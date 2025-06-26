@@ -17,7 +17,7 @@ install.packages("devtools")
 # Install MS1Match from GitHub
 devtools::install_github("RuibingS/MS1match")
 ```
-## 📘 Tutorial / Vignette
+## 📘 Vignette
 
 A full reproducible tutorial using the demo StM16 data set is available:
 
