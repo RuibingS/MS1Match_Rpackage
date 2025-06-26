@@ -1,0 +1,51 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="MS1Match Structure" id="vVGOdZ1hHDYqvKH5j9NW">
+    <mxGraphModel dx="1480" dy="740" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- User Functions -->
+        <mxCell id="2" value="direct_match()" style="ellipse;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="60" y="80" width="140" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="3" value="annotate()" style="ellipse;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="400" y="80" width="140" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- S4 Classes -->
+        <mxCell id="4" value="Class: DirectMatchObject&#10;- FT: data.frame&#10;- compounds_list: list&#10;- thresholds: numeric" style="swimlane;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="30" y="160" width="200" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="5" value="Class: PeakAnnotationDF&#10;- compounds_df: data.frame&#10;- FT: data.frame&#10;- adducts_df: data.frame&#10;- polarity: character&#10;- intensity: numeric" style="swimlane;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="370" y="160" width="220" height="140" as="geometry"/>
+        </mxCell>
+
+        <!-- S4 Methods -->
+        <mxCell id="6" value="Method: run_direct_match()" style="rounded=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="70" y="280" width="160" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="7" value="Method: annotate()" style="rounded=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="430" y="320" width="140" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Generic Functions -->
+        <mxCell id="8" value="Generic: run_direct_match" style="rhombus;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="90" y="380" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="9" value="Generic: annotate" style="rhombus;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="460" y="400" width="100" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Connectors -->
+        <mxCell id="e1" style="endArrow=block" edge="1" parent="1" source="2" target="4"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" style="endArrow=block" edge="1" parent="1" source="3" target="5"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3" style="endArrow=block" edge="1" parent="1" source="4" target="6"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4" style="endArrow=block" edge="1" parent="1" source="5" target="7"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e5" style="endArrow=block" edge="1" parent="1" source="6" target="8"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e6" style="endArrow=block" edge="1" parent="1" source="7" target="9"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

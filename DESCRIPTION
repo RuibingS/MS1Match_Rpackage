@@ -1,0 +1,11 @@
+Package: MS1Match
+Title: Mass Spectrometry MS1 Peak Matching
+Version: 0.0.0.9000
+Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
+Description: Provides functions for direct MS1 peak matching for LC-MS and FIA-MS workflows.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE, roclets = c("namespace", "rd"))
+RoxygenNote: 7.3.2
+Imports: Rcpp, RcppArmadillo, enviPat, MetaboCoreUtils
+LinkingTo: Rcpp, RcppArmadillo, BH

@@ -1,0 +1,385 @@
+---
+title: "MS1Match Tutorial"
+author: "Ruibing Shi"
+output:
+  BiocStyle::html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+vignette: >
+  %\VignetteIndexEntry{MS1Match Tutorial}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+First, loading all the needed packages.
+```{r setup, include = FALSE}
+library(xcms)
+library(tibble)
+library(dplyr)
+library(tidyr)
+library(tibble)
+library(MS1Match)
+
+```
+
+
+
+
+
+
+## Data Import and Peak Detection
+### Load demo data
+We begin by preprocessing LC-MS data using the `xcms` package. The demo dataset `StM16`, included in the `MS1Match` package, will be used to illustrate the workflow.
+
+
+```{r import-data}
+result_StM16 <- readRDS(here::here("inst", "extdata", "result_StM16.rds"))
+```
+`result_StM16` is a list with four elements: `result_StM16[[1]]` is a `XCMSnExp` object from `XCMS`, `result_StM16[[2]]` is feature definition table, `result_StM16[[3]]` is the feature intensity  table and `result_StM16[[4]]` is `XChromatograms` object where the information of the extracted ion chromatogram (EIC) is saved.   
+
+### Run XCMS on Custom Files
+Users can run `runXCMS()` to process their own `mzXML` or `mzML` files by specifying appropriate parameters from `xcms`.
+
+```{r runXCMS-mzXML, eval = FALSE}
+runXCMS_result <- runXCMS(files_dir,
+                    peakwidth,
+                    ppm,
+                    snthresh,
+                    mzdiff,
+                    prefilter,
+                    noise,
+                    bw,
+                    sample_name,
+                    sample_group,
+                    minFraction)
+
+```
+
+### Prepare the Feature Table
+
+We now create a feature table by combining the output from `result_StM16[[2]]` (feature definitions) and `result_StM16[[3]]` (intensity values). The table is then cleaned and prepared for downstream annotation.
+
+In particular:
+
+1. Convert the result to a data frame (**required**)
+2. Rename the first column to `feature_name` (**required**)
+3. Remove the `peakidx` column (**optional**)
+4. Calculate a new column `intensity_mean` as the row-wise mean across samples (**required** if using multiple samples)
+5. Sort the table by RT or m/z (**optional**)
+6. Filter by retention time using `dplyr::filter()` (**optional**)  
+   – In this example, we keep features with RT between 60 and 1200 seconds.
+
+```{r create-FT}
+
+
+# 1. Prepare feature table metadata (remove 'peakidx', add 'feature_name')
+result_StM16_FT <- result_StM16[[2]] %>%
+  as.data.frame() %>%
+  select(-peakidx) %>%
+  rownames_to_column(var = "feature_name")
+
+# 2. Prepare intensity table (add 'feature_name')
+result_StM16_FT_int <- result_StM16[[3]] %>%
+  as.data.frame() %>%
+  rownames_to_column(var = "feature_name")
+
+# 3. Add mean intensity column across all 'mzxml' columns
+result_StM16_FT_int <- result_StM16_FT_int %>%
+  rowwise() %>%
+  mutate(intensity_mean = mean(c_across(matches("mzxml")), na.rm = TRUE)) %>%
+  ungroup()
+
+# 4. Join metadata and intensity tables
+result_StM16_FT_join <- left_join(result_StM16_FT, result_StM16_FT_int, by = "feature_name")
+
+# 5. Optional: Filter features by RT (60 to 1200 seconds)
+result_StM16_FT_filtered <- result_StM16_FT_join %>%
+  filter(rtmed >= 60, rtmed <= 1200)
+
+```
+
+```{r,echo=FALSE}
+head(result_StM16_FT_filtered)
+```
+
+
+
+## Import Mass Spectral Library
+
+To perform direct MS1 library matching, we first import the in-house spectral library `Si16.library`, which contains MS1 spectra for 16 pure reference compounds.
+
+```{r import-MS1-library}
+
+Si16_library <- parse_library_parallel(file_path = here::here("data","StM16_library","Si16.library"),
+                                                    ionPolarity = "pos",spectrum_type ="MS1")
+```
+
+This returns a list-like object containing MS1 peak information per compound:
+```{r, results='hide'}
+Si16_library[[1]]
+```
+If you want to import an MS2 spectral library instead, you can specify spectrum_type = "MS2":
+```{r}
+# Import MS2 library
+Si16_MS2_library <- parse_library_parallel(file_path = here::here("data","StM16_library","Si11_library_MS2.library"), ionPolarity = "pos",spectrum_type ="MS2")
+ 
+```
+
+
+## Direct Matching to the MS1 Library
+
+We now match the m/z values in the feature table to those of the primary ions (`[M+H]+`) in the MS1 spectral library. Once a primary ion is found, the corresponding peaks from the library are matched to neighboring features based on retention time (RT) proximity.
+
+The feature table must be sorted by m/z; if not, `createDirectLibMatch()` will automatically sort it.
+
+```{r create-direct-libmatch}
+DirectLibMatch_obj <- createDirectLibMatch(
+  FT = result_StM16_FT_filtered,
+  compounds_list = Si16_library,
+  diff_mz_thr = 0.01,
+  diff_rt_thr = 5,
+  ppm = 10,
+  ms_level = "MS1",
+  polarity = "pos"
+)
+```
+
+We can now annotate the feature table using the direct MS1 library match:
+```{r}
+direct_match_Stm16_res_MS1 <- libAnnotate(DirectLibMatch_obj)
+```
+The result from libAnnotate() is a list containing matched annotations. You can convert it to a data frame for easier inspection:
+
+
+```{r, results='hide'}
+direct_match_Stm16_res_MS1[[1]]
+
+# convert list to df
+direct_match_Stm16_res_MS1_df <- plyr::ldply(direct_match_Stm16_res_MS1, data.frame)
+```
+
+
+```{r,echo=FALSE}
+head(direct_match_Stm16_res_MS1_df)
+```
+
+
+
+
+
+## Direct matching to the MS2 library 
+
+We can also use MS2 spectra to perform the direct matching and compare the results from MS1. 
+
+```{r direct-MS2libmatch}
+DirectLibMatch_MS2_obj <- createDirectLibMatch(
+  FT = result_StM16_FT_filtered,
+  compounds_list = Si16_MS2_library,
+  diff_mz_thr = 0.01,
+  diff_rt_thr = 5,
+  ppm = 10,
+  ms_level = "MS2",
+  polarity = "pos"
+)
+```
+
+
+We can now annotate the feature table using the direct MS2 library match:
+```{r}
+direct_match_Stm16_res_MS2 <- libAnnotate(DirectLibMatch_MS2_obj)
+```
+The result from libAnnotate() is a list containing matched annotations. You can convert it to a data frame for easier inspection:
+
+
+```{r}
+# convert list to df
+direct_match_Stm16_res_MS2_df <- plyr::ldply(direct_match_Stm16_res_MS2, data.frame)
+```
+
+
+```{r,echo=FALSE}
+head(direct_match_Stm16_res_MS2_df)
+```
+
+
+
+To evaluate the annotation performance, we compare the number of features directly matched using the MS1 library versus the MS2 library.
+```{r}
+direct_match_res_MS1_df_subset <- direct_match_Stm16_res_MS1_df[,c("Compound_name", "Matched_peaks","Total_library_peaks")] %>% distinct()
+
+direct_match_res_MS2_df_subset <- direct_match_Stm16_res_MS2_df[,c("Compound_name", "Matched_peaks","Total_library_peaks")] %>% distinct()
+
+
+
+direct_match_res_MS1_MS2_join <- full_join(direct_match_res_MS1_df_subset, direct_match_res_MS2_df_subset, by = c("Compound_name"),
+                                           suffix = c("_MS1", "_MS2"))
+```
+The result:
+
+```{r, echo=FALSE}
+head(direct_match_res_MS1_MS2_join)
+```
+
+
+## Annotation of MS1-Matched Features
+
+### Import Supporting Tables
+We first import the adduct and neutral loss tables:
+```{r import-supporting-tables, message=FALSE}
+# Load adduct and neutral loss tables
+adduct_table <- read.csv(here::here("data", "Adducts", "adducts.csv"), check.names = TRUE)
+neutral_loss_table <- read.csv(here::here("data", "Neutral loss", "neutral loss database.csv"), check.names = TRUE)
+
+```
+
+After identifying candidate features through direct MS1 library matching, we initialize a `PeakAnnotation` S4 object to annotate the features using adducts, neutral losses, and isotopic patterns
+```{r}
+
+# Create PeakAnnotation object
+PeakAnnotation_obj <- createPeakAnnotation(compounds = Si16_library,
+                                              FT =  result_StM16_FT_filtered,
+                                              intensity =  result_StM16_FT_filtered$intensity_mean,
+                                              neutral_loss_table = neutral_loss_table,
+                                              adducts_df = adduct_table,
+                                              PI_rt_threshold = 10 ,
+                                              polarity = "positive")
+```
+
+Finally, we call the `annotate` to generate detailed annotations:
+```{r}
+StM16_annotate_res <- annotate(PeakAnnotation_obj)
+```
+
+The output is a list which includes primary ion, adduct, neutral loss, and isotope annotations for each feature.
+```{r, results='hide'}
+# check output
+StM16_annotate_res[[1]]
+```
+
+
+```{r,eval=FALSE}
+annotate_peaks_StM16_result_df <- plyr::ldply(StM16_annotate_res, data.frame, stringsAsFactors = FALSE)
+```
+
+
+```{r,echo=FALSE}
+head(annotate_peaks_StM16_result_df)
+```
+
+
+## Direct Target List Matching
+
+In this section, we perform direct matching between feature table m/z values and target lists using known compounds from curated databases.
+
+### Import Target Lists
+
+We first import the **PAMDB** target list for *Pseudomonas aeruginosa* metabolites:
+
+```{r, message=FALSE, warning=FALSE, results='hide'}
+PA14_target_list <- PAMD_target_list_import(target_list_path = here::here("data", "Pseudomonas_target_list", "PaMetV2.csv"), IonPolarity = "pos")#
+```
+
+
+```{r, echo=FALSE}
+head(PA14_target_list)
+```
+
+
+The MS1Match package also includes a target list for human plasma metabolites (HMDB):
+
+```{r}
+hmdb_target_list <- HMDB_target_list_import(target_list_path = here::here("data", "hmdb", "hmdb_blood_detected.csv"), IonPolarity = "pos")#
+
+```
+### Match Features to Target List
+
+Matching is based on m/z of primary ions:
+
+- [M+H]+ in positive ion mode
+- [M-H]- in negative ion mode
+```{r}
+Stm16_PAMDB_PI_match <- PImatch_target (FT = result_StM16_FT_filtered,
+                                   Comp_data = PA14_target_list,
+                                   PIon = "[M+H]+",
+                                   diff_mz_thr = 0.005,
+                                   ppm = 10)
+```
+
+
+```{r}
+# list to data frame
+
+Stm16_PAMDB_PI_match_filtered_list <- Filter(function(x) length(x$Feature_name) > 0, Stm16_PAMDB_PI_match)
+
+Stm16_PAMDB_PI_match_filtered_df <- do.call(rbind, lapply(Stm16_PAMDB_PI_match_filtered_list, as.data.frame)) %>%  
+  rename_with(~ paste0(.x, "_PAMDB"), .cols = -Feature_name)
+```
+
+
+```{r, echo=FALSE}
+head(Stm16_PAMDB_PI_match_filtered_df)
+```
+
+
+
+
+## Join Annotation Results
+To facilitate downstream analysis and export, we provide a wrapper function that merges the results from:
+
+- MS1 library direct matching,
+- Peak-level annotation (adducts, neutral losses, isotopes),
+- External target list matching (e.g., PAMDB).
+
+The result is a comprehensive annotated data frame.
+```{r}
+StM16_join_annotation_results <- join_annotation_results(direct_match_Stm16_res_MS1, StM16_annotate_res, Stm16_PAMDB_PI_match)
+```
+
+You can now export StM16_join_annotation_results or use it for further filtering, visualization, or reporting.
+```{r,echo=FALSE}
+head(StM16_join_annotation_results)
+```
+
+
+```{r, eval=FALSE}
+write.csv(StM16_join_annotation_results, "StM16_join_annotation_results.csv",row.names = FALSE)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
