@@ -1,4 +1,4 @@
-# MS1Match <img src="logo/MS1Match_Logo.png" align="right" width=120 height=120 alt="" />
+# MS1Match <img src="man/logo/MS1Match_Logo.png" align="right" width=120 height=120 alt="" />
 
 **MS1Match** is an R package for annotating mass spectrometry (MS1 and MS2) feature tables using compound libraries. It offers:
 
