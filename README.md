@@ -15,7 +15,8 @@
 install.packages("devtools")
 
 # Install MS1Match from GitHub
-devtools::install_github("RuibingS/MS1match")
+devtools::install_github("RuibingS/MS1Match_Rpackage")
+
 ```
 ## 📘 Vignette
 
