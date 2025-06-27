@@ -7,5 +7,16 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE, roclets = c("namespace", "rd"))
 RoxygenNote: 7.3.2
-Imports: Rcpp, RcppArmadillo, enviPat, MetaboCoreUtils
+Imports:
+    xcms (>= 3.20.0),
+    MSnbase,
+    tibble,
+    dplyr,
+    tidyr,
+    Spectra,
+    doParallel,
+    Rcpp,
+    RcppArmadillo,
+    MetaboCoreUtils,
+    enviPat
 LinkingTo: Rcpp, RcppArmadillo, BH

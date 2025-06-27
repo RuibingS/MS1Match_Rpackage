@@ -175,30 +175,17 @@ Rcpp::List direct_match_MS2Lib_cpp(Rcpp::DataFrame FT,
 
     std::string compound_name = Rcpp::as<std::string>(compound["Name"]);
 
-    // Precursor m/z
     double pre_mz = NA_REAL;
-    if (compound.containsElementNamed("PreIon")) {
-      try {
-        pre_mz = std::stod(Rcpp::as<std::string>(compound["PreIon"]));
-        Rcpp::Rcout << "  Precursor m/z: " << pre_mz << "\n";
-      } catch (...) {
-        Rcpp::Rcout << "  Could not parse PreIon, skipping\n";
-        continue;
-      }
-    } else {
+    try {
+      pre_mz = std::stod(Rcpp::as<std::string>(compound["PreIon"]));
+    } catch (...) {
       continue;
     }
 
     double compound_rt = 0.0;
-    bool has_rt_comp = false;
-    if (compound.containsElementNamed("RT")) {
-      compound_rt = Rcpp::as<double>(compound["RT"]);
-      has_rt_comp = true;
-      Rcpp::Rcout << "  Compound RT: " << compound_rt << "\n";
-    }
+    bool has_rt_comp = get_rt(compound, compound_rt);
 
     double mz_tol = std::max(diff_mz_thr, pre_mz * ppm * 1e-6);
-    Rcpp::Rcout << "  m/z tolerance: " << mz_tol << "\n";
 
     Rcpp::DataFrame Peaks = Rcpp::as<Rcpp::DataFrame>(compound["Peaks"]);
     Rcpp::NumericVector peak_mz = Peaks["mz"];
@@ -211,15 +198,12 @@ Rcpp::List direct_match_MS2Lib_cpp(Rcpp::DataFrame FT,
       peak_int = reorder_vector(peak_int, idx);
     }
 
-    int matches_for_compound = 0;
-
     for (int j = 0; j < nrow_FT; ++j) {
       double fmz = FT_mz[j];
       double frt = has_rt ? FT_rt[j] : NA_REAL;
 
       if (std::fabs(fmz - pre_mz) > mz_tol) continue;
       if (has_rt && has_rt_comp && std::fabs(frt - compound_rt) > diff_rt_thr) continue;
-
 
       int matched_peaks = 0;
       std::vector<std::string> matched_peak_features;
@@ -245,10 +229,9 @@ Rcpp::List direct_match_MS2Lib_cpp(Rcpp::DataFrame FT,
       Rcpp::CharacterVector matched_peak_features_char = Rcpp::wrap(matched_peak_features);
       double score = matched_peaks > 0 ? matched_peaks / (double)total_peaks : NA_REAL;
       std::string lib_group_id = "Lib_group_" + std::to_string(group_index++);
-      matches_for_compound++;
 
       output_list.push_back(List::create(
-          _["feature_name"] = as<std::string>(feature_name[j]),
+          _["feature_name"] = Rcpp::as<std::string>(feature_name[j]),
           _["Lib_group"] = lib_group_id,
           _["feature_mz"] = fmz,
           _["feature_rt"] = frt,
@@ -260,13 +243,9 @@ Rcpp::List direct_match_MS2Lib_cpp(Rcpp::DataFrame FT,
           _["Matched_peaks"] = matched_peaks,
           _["Match_peak_score"] = score,
           _["Total_library_peaks"] = total_peaks,
-          _["Matched_features_to_peaks"] = matched_peak_features_char.size() > 0 ? matched_peak_features_char : Rcpp::CharacterVector::create(NA_STRING),
-          _["Matched_features_mz"] = matched_feature_mz.size() > 0 ? matched_feature_mz : Rcpp::NumericVector::create(NA_REAL)
+          _["Matched_features_to_peaks"] = matched_peak_features_char.size() ? matched_peak_features_char : Rcpp::CharacterVector::create(NA_STRING),
+          _["Matched_features_mz"] = matched_feature_mz.size() ? matched_feature_mz : Rcpp::NumericVector::create(NA_REAL)
       ));
-    }
-
-    if (matches_for_compound == 0) {
-      Rcpp::Rcout << "  No precursor matches found in FT for compound\n";
     }
   }
 
