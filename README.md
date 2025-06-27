@@ -11,6 +11,12 @@
 4. Targeted annotation based on a user-defined compound list
 
 ```r
+# Install required Bioconductor packages first
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install(c("xcms", "MSnbase", "Spectra"))
+
 # Install devtools if not already
 install.packages("devtools")
 
