@@ -1,1 +1,7 @@
 .Rproj.user
+*.html
+.Rproj.user/
+.Rhistory
+.RData
+*.Rproj
+*.exe

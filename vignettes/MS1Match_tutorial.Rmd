@@ -44,8 +44,6 @@ We begin by preprocessing LC-MS data using the `xcms` package. The demo dataset 
 
 ```{r import-data}
 result_StM16 <- readRDS(system.file("extdata", "result_StM16.rds", package = "MS1Match"))
-  #here::here("inst", "extdata", "result_StM16.rds"))
-
 
 ```
 `result_StM16` is a list with four elements: `result_StM16[[1]]` is a `XCMSnExp` object from `XCMS`, `result_StM16[[2]]` is feature definition table, `result_StM16[[3]]` is the feature intensity  table and `result_StM16[[4]]` is `XChromatograms` object where the information of the extracted ion chromatogram (EIC) is saved.   
@@ -99,7 +97,7 @@ To perform direct MS1 library matching, we first import the in-house spectral li
 
 ```{r import-MS1-library}
 
-Si16_library <- parse_library_parallel(file_path = here::here("data","StM16_library","Si16.library"),
+Si16_library <- parse_library_parallel(file_path = system.file("extdata", "StM16_library", "Si16.library", package = "MS1Match"),
                                                     ionPolarity = "pos",spectrum_type ="MS1")
 ```
 
@@ -107,10 +105,13 @@ This returns a list-like object containing MS1 peak information per compound:
 ```{r, results='hide'}
 Si16_library[[1]]
 ```
+
+
+
 If you want to import an MS2 spectral library instead, you can specify spectrum_type = "MS2":
 ```{r}
 # Import MS2 library
-Si16_MS2_library <- parse_library_parallel(file_path = here::here("data","StM16_library","Si11_library_MS2.library"), ionPolarity = "pos",spectrum_type ="MS2")
+Si16_MS2_library <- parse_library_parallel(file_path = system.file("extdata", "StM16_library", "Si11_library_MS2.library", package = "MS1Match"), ionPolarity = "pos",spectrum_type ="MS2")
  
 ```
 
@@ -137,21 +138,47 @@ We can now annotate the feature table using the direct MS1 library match:
 ```{r}
 direct_match_Stm16_res_MS1 <- libAnnotate(DirectLibMatch_obj)
 ```
-The result from libAnnotate() is a list containing matched annotations. You can convert it to a data frame for easier inspection:
+The result from `libAnnotate()` is a list containing matched annotations. You can convert it to a data frame for easier inspection:
 
 
 ```{r, results='hide'}
 direct_match_Stm16_res_MS1[[1]]
 
+
 # convert list to df
-direct_match_Stm16_res_MS1_df <- plyr::ldply(direct_match_Stm16_res_MS1, data.frame)
+direct_match_Stm16_res_MS1_df <- do.call(rbind, lapply(direct_match_Stm16_res_MS1, function(x) {
+  x[c("Compound_peak_mz_full", "Compound_peak_int_full")] <- NULL
+  as.data.frame(x, stringsAsFactors = FALSE)
+}))
+
 ```
+
+
+
+
 
 
 ```{r,echo=FALSE}
 head(direct_match_Stm16_res_MS1_df)
 ```
 
+### Visualizing MS1 Spectral Matches
+`MS1Match` provides visualization tools to help inspect the quality of spectral matches between query features and reference library compounds using mirror.
+This function `plotMirrorSpectraSingle` creates a mirror plot using the matched feature peaks (on top) and reference library spectrum (on bottom).
+The cosine similarity score (inner and outer cosine from `Spectra`) and the match score are displayed in the plot.
+If no `output_dir` is provided, only the plot is shown. If `output_dir` is set, the plot will be saved as a PNG file instead.
+
+```{r}
+plotMirrorSpectraSingle(object = DirectLibMatch_obj, match = direct_match_Stm16_res_MS1[[5]], output_dir = NULL)
+```
+
+
+### Plot All Matches and Export
+To generate and export mirror plots for all matched compounds at once:
+
+```{r, eval=FALSE}
+plotMirrorSpectra(object = DirectLibMatch_obj, matches = direct_match_Stm16_res_MS1, output_dir = "mirror_plots_Stm16_res_MS1")
+```
 
 
 
@@ -181,8 +208,15 @@ The result from libAnnotate() is a list containing matched annotations. You can 
 
 
 ```{r}
+
+
 # convert list to df
-direct_match_Stm16_res_MS2_df <- plyr::ldply(direct_match_Stm16_res_MS2, data.frame)
+direct_match_Stm16_res_MS2_df <- do.call(rbind, lapply(direct_match_Stm16_res_MS2, function(x) {
+  x[c("Compound_peak_mz_full", "Compound_peak_int_full")] <- NULL
+  as.data.frame(x, stringsAsFactors = FALSE)
+}))
+
+  
 ```
 
 
@@ -190,7 +224,21 @@ direct_match_Stm16_res_MS2_df <- plyr::ldply(direct_match_Stm16_res_MS2, data.fr
 head(direct_match_Stm16_res_MS2_df)
 ```
 
+### Visualizing MS1 Spectral Matches
 
+Similarly, we plot the spectral mirror plot for the MS2 library matching result:
+```{r}
+plotMirrorSpectraSingle(object = DirectLibMatch_MS2_obj, match = direct_match_Stm16_res_MS2[[5]])
+```
+And export for all matched compound: 
+
+```{r, eval=FALSE}
+plotMirrorSpectra(object = DirectLibMatch_MS2_obj, matches = direct_match_Stm16_res_MS2, output_dir = "mirror_plots_Stm16_res_MS2")
+```
+
+
+
+### Compare MS1 and MS2 library matching results
 
 To evaluate the annotation performance, we compare the number of features directly matched using the MS1 library versus the MS2 library.
 ```{r}
@@ -216,8 +264,11 @@ head(direct_match_res_MS1_MS2_join)
 We first import the adduct and neutral loss tables:
 ```{r import-supporting-tables, message=FALSE}
 # Load adduct and neutral loss tables
-adduct_table <- read.csv(here::here("data", "Adducts", "adducts.csv"), check.names = TRUE)
-neutral_loss_table <- read.csv(here::here("data", "Neutral loss", "neutral loss database.csv"), check.names = TRUE)
+adduct_table <- read.csv(system.file("extdata", "Adducts", "adducts.csv", package = "MS1Match"))
+
+neutral_loss_table <- read.csv(system.file("extdata", "Neutral loss", "neutral loss database.csv", package = "MS1Match"), check.names = TRUE)
+  
+
 
 ```
 
@@ -246,7 +297,7 @@ StM16_annotate_res[[1]]
 ```
 
 
-```{r,eval=FALSE}
+```{r, results='hide'}
 annotate_peaks_StM16_result_df <- plyr::ldply(StM16_annotate_res, data.frame, stringsAsFactors = FALSE)
 ```
 
@@ -265,8 +316,8 @@ In this section, we perform direct matching between feature table m/z values and
 We first import the **PAMDB** target list for *Pseudomonas aeruginosa* metabolites:
 
 ```{r, message=FALSE, warning=FALSE, results='hide'}
-PA14_target_list <- PAMD_target_list_import(target_list_path = here::here("data", "Pseudomonas_target_list", "PaMetV2.csv"), IonPolarity = "pos")#
-system.file("extdata", "your_file.rds", package = "MS1Match")
+PA14_target_list <- PAMD_target_list_import(target_list_path = system.file("extdata", "Pseudomonas_target_list", "PaMetV2.csv", package = "MS1Match"))
+                                              
 
 ```
 
@@ -279,7 +330,7 @@ head(PA14_target_list)
 The MS1Match package also includes a target list for human plasma metabolites (HMDB):
 
 ```{r}
-hmdb_target_list <- HMDB_target_list_import(target_list_path = here::here("data", "hmdb", "hmdb_blood_detected.csv"), IonPolarity = "pos")#
+hmdb_target_list <- HMDB_target_list_import(target_list_path = system.file("extdata", "hmdb", "hmdb_blood_detected.csv", package = "MS1Match"), IonPolarity = "pos")
 
 ```
 ### Match Features to Target List
@@ -331,7 +382,7 @@ You can now export StM16_join_annotation_results or use it for further filtering
 head(StM16_join_annotation_results)
 ```
 
-
+And export it as a .csv file
 ```{r, eval=FALSE}
 write.csv(StM16_join_annotation_results, "StM16_join_annotation_results.csv",row.names = FALSE)
 ```

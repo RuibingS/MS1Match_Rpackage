@@ -38,6 +38,8 @@ Rcpp::List direct_match_MS1Lib_cpp(Rcpp::DataFrame FT,
   int nrow_FT = FT.nrow();
   int nrow_Comp = compounds_list.length();
   NumericVector FT_mz = get_column_with_fallback<NumericVector>(FT, "mzmed", "mz", "m/z");
+  NumericVector FT_int = get_column_with_fallback<NumericVector>(FT, "intensity_mean", "mean_intensity","intensity");
+
   CharacterVector feature_name = get_required_column<CharacterVector>(FT, "feature_name");
   NumericVector FT_rt;
   bool has_rt_FT = false;
@@ -54,6 +56,7 @@ Rcpp::List direct_match_MS1Lib_cpp(Rcpp::DataFrame FT,
     FT_mz = reorder_vector(FT_mz, idx);
     if (has_rt_FT) FT_rt = reorder_vector(FT_rt, idx);
     feature_name = reorder_vector(feature_name, idx);
+    FT_int = reorder_vector(FT_int, idx);
   }
 
   Rcpp::List output_list;
@@ -93,10 +96,11 @@ Rcpp::List direct_match_MS1Lib_cpp(Rcpp::DataFrame FT,
 
           int matched_peaks = 0;
           std::vector<std::string> matched_peak_features;
-          Rcpp::NumericVector matched_feature_mz, match_peak_mz, match_peak_int;
+          Rcpp::NumericVector matched_feature_mz,matched_feature_int ,match_peak_mz, match_peak_int;
 
           for (int k = 0; k < nrow_FT; ++k) {
             double mz_k = FT_mz[k];
+            double int_k = FT_int[k];
             double rt_k = has_rt_FT ? FT_rt[k] : NA_REAL;
             if (has_rt_FT && has_rt_comp && std::fabs(rt_k - compound_rt) > diff_rt_thr) continue;
 
@@ -107,6 +111,7 @@ Rcpp::List direct_match_MS1Lib_cpp(Rcpp::DataFrame FT,
                 match_peak_int.push_back(peak_int[p]);
                 matched_peak_features.push_back(as<std::string>(feature_name[k]));
                 matched_feature_mz.push_back(mz_k);
+                matched_feature_int.push_back(int_k);
                 break;
               }
             }
@@ -124,12 +129,16 @@ Rcpp::List direct_match_MS1Lib_cpp(Rcpp::DataFrame FT,
               _["Compound_rt"] = has_rt_comp ? compound_rt : NA_REAL,
               _["Compound_peak_mz"] = match_peak_mz.size() ? match_peak_mz : NumericVector::create(NA_REAL),
               _["Compound_peak_int"] = match_peak_int.size() ? match_peak_int : NumericVector::create(NA_REAL),
+              _["Compound_peak_mz_full"] = peak_mz,
+              _["Compound_peak_int_full"] = peak_int,
               _["Ion_type"] = "[M+H]+",
               _["Matched_peaks"] = matched_peaks,
               _["Match_peak_score"] = score,
               _["Total_library_peaks"] = total_peaks,
               _["Matched_features_to_peaks"] = matched_peak_features_char.size() > 0 ? matched_peak_features_char : Rcpp::CharacterVector::create(NA_STRING),
-              _["Matched_features_mz"] = matched_feature_mz.size() > 0 ? matched_feature_mz : Rcpp::NumericVector::create(NA_REAL)
+              _["Matched_features_mz"] = matched_feature_mz.size() > 0 ? matched_feature_mz : Rcpp::NumericVector::create(NA_REAL),
+              _["Matched_features_int"] = matched_feature_int.size() > 0 ? matched_feature_int : Rcpp::NumericVector::create(NA_REAL)
+
           ));
         }
   }
@@ -149,6 +158,8 @@ Rcpp::List direct_match_MS2Lib_cpp(Rcpp::DataFrame FT,
 
   Rcpp::NumericVector FT_mz = get_column_with_fallback<NumericVector>(FT, "mzmed", "mz", "m/z");
   Rcpp::CharacterVector feature_name = get_required_column<CharacterVector>(FT, "feature_name");
+  NumericVector FT_int = get_column_with_fallback<NumericVector>(FT, "intensity_mean", "mean_intensity", "intensity");
+
 
   Rcpp::NumericVector FT_rt;
   bool has_rt = false;
@@ -164,6 +175,7 @@ Rcpp::List direct_match_MS2Lib_cpp(Rcpp::DataFrame FT,
     FT_mz = reorder_vector(FT_mz, idx);
     if (has_rt) FT_rt = reorder_vector(FT_rt, idx);
     feature_name = reorder_vector(feature_name, idx);
+    FT_int = reorder_vector(FT_int, idx);
   }
 
   Rcpp::List output_list;
@@ -207,10 +219,11 @@ Rcpp::List direct_match_MS2Lib_cpp(Rcpp::DataFrame FT,
 
       int matched_peaks = 0;
       std::vector<std::string> matched_peak_features;
-      Rcpp::NumericVector matched_feature_mz, match_peak_mz, match_peak_int;
+      Rcpp::NumericVector matched_feature_mz, matched_feature_int, match_peak_mz, match_peak_int;
 
       for (int k = 0; k < nrow_FT; ++k) {
         double mz_k = FT_mz[k];
+        double int_k = FT_int[k];
         double rt_k = has_rt ? FT_rt[k] : NA_REAL;
         if (has_rt && has_rt_comp && std::fabs(rt_k - compound_rt) > diff_rt_thr) continue;
 
@@ -221,6 +234,7 @@ Rcpp::List direct_match_MS2Lib_cpp(Rcpp::DataFrame FT,
             match_peak_int.push_back(peak_int[p]);
             matched_peak_features.push_back(Rcpp::as<std::string>(feature_name[k]));
             matched_feature_mz.push_back(mz_k);
+            matched_feature_int.push_back(int_k);
             break;
           }
         }
@@ -239,12 +253,17 @@ Rcpp::List direct_match_MS2Lib_cpp(Rcpp::DataFrame FT,
           _["Compound_rt"] = has_rt_comp ? compound_rt : NA_REAL,
           _["Compound_peak_mz"] = match_peak_mz.size() ? match_peak_mz : NumericVector::create(NA_REAL),
           _["Compound_peak_int"] = match_peak_int.size() ? match_peak_int : NumericVector::create(NA_REAL),
+          _["Compound_peak_mz"] = match_peak_mz.size() ? match_peak_mz : NumericVector::create(NA_REAL),
+          _["Compound_peak_mz_full"] = peak_mz,
+          _["Compound_peak_int_full"] = peak_int,
           _["Precursor_mz"] = pre_mz,
           _["Matched_peaks"] = matched_peaks,
           _["Match_peak_score"] = score,
           _["Total_library_peaks"] = total_peaks,
           _["Matched_features_to_peaks"] = matched_peak_features_char.size() ? matched_peak_features_char : Rcpp::CharacterVector::create(NA_STRING),
-          _["Matched_features_mz"] = matched_feature_mz.size() ? matched_feature_mz : Rcpp::NumericVector::create(NA_REAL)
+          _["Matched_features_mz"] = matched_feature_mz.size() ? matched_feature_mz : Rcpp::NumericVector::create(NA_REAL),
+          _["Matched_features_int"] = matched_feature_int.size() ? matched_feature_int : Rcpp::NumericVector::create(NA_REAL)
+
       ));
     }
   }

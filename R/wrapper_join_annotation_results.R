@@ -3,7 +3,7 @@
 #' @param dirct_lib_list Required list (library match output)
 #' @param lib_anno_list Optional list to join by `Matched_features_to_peaks`
 #' @param target_match_list Optional list to join by `Matched_features_to_peaks`
-#'
+#' @import purrr
 #' @return A data.frame of joined annotation results
 #' @export
 join_annotation_results <- function(dirct_lib_list, lib_anno_list = NULL, target_match_list = NULL) {
@@ -12,7 +12,10 @@ join_annotation_results <- function(dirct_lib_list, lib_anno_list = NULL, target
   df_output <- NULL
 
   dirct_lib_df <- tryCatch({
-    dplyr::bind_rows(dirct_lib_list)
+    dirct_lib_list%>%
+      map(~ .x[setdiff(names(.x), c("Compound_peak_mz_full", "Compound_peak_int_full"))]) %>%
+      bind_rows()
+    # dplyr::bind_rows()
   }, error = function(e) {
     stop("Failed to bind dirct_lib_list: ", conditionMessage(e))
   })
