@@ -26,7 +26,7 @@ devtools::install_github("RuibingS/MS1Match_Rpackage")
 ```
 ## 📘 Vignette
 
-A full reproducible tutorial using the demo StM16 data set is available:
+A full reproducible tutorial using the demo StM14 data set is available:
 
 👉 [MS1Match Tutorial](vignettes/MS1Match_tutorial.html)
 
