@@ -1,7 +1,21 @@
-.Rproj.user
-*.html
+# RStudio
 .Rproj.user/
+
+# R session
 .Rhistory
 .RData
-*.Rproj
-*.exe
+.Ruserdata
+
+# Build artifacts
+*.Rcheck/
+*.tar.gz
+doc/
+Meta/
+00LOCK*
+src/*.o
+src/*.so
+src/*.dll
+
+# OS files
+.DS_Store
+Thumbs.db
