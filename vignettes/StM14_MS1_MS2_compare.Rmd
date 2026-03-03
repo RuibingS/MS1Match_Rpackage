@@ -1,0 +1,450 @@
+---
+title: "Si16_MS2"
+author: "Ruibing"
+date: "2025-12-10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Import MS2 library
+Si16_MS2_library <- parse_library(file_path = system.file("extdata", "StM16_library", "Si11_library_MS2.library", package = "MS1Match"), ionPolarity = "pos",spectrum_type ="MS2")
+ 
+```
+
+
+```{r}
+Si16_MS2_library[[1]]$PreIon
+```
+
+## Direct matching to the MS2 library 
+
+We can also use MS2 spectra to perform the direct matching and compare the results from MS1. 
+
+```{r direct-MS2libmatch}
+DirectLibMatch_MS2_obj <- createDirectLibMatch(
+  FT = result_StM16_FT_filtered,
+  compounds_list = Si16_MS2_library,
+  diff_mz_thr = 0.01,
+  diff_rt_thr = 5,
+  ppm = 10,
+  ms_level = "MS2",
+  polarity = "pos"
+)
+```
+
+
+
+We can now annotate the feature table using the direct MS2 library match:
+```{r}
+
+library(doParallel)
+
+# Start a cluster using available cores
+n_cores <- max(1, parallel::detectCores() - 1)
+cl <- makeCluster(n_cores)
+# 
+# # Register it so %dopar% uses it
+ registerDoParallel(cl)
+
+
+direct_match_Stm16_MS2_obj <- libAnnotate(DirectLibMatch_MS2_obj, compute_cosine = TRUE)
+```
+The result from libAnnotate() is a list containing matched annotations. You can convert it to a data frame for easier inspection:
+
+```{r}
+direct_match_Stm16_res_MS2 <- results(direct_match_Stm16_MS2_obj)
+```
+
+```{r}
+direct_match_Stm16_res_MS2[[1]]
+```
+
+## Annotation of MS2-Matched Features
+
+### Import Supporting Tables
+We first import the adduct and neutral loss tables:
+```{r import-supporting-tables, message=FALSE}
+# Load adduct and neutral loss tables
+adduct_table <- read.csv(system.file("extdata", "Adducts", "adducts.csv", package = "MS1Match"))
+
+neutral_loss_table <- read.csv(system.file("extdata", "Neutral loss", "neutral loss database.csv", package = "MS1Match"), check.names = TRUE)
+  
+
+
+```
+
+After identifying candidate features through direct MS1 library matching, we initialize a `PeakAnnotation` S4 object to annotate the features using adducts, neutral losses, and isotopic patterns
+```{r}
+
+# Create PeakAnnotation object
+PeakAnnotation_MS2_obj <- createPeakAnnotation(compounds = Si16_MS2_library,
+                                              FT =  result_StM16_FT_filtered,
+                                              neutral_loss_table = neutral_loss_table,
+                                              adducts_df = adduct_table,
+                                              PI_rt_threshold = 10 ,
+                                              polarity = "positive")
+```
+
+Finally, we call the `annotate` to generate detailed annotations:
+```{r}
+StM16_annotate_res_MS2 <- annotate(PeakAnnotation_MS2_obj)
+```
+
+```{r}
+StM16_annotate_res_MS2[[1]]
+```
+
+```{r}
+# direct_match_Stm16_res_MS2 %>%
+#       purrr::map(~ .x[setdiff(names(.x), c("Compound_peak_mz", "Compound_peak_int"))]) %>%
+#       dplyr::bind_rows() %>% 
+#   head()
+```
+
+
+
+
+```{r}
+# StM16_join_annotation_results_MS2 <- join_annotation_results(FT = result_StM16_FT_filtered, direct_match_Stm16_res_MS2, StM16_annotate_res, NULL)
+StM16_join_annotation_results_2merge_MS2 <- join_annotation_results(FT = result_StM16_FT_filtered, dirct_lib_list = direct_match_Stm16_res_MS2,  lib_anno_list =  StM16_annotate_res_MS2, target_match_list = NULL)
+```
+
+```{r}
+str(StM16_join_annotation_results_2merge_MS2)
+```
+
+### compare to the MS1 result
+
+```{r}
+StM16_join_annotation_results_2merge_anno_MS1 <- StM16_join_annotation_results_2merge$export_reduced_anno_table
+
+
+
+StM16_join_annotation_results_2merge_anno_MS2 <- StM16_join_annotation_results_2merge_MS2$export_reduced_anno_table
+
+```
+
+ full join 
+```{r}
+# library(dplyr)
+# library(stringr)
+# library(tidyr)
+# 
+# StM16_join_annotation_results_2merge_anno_MS1_mutate <- StM16_join_annotation_results_2merge_anno_MS1 %>%
+#   group_by( Lib_group) %>%
+#   mutate(
+#     compound = PI_match %>%
+#       str_remove("\\s*\\[.*\\]") %>%   # remove [M+H]+ etc
+#       na.omit() %>% 
+#       first()
+#   ) %>%
+#   ungroup()
+```
+
+
+
+
+```{r}
+StM16_join_annotation_results_2merge_anno_MS1_MS2 <- StM16_join_annotation_results_2merge_anno_MS1 %>% 
+  
+  full_join(., StM16_join_annotation_results_2merge_anno_MS2 , by = "feature_name",suffix = c("_MS1", "_MS2"))
+  
+  
+```
+
+```{r}
+str(StM16_join_annotation_results_2merge_anno_MS1_MS2)
+```
+
+```{r}
+#write.csv(StM16_join_annotation_results_2merge_anno_MS1_MS2, "StM16_join_annotation_results_2merge_anno_MS1_MS2.csv", row.names = F)
+library(dplyr)
+
+summary_by_compound_MS1_MS2 <- StM16_join_annotation_results_2merge_anno_MS1_MS2 %>%
+  mutate(
+    in_MS1 = !is.na(mzmed_MS1),
+    in_MS2 = !is.na(mzmed_MS2),
+    origin = case_when(
+      in_MS1 & in_MS2 ~ "intersection",
+      in_MS1 & !in_MS2 ~ "ms1_only",
+      !in_MS1 & in_MS2 ~ "ms2_only",
+      TRUE ~ NA_character_
+    ),
+    compound = coalesce(Compound_name_MS1, Compound_name_MS2)
+  ) %>%
+  filter(!is.na(compound), !is.na(origin)) %>%
+  group_by(compound) %>%
+  summarise(
+    ms1_only = sum(origin == "ms1_only"),
+    ms2_only = sum(origin == "ms2_only"),
+    intersection = sum(origin == "intersection"),
+    total_peaks = n(),
+     overlap_pct = 100 * intersection / total_peaks,
+    .groups = "drop"
+  ) %>%
+  arrange(desc(total_peaks)) %>% 
+  
+  filter(compound != c("Quercetin", "L-(+)-Alpha-Phenylglycine"))
+
+
+summary_by_compound_MS1_MS2
+
+```
+
+
+```{r}
+write.csv(StM16_join_annotation_results_2merge_anno_MS1_MS2, "StM16_join_annotation_results_2merge_anno_MS1_MS2.csv", row.names = F)
+
+```
+
+
+### stack bar plot
+
+```{r}
+
+
+
+plot_df_all_MS1_MS2 <- summary_by_compound_MS1_MS2 %>%
+  mutate(compound = fct_reorder(compound, total_peaks)) %>%
+  pivot_longer(
+    cols = c(ms1_only, ms2_only, intersection),
+    names_to = "origin",
+    values_to = "n_peaks"
+  )
+
+
+ggplot(plot_df_all_MS1_MS2, aes(x = compound, y = n_peaks, fill = origin)) +
+  geom_col() +
+  coord_flip() +
+  labs(x = NULL, y = "Number of matched peaks (features)", fill = NULL) +
+  scale_fill_manual(
+    values = c(
+      ms1_only = "#76B7B2",
+      intersection = "#4E79A7",
+      ms2_only = "#F28E2B"
+    ),
+    breaks = c("ms1_only", "intersection", "ms2_only"),
+    labels = c("Unique MS1", "Intersection", "Unique MS2")
+  ) +
+  theme_bw() +
+  theme(axis.text.y = element_text(size = 16))
+
+
+```
+
+```{r}
+library(ggplot2)
+library(forcats)
+
+# ensure compounds are ordered (optional but usually nicer)
+plot_df_all_MS1_MS2$compound <- fct_reorder(plot_df_all_MS1_MS2$compound, plot_df_all_MS1_MS2$n_peaks, .fun = sum)
+
+StM14_MS1_MS2_overlap_plot <- ggplot(plot_df_all_MS1_MS2, aes(x = compound, y = n_peaks, fill = origin)) +
+  geom_col() +
+  labs(
+    x = NULL,
+    y = "Number of matched features",
+    fill = NULL
+  ) +
+  scale_fill_manual(
+    values = c(
+      ms1_only = "#76B7B2",
+      intersection = "#4E79A7",
+      ms2_only = "#F28E2B"
+    ),
+    breaks = c("ms1_only", "intersection", "ms2_only"),
+    labels = c("MS1 only", "MS1-MS2", "Unique MS2 only")
+  ) +
+  theme_bw() +
+  theme_classic(base_family = "sans") +
+  theme(
+    axis.text.x  = element_text(size = 14, angle = 45, hjust = 1),
+    axis.text.y  = element_text(size = 14),      # y tick labels
+    axis.title.y = element_text(size = 14),      # y axis title
+    legend.text  = element_text(size = 12),      # legend labels
+    legend.title = element_text(size = 14)       # legend title (even if NULL)
+  )
+
+```
+
+```{r}
+StM14_MS1_MS2_overlap_plot
+```
+
+```{r}
+plot_df_all_MS1_MS2
+```
+
+
+
+```{r}
+#ggsave("Fig_StM14_MS1_MS2_overlap.png", plot = StM14_MS1_MS2_overlap_plot, width = 28, height = 28, units = "in", dpi = 600)
+```
+
+
+```{r}
+#ggsave("Fig_StM14_MS1_MS2_overlap.pdf",   width = 17, height = 16, device = cairo_pdf)
+```
+
+
+```{r}
+#ggsave("Fig_StM14_MS1_MS2_overlap(3).pdf",   width = 7, height = 6, device = cairo_pdf)
+ggsave("Fig_StM14_MS1_MS2_overlap(5).pdf",   width = 9, height = 8, device = cairo_pdf)
+
+```
+
+```{r}
+
+library(dplyr)
+library(stringr)
+library(tidyr)
+
+summarize_redundant_features_refined <- function(df, ppm_tol = 10) {
+
+  # --- helpers ---
+  ppm_error <- function(obs, ref) abs(obs - ref) / ref * 1e6
+  extract_pi_mz <- function(x) as.numeric(str_extract(x, "(?i)([0-9]+\\.[0-9]+)(?!.*[0-9])"))
+
+  # Choice A (positive mode): any '-' inside [...] => treat as NL
+  has_minus_inside_brackets <- function(x) {
+    str_detect(x %||% "", "\\[[^\\]]*-[^\\]]*\\]")
+  }
+
+  # --- clean empty strings ---
+  df <- df %>%
+    mutate(across(where(is.character), ~ ifelse(.x == "", NA_character_, .x)))
+
+  # --- exclusive feature-level classification (PI counts as Adduct now) ---
+  df <- df %>%
+    mutate(
+      has_PI  = !is.na(PI_match) & str_trim(PI_match) != "",
+      has_iso = !is.na(iso_annotation) &
+        str_trim(iso_annotation) != "" &
+        str_detect(iso_annotation, "\\[M\\+\\d+\\]"),
+
+      # Choice A: NL column OR '-' inside bracketed ion in adduct column
+      has_NL  = (!is.na(NL_match) & str_trim(NL_match) != "") |
+        (!is.na(adduct_match) & str_trim(adduct_match) != "" &
+           has_minus_inside_brackets(adduct_match)),
+
+      # Adduct now includes PI OR any adduct_match
+      has_adduct_any =
+        (!is.na(adduct_match) & str_trim(adduct_match) != "") |
+        has_PI,
+
+      # IMPORTANT: PI removed as its own category
+      feature_class = case_when(
+        has_NL ~ "NL",
+        has_adduct_any ~ "Adduct",
+        has_iso ~ "Isotope",
+        TRUE ~ "Unannotated"
+      )
+    )
+
+  # --- group-level exclusive totals (these now sum without PI column) ---
+  group_totals <- df %>%
+    group_by(Lib_group) %>%
+    summarise(
+      n_features_total        = n(),
+      n_features_with_NL      = sum(feature_class == "NL"),
+      n_features_with_adduct  = sum(feature_class == "Adduct"),
+      n_iso_features          = sum(feature_class == "Isotope"),
+      n_unannotated_features  = sum(feature_class == "Unannotated"),
+      perc_unannotated        = round(100 * n_unannotated_features / n_features_total, 1),
+      .groups = "drop"
+    )
+
+  # --- compound map (one row per PI per group) ---
+  compound_map <- df %>%
+    filter(!is.na(PI_match), str_trim(PI_match) != "") %>%
+    distinct(Lib_group, PI_match) %>%
+    mutate(PI_mz = extract_pi_mz(PI_match))
+
+  if (nrow(compound_map) == 0L) {
+    warning("No compounds with PI_match found.")
+    return(group_totals)
+  }
+
+  # --- valid adduct feature count per PI (unchanged logic) ---
+  adduct_long <- df %>%
+    filter(!is.na(adduct_match), str_trim(adduct_match) != "") %>%
+    select(Lib_group, feature_name, adduct_match) %>%
+    mutate(adduct_split = str_split(adduct_match, ";\\s*")) %>%
+    unnest_longer(adduct_split, values_to = "adduct_entry") %>%
+    mutate(
+      adduct_entry  = str_trim(adduct_entry),
+      adduct_label  = str_extract(adduct_entry, "\\[[^\\]]+\\]"),
+      adduct_ref_mz = suppressWarnings(as.numeric(str_extract(adduct_entry, "([0-9]+\\.[0-9]+)\\s*$")))
+    )
+
+  adduct_eval <- compound_map %>%
+    nest_join(adduct_long, by = "Lib_group") %>%
+    unnest(cols = c(adduct_long)) %>%
+    mutate(
+      adduct_ppm_vs_PI = ifelse(!is.na(adduct_ref_mz) & !is.na(PI_mz),
+                                ppm_error(adduct_ref_mz, PI_mz), NA_real_),
+      adduct_is_valid_for_PI = case_when(
+        is.na(adduct_ref_mz) ~ NA,
+        adduct_ppm_vs_PI <= ppm_tol ~ TRUE,
+        TRUE ~ FALSE
+      )
+    )
+
+  adduct_summary_min <- adduct_eval %>%
+    group_by(Lib_group, PI_match) %>%
+    summarise(
+      n_valid_adduct_features = n_distinct(feature_name[adduct_is_valid_for_PI %in% TRUE]),
+      .groups = "drop"
+    )
+
+  # --- final lean output ---
+  final <- compound_map %>%
+    left_join(group_totals, by = "Lib_group") %>%
+    left_join(adduct_summary_min, by = c("Lib_group", "PI_match")) %>%
+    mutate(n_valid_adduct_features = replace_na(n_valid_adduct_features, 0)) %>%
+    select(
+      Lib_group,
+      PI_match,
+      n_features_total,
+      
+      n_features_with_adduct,
+      n_features_with_NL,
+      n_iso_features,
+      n_unannotated_features,
+      perc_unannotated,
+      n_valid_adduct_features
+    ) %>%
+    arrange(desc(n_features_total))
+
+  return(final)
+}
+
+```
+
+```{r}
+StM14_join_annotation_results_2merge$export_reduced_table %>% 
+  filter(Compound_name %in% "Trimetoprim")
+```
+
+
+```{r}
+summary_tbl <- summarize_redundant_features_refined(StM14_join_annotation_results_2merge$export_reduced_anno_table)
+
+#write.csv(summary_tbl, "Stm16_Table1_summary.csv", row.names = FALSE)
+
+summary_tbl 
+
+```
+
+```{r}
+summary_tbl <- summarize_redundant_features_refined(StM14_join_annotation_results_2merge$export_match_table)
+
+write.csv(summary_tbl, "Stm14_Table1_feature_type_summary.csv", row.names = FALSE)
+
+summary_tbl 
+
+```

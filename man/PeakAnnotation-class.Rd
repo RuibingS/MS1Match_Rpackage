@@ -12,13 +12,13 @@ Base class for peak annotation
 \describe{
 \item{\code{FT}}{Data frame with feature table.}
 
+\item{\code{compounds_list}}{List of processed compounds.}
+
 \item{\code{adducts_df}}{Data frame of adduct definitions.}
 
 \item{\code{neutral_loss_table}}{Data frame of neutral losses.}
 
 \item{\code{polarity}}{Character. Either "positive" or "negative".}
-
-\item{\code{intensity}}{Numeric vector of feature intensities.}
 
 \item{\code{mz_threshold}}{Numeric. m/z tolerance for matching.}
 

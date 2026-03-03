@@ -1,0 +1,1563 @@
+---
+title: "upset_plot"
+author: "Ruibing"
+date: "2025-10-26"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+### import 
+
+```{r}
+CBIO_Massbank_overlaps_df <- read.csv(here::here("Archive", "vignetes_table", "CBIO_Massbank_overlaps.csv"))
+
+```
+
+
+```{r}
+head(CBIO_Massbank_overlaps_df)
+```
+
+
+```{r}
+compare_peaks_lib <- compare_library_peaks(in_house_list = PA14_CBIO_library_MS1, mona_lib_list = massbank_msp,overlaps_df =  CBIO_Massbank_overlaps_df)
+```
+
+```{r}
+str(compare_peaks_lib)
+```
+
+### import literature library 
+
+```{r}
+library(MS1Match)
+
+library(ggplot2)
+```
+
+
+```{r}
+literature_msp <- import_msp_csu(system.file("extdata", "CSUPMF_C8_lib", "CSUPMF_C8_lib.mspLib", package = "MS1Match"))
+
+# parsed_lib <- parse_msp_library_cpp(
+#   "CSUPMF_C8_lib.mspLib",
+#   spectrum_type = "MS1",
+#   ionPolarity = "POSITIVE"
+# )
+# 
+length(literature_msp)
+(literature_msp[[1]])
+
+```
+
+### compare 3 libraries
+
+```{r}
+# imported libraries
+inhouse_lib <- parse_library(file_path = system.file("extdata", "CBIO", "PA14_CBIO_Standards.library", package = "MS1Match"),
+                                                    ionPolarity = "pos",spectrum_type ="MS1")
+mona_lib   <- import_msp(system.file("extdata", "Massbank_MS1", "massbank_result.nist_msp_MS1_TOF.msp", package = "MS1Match"),
+                           spectrum_type = "MS",ionPolarity = "POSITIVE")
+csu_lib     <-  import_msp_csu(system.file("extdata", "CSUPMF_C8_lib", "CSUPMF_C8_lib.mspLib", package = "MS1Match"))
+
+
+
+```
+```{r}
+summary(sapply(inhouse_lib, function(x) nrow(x$Peaks)))
+summary(sapply(mona_lib, function(x) nrow(x$Peaks)))
+summary(sapply(csu_lib, function(x) nrow(x$Peaks)))
+```
+
+```{r}
+# Collect peak counts per library
+df_peaks <- tibble(
+  Library = rep(c("In-house", "MoNA", "CSU-PMF"), each = 1),
+  Counts  = c(
+    list(sapply(inhouse_lib, function(x) nrow(x$Peaks))),
+    list(sapply(mona_lib, function(x) nrow(x$Peaks))),
+    list(sapply(csu_lib, function(x) nrow(x$Peaks)))
+  )
+) %>%
+  unnest_longer(Counts) %>%
+  mutate(Library = factor(Library, levels = c("In-house", "MoNA", "CSU-PMF")))
+
+# Compute medians
+medians <- df_peaks %>%
+  group_by(Library) %>%
+  summarise(med = median(Counts))
+
+# X positions for segment lines (tight inside each violin)
+segments <- medians %>%
+  mutate(
+    x = as.numeric(Library),
+    x_left  = x - 0.35,
+    x_right = x + 0.35
+  )
+
+# Color palette for libraries
+lib_colors <- c(
+  "In-house" = "#1f78b4",
+  "MoNA"     = "#33a02c",
+  "CSU-PMF"  = "#e31a1c"
+)
+
+```
+
+
+```{r}
+p_violin <- ggplot(df_peaks, aes(x = Library, y = Counts, fill = Library)) +
+  geom_violin(trim = FALSE, color = "black", alpha = 0.7, linewidth = 0.7) +
+  geom_jitter(width = 0.1, alpha = 0.25, size = 1) +
+
+  # median dashed line
+  geom_segment(
+    data = segments,
+    aes(x = x_left, xend = x_right, y = med, yend = med, color = Library),
+    linewidth = 1.0,
+    linetype = "dashed"
+  ) +
+
+  # Median labels with custom per-library offsets
+  geom_text(
+    data = medians %>%
+      mutate(
+        x_num = case_when(
+          Library == "In-house" ~ as.numeric(Library) + 0.4,
+          Library == "MoNA"     ~ as.numeric(Library) + 0.50,
+          Library == "CSU-PMF"  ~ as.numeric(Library) + 0.45
+        ),
+        y_adj = ifelse(med <= 1, 1.3, med * 1.)
+      ),
+    aes(x = x_num, y = y_adj,
+        label = format(round(med), big.mark = ",")),
+    fontface = "bold",
+    size = 2,
+    color = "black"
+  ) +
+
+  scale_fill_manual(values = lib_colors) +
+  scale_color_manual(values = lib_colors) +
+  scale_y_log10(
+    breaks = c(1, 3, 10, 30, 100, 300, 1000),
+    labels = c("1", "3", "10", "30", "100", "300", "1000")
+  ) +
+
+theme_minimal(base_size = 7) +
+  theme(
+    panel.grid.minor = element_blank(),
+    legend.position = "none",
+
+    axis.text.x  = element_text(size = 6),
+    axis.text.y  = element_text(size = 6),
+
+    axis.title.x = element_text(size = 7),
+    axis.title.y = element_text(size = 7)
+  ) +
+  labs(
+    x = "Library",
+    y = "Number of peaks"
+  )
+
+p_violin
+
+
+
+
+
+
+```
+```{r}
+ggsave(
+  "p_violin_figure(3).pdf",plot  = p_violin,
+  width = 9, height = 8,
+  units = "cm",
+  dpi = 600
+)
+
+```
+
+
+```{r}
+p_violin <- ggplot(df_peaks, aes(x = Library, y = Counts, fill = Library)) +
+
+  geom_violin(
+    trim = FALSE,
+    color = "black",
+    alpha = 0.7,
+    linewidth = 0.45     # ↓ thinner outline
+  ) +
+
+  geom_jitter(
+    width = 0.1,
+    alpha = 0.25,
+    size = 0.45          # ↓ much smaller points
+  ) +
+
+  # median dashed line
+  geom_segment(
+    data = segments,
+    aes(x = x_left, xend = x_right, y = med, yend = med, color = Library),
+    linewidth = 0.55,    # ↓ thinner line
+    linetype = "dashed"
+  ) +
+
+  # Median labels
+  geom_text(
+    data = medians %>%
+      mutate(
+        x_num = case_when(
+          Library == "In-house" ~ as.numeric(Library) + 0.4,
+          Library == "MoNA"     ~ as.numeric(Library) + 0.50,
+          Library == "CSU-PMF"  ~ as.numeric(Library) + 0.45
+        ),
+        y_adj = ifelse(med <= 1, 1.3, med * 1.)
+      ),
+    aes(x = x_num, y = y_adj,
+        label = format(round(med), big.mark = ",")),
+    fontface = "bold",
+    size = 1.9,          # slightly smaller but still readable
+    color = "black"
+  ) +
+
+  scale_fill_manual(values = lib_colors) +
+  scale_color_manual(values = lib_colors) +
+
+  scale_y_log10(
+    breaks = c(1, 3, 10, 30, 100, 300, 1000),
+    labels = c("1", "3", "10", "30", "100", "300", "1000")
+  ) +
+
+  theme_minimal(base_size = 7) +
+  theme(
+    panel.grid.minor = element_blank(),
+    legend.position = "none",
+    axis.text.x  = element_text(size = 6),
+    axis.text.y  = element_text(size = 6),
+    axis.title.x = element_text(size = 7),
+    axis.title.y = element_text(size = 7)
+  ) +
+  labs(
+    x = "Library",
+    y = "Number of peaks"
+  )
+
+```
+
+
+
+```{r}
+p_violin
+```
+
+```{r}
+ggsave(
+  "p_violin_figure.pdf",
+  plot  = p_violin,
+  width = 9,
+  height = 6,   # ↓ tighter, more “ACS-like”
+  units = "cm",
+  device = cairo_pdf
+)
+
+```
+
+```{r}
+ggsave(
+  "p_violin_figure.png",
+  plot = p_violin,
+  width = 9, height = 6,
+  units = "cm",
+  dpi = 600
+)
+
+```
+
+```{r}
+#ggsave("p_violin_peak count distribution per compound across libraries.png", p_violin, width = 10, height = 8, units = "in", dpi = 300)
+
+ggsave("p_violin_peak count distribution per compound across libraries.pdf",   width = 8, height = 6, device = cairo_pdf)
+
+```
+
+```{r}
+#lapply(inhouse_lib[which(sapply(inhouse_lib, function(x) x$Name %in% "5-Valerolactone"))], function(x) x$Peaks)
+
+lapply(inhouse_lib[which(sapply(inhouse_lib, function(x) x$Name %in% "N-Acetyl-L-Cysteine"))], function(x) x)
+#lapply(inhouse_lib[which(sapply(inhouse_lib, function(x) x$Name %in% "N-Acetyl-L-Cysteine"))], function(x) x$Peaks)
+```
+
+
+
+```{r}
+length(csu_lib)
+```
+
+
+```{r}
+comp_tbl <- compare_libraries_3(inhouse_lib, mona_lib, csu_lib,
+                                names = c("Inhouse", "MoNA", "CSU_PMF"))
+```
+
+
+```{r}
+# write.csv(comp_tbl[, c(
+#   "Formula", "Name_Inhouse", "Name_MoNA", "Name_CSU_PMF",
+#   "Inhouse", "MoNA", "CSU_PMF", "Match_type"
+# )], "3 libraries overlap.csv")
+
+
+comp_tbl
+```
+
+
+```{r}
+compare_libraries_3 <- function(lib1, lib2, lib3 = NULL,
+                                names = c("Library1", "Library2", "Library3")) {
+  # --- helpers ---
+  get_field <- function(x, field) if (!is.null(x[[field]])) x[[field]] else NA_character_
+  to_utf8 <- function(x) iconv(x, from = "", to = "UTF-8", sub = "byte")
+
+  normalize_formula <- function(f) {
+    f <- trimws(f)
+    f <- gsub("\\[|\\]", "", f)
+    f <- gsub("[+-]+$", "", f)
+    f <- gsub("\\s+", "", f)
+    f
+  }
+
+  extract_info <- function(lib, label) {
+    if (length(lib) == 0) return(data.frame())
+    df <- data.frame(
+      Formula = to_utf8(sapply(lib, function(x) normalize_formula(get_field(x, "Formula")))),
+      Name = to_utf8(sapply(lib, function(x) get_field(x, "Name"))),
+      Synonyms = to_utf8(sapply(lib, function(x) {
+        syn <- unlist(x[grep("^SYNON", names(x), ignore.case = TRUE)])
+        if (length(syn) == 0) NA_character_ else paste(unique(syn), collapse = "; ")
+      })),
+      Source = label,
+      stringsAsFactors = FALSE
+    )
+    # rename columns with library prefix
+    names(df)[2:4] <- paste0(names(df)[2:4], "_", label)
+    df
+  }
+
+  df1 <- extract_info(lib1, names[1])
+  df2 <- extract_info(lib2, names[2])
+  df3 <- if (!is.null(lib3)) extract_info(lib3, names[3]) else NULL
+
+  # --- merge stepwise by Formula ---
+  merged12 <- merge(df1, df2, by = "Formula", all = TRUE)
+  merged <- if (!is.null(df3)) merge(merged12, df3, by = "Formula", all = TRUE) else merged12
+
+  # --- presence flags ---
+  merged[[names[1]]] <- !is.na(merged[[paste0("Name_", names[1])]])
+  merged[[names[2]]] <- !is.na(merged[[paste0("Name_", names[2])]])
+  if (!is.null(df3)) merged[[names[3]]] <- !is.na(merged[[paste0("Name_", names[3])]])
+
+  # --- keep only overlaps (≥2 libraries) ---
+  presence_cols <- names[names %in% names(merged)]
+  merged$num_present <- rowSums(merged[presence_cols])
+  merged <- merged[merged$num_present >= 2, ]
+
+  # --- classify overlap ---
+  merged$Match_type <- ifelse(merged$num_present == 3, "3-way_overlap", "2-way_overlap")
+
+  merged
+}
+
+
+
+```
+
+
+```{r}
+library_3_overlap <- read.csv(here::here("Archive","vignetes_table","overlap_threLibraries.csv"))
+
+library_3_overlap_unique <- library_3_overlap %>% 
+  dplyr::distinct()
+
+
+
+library_3_overlap_unique
+```
+
+
+```{r}
+#sapply(inhouse_lib[which(sapply(inhouse_lib, function(x) x$Name)%in%library_3_overlap_unique$Name_Inhouse)], function(x) x$Name)
+#sapply(inhouse_lib[which(sapply(inhouse_lib, function(x) x$Name)%in%library_3_overlap_unique$Name_Inhouse)], function(x) x$ExactMass)
+
+data.frame(sapply(inhouse_lib[which(sapply(inhouse_lib, function(x) x$Name)%in%library_3_overlap_unique$Name_Inhouse)], function(x) x$Name), sapply(inhouse_lib[which(sapply(inhouse_lib, function(x) x$Name)%in%library_3_overlap_unique$Name_Inhouse)], function(x) x$ExactMass))
+```
+
+
+### compare common peaks of the common compunds in the 3 libraries
+
+```{r}
+result_3lib <- compare_library_peaks_3lib(
+  inhouse_lib,
+  mona_lib,
+  csu_lib,
+  library_3_overlap_unique,
+  mz_tol = 0.005
+)
+
+#str(result_3lib)
+```
+
+### plot 3 libraries
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(UpSetR)
+
+
+plot_library_overlap_3lib <- function(compare_peaks_3lib,
+                                      save_prefix = "library_overlap_3lib",
+                                      mz_round = 3,
+                                      save_csv = FALSE,
+                                      width = 10, height = 10, dpi = 300) {
+
+
+  # ---- Summary data frame ----
+  summary_df <- data.frame(
+    Compound = compare_peaks_3lib$Name_Inhouse,
+    unique_in = compare_peaks_3lib$Unique_Inhouse,
+    unique_mo = compare_peaks_3lib$Unique_MoNA,
+    unique_csu = compare_peaks_3lib$Unique_CSU_PMF,
+    overlap_in_mo = compare_peaks_3lib$Overlap_in_mo,
+    overlap_in_csu = compare_peaks_3lib$Overlap_in_csu,
+    overlap_mo_csu = compare_peaks_3lib$Overlap_mo_csu,
+    overlap_3way = compare_peaks_3lib$Overlap_3way,
+    stringsAsFactors = FALSE
+  ) %>%
+    mutate(total_peaks = unique_in + unique_mo + unique_csu +
+             overlap_in_mo + overlap_in_csu + overlap_mo_csu + overlap_3way)
+
+  # ---- Stacked bar plot ----
+  long_df <- summary_df %>%
+    pivot_longer(
+      cols = c(unique_in, unique_mo, unique_csu,
+               overlap_in_mo, overlap_in_csu, overlap_mo_csu, overlap_3way),
+      names_to = "Type", values_to = "Count"
+    )
+
+  color_map <- c(
+    "unique_in" = "#F28E2B",
+    "unique_mo" = "#E15759",
+    "unique_csu" = "#76B7B2",
+    "overlap_in_mo" = "#59A14F",
+    "overlap_in_csu" = "#8CD17D",
+    "overlap_mo_csu" = "#B6992D",
+    "overlap_3way" = "#4E79A7"
+  )
+
+  label_map <- c(
+    "unique_in" = "Unique (Inhouse)",
+    "unique_mo" = "Unique (MoNA)",
+    "unique_csu" = "Unique (CSU_PMF)",
+    "overlap_in_mo" = "Inhouse–MoNA",
+    "overlap_in_csu" = "Inhouse–CSU_PMF",
+    "overlap_mo_csu" = "MoNA–CSU_PMF",
+    "overlap_3way" = "All three"
+  )
+
+# p_bar <- ggplot(
+#   long_df %>%
+#     mutate(Compound = factor(Compound, levels = unique(summary_df$Compound))),
+#   aes(x = Compound, y = Count, fill = Type)
+# ) +
+#   geom_bar(stat = "identity") +
+#   scale_fill_manual(values = color_map, labels = label_map) +
+#   labs(
+#     y = "Peak count", x = "Compound", fill = ""
+#     # title = "Peak Overlap Between Inhouse, MoNA, and CSU_PMF Libraries"
+#   ) +
+#   theme_bw(base_size = 13) +
+#   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+p_bar <- ggplot(
+  long_df %>%
+    mutate(Compound = factor(Compound, levels = unique(summary_df$Compound))),
+  aes(x = Compound, y = Count, fill = Type)
+) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = color_map, labels = label_map) +
+  labs(
+    y = "Peak count",
+    x = "Compound",
+    fill = ""
+  ) +
+  theme_bw(base_size = 7) +
+  theme(
+    axis.text.x  = element_text(size = 6, angle = 45, hjust = 1),
+    axis.text.y  = element_text(size = 6),
+    axis.title.x = element_text(size = 7),
+    axis.title.y = element_text(size = 7),
+    legend.text  = element_text(size = 6),
+    legend.title = element_text(size = 7)
+  )
+
+
+  # ---- Build detailed peak-level table ----
+  message("Building detailed peak-level overlap data...")
+
+  make_peak_df_3lib <- function(names_vec,
+                                list_in, list_mo, list_csu,
+                                list_in_mo, list_in_csu, list_mo_csu,
+                                list_all3) {
+    do.call(rbind, lapply(seq_along(names_vec), function(i) {
+      data.frame(
+        Compound = names_vec[i],
+        mz = c(
+          list_in[[i]], list_mo[[i]], list_csu[[i]],
+          list_in_mo[[i]], list_in_csu[[i]], list_mo_csu[[i]], list_all3[[i]]
+        ),
+        source_list = c(
+          rep("mz_inhouse_only", length(list_in[[i]])),
+          rep("mz_mona_only", length(list_mo[[i]])),
+          rep("mz_csu_only", length(list_csu[[i]])),
+          rep("mz_overlap_in_mo", length(list_in_mo[[i]])),
+          rep("mz_overlap_in_csu", length(list_in_csu[[i]])),
+          rep("mz_overlap_mo_csu", length(list_mo_csu[[i]])),
+          rep("mz_overlap_3way", length(list_all3[[i]]))
+        ),
+        Inhouse = c(
+          rep(1, length(list_in[[i]])), rep(0, length(list_mo[[i]])),
+          rep(0, length(list_csu[[i]])), rep(1, length(list_in_mo[[i]])),
+          rep(1, length(list_in_csu[[i]])), rep(0, length(list_mo_csu[[i]])),
+          rep(1, length(list_all3[[i]]))
+        ),
+        MoNA = c(
+          rep(0, length(list_in[[i]])), rep(1, length(list_mo[[i]])),
+          rep(0, length(list_csu[[i]])), rep(1, length(list_in_mo[[i]])),
+          rep(0, length(list_in_csu[[i]])), rep(1, length(list_mo_csu[[i]])),
+          rep(1, length(list_all3[[i]]))
+        ),
+        CSU_PMF = c(
+          rep(0, length(list_in[[i]])), rep(0, length(list_mo[[i]])),
+          rep(1, length(list_csu[[i]])), rep(0, length(list_in_mo[[i]])),
+          rep(1, length(list_in_csu[[i]])), rep(1, length(list_mo_csu[[i]])),
+          rep(1, length(list_all3[[i]]))
+        )
+      )
+    }))
+  }
+
+  peaks_all <- make_peak_df_3lib(
+    compare_peaks_3lib$Name_Inhouse,
+    compare_peaks_3lib$mz_inhouse_only,
+    compare_peaks_3lib$mz_mona_only,
+    compare_peaks_3lib$mz_csu_only,
+    compare_peaks_3lib$mz_overlap_in_mo,
+    compare_peaks_3lib$mz_overlap_in_csu,
+    compare_peaks_3lib$mz_overlap_mo_csu,
+    compare_peaks_3lib$mz_overlap_3way
+  ) %>%
+    mutate(mz_rounded = round(mz, mz_round)) %>%
+    filter(!is.na(mz))
+
+  # ---- Category ----
+  peaks_all <- peaks_all %>%
+    mutate(
+      Category = case_when(
+        Inhouse == 1 & MoNA == 0 & CSU_PMF == 0 ~ "Inhouse only",
+        Inhouse == 0 & MoNA == 1 & CSU_PMF == 0 ~ "MoNA only",
+        Inhouse == 0 & MoNA == 0 & CSU_PMF == 1 ~ "CSU_PMF only",
+        Inhouse == 1 & MoNA == 1 & CSU_PMF == 0 ~ "Inhouse ∩ MoNA",
+        Inhouse == 1 & MoNA == 0 & CSU_PMF == 1 ~ "Inhouse ∩ CSU_PMF",
+        Inhouse == 0 & MoNA == 1 & CSU_PMF == 1 ~ "MoNA ∩ CSU_PMF",
+        Inhouse == 1 & MoNA == 1 & CSU_PMF == 1 ~ "All three",
+        TRUE ~ "Unknown"
+      )
+    )
+
+  if (save_csv) {
+    write.csv(peaks_all,
+              paste0(save_prefix, "_peak_overlap_detailed.csv"),
+              row.names = FALSE)
+    message("Saved detailed peak table: ",
+            paste0(save_prefix, "_peak_overlap_detailed.csv"))
+  }
+
+  # ----  Global UpSet plot ----
+  message("Creating UpSet plot...")
+
+  upset_df <- data.frame(
+    Inhouse = as.integer(peaks_all$Inhouse),
+    MoNA    = as.integer(peaks_all$MoNA),
+    CSU_PMF = as.integer(peaks_all$CSU_PMF)
+  )
+  upset_df <- upset_df[complete.cases(upset_df), ]
+
+
+
+  # ----  Global UpSet plot ----
+  message("Creating UpSet plot...")
+
+  upset_df <- data.frame(
+    Inhouse = as.integer(peaks_all$Inhouse),
+    MoNA    = as.integer(peaks_all$MoNA),
+    CSU_PMF = as.integer(peaks_all$CSU_PMF)
+  )
+  upset_df <- upset_df[complete.cases(upset_df), ]
+
+
+message("Creating UpSet plot...")
+
+# Prepare UpSet input
+upset_df <- peaks_all %>%
+  dplyr::select(Inhouse, MoNA, CSU_PMF) %>%
+  dplyr::mutate(across(everything(), as.integer)) %>%
+  tidyr::drop_na()
+
+
+
+
+upset_plot <- function() {
+  UpSetR::upset(
+    upset_df,
+    sets = c("CSU_PMF", "Inhouse", "MoNA"),
+    keep.order = TRUE,
+    order.by = "freq",
+    main.bar.color = "#4E79A7",
+    sets.bar.color = "#F28E2B",
+    nintersects = NA,
+
+    show.numbers = "no",   # <- only removes those labels
+    text.scale = 0.85,
+
+    mainbar.y.label = "Number of shared peaks",
+    sets.x.label = "Total peak count per library"
+  )
+}
+
+
+# upset_plot <- function() {
+  #   UpSetR::upset(
+  #     upset_df,
+  #     sets = c("CSU_PMF", "Inhouse", "MoNA"),
+  #     keep.order = TRUE,
+  #     order.by = "freq",
+  #     main.bar.color = "#4E79A7",   # blue intersections
+  #     sets.bar.color = "#F28E2B",   # orange side bars
+  #     nintersects = NA,
+  #     text.scale = 1.3,
+  #     mainbar.y.label = "Number of shared m/z peaks (all compounds)",
+  #     sets.x.label = "Total peak count per library"
+  #   )
+  # }
+  # 
+
+
+  # ---- Numeric summary ----
+  intersection_summary <- peaks_all %>%
+    group_by(Inhouse, MoNA, CSU_PMF) %>%
+    summarise(Count = n(), .groups = "drop") %>%
+    mutate(
+      Intersection = case_when(
+        Inhouse == 1 & MoNA == 0 & CSU_PMF == 0 ~ "Inhouse only",
+        Inhouse == 0 & MoNA == 1 & CSU_PMF == 0 ~ "MoNA only",
+        Inhouse == 0 & MoNA == 0 & CSU_PMF == 1 ~ "CSU_PMF only",
+        Inhouse == 1 & MoNA == 1 & CSU_PMF == 0 ~ "Inhouse ∩ MoNA",
+        Inhouse == 1 & MoNA == 0 & CSU_PMF == 1 ~ "Inhouse ∩ CSU_PMF",
+        Inhouse == 0 & MoNA == 1 & CSU_PMF == 1 ~ "MoNA ∩ CSU_PMF",
+        Inhouse == 1 & MoNA == 1 & CSU_PMF == 1 ~ "All three",
+        TRUE ~ "Other"
+      )
+    ) %>%
+    arrange(desc(Count))
+
+  if (save_csv) {
+    write.csv(intersection_summary,
+              paste0(save_prefix, "_upset_intersection_summary.csv"),
+              row.names = FALSE)
+    message("Saved intersection summary: ",
+            paste0(save_prefix, "_upset_intersection_summary.csv"))
+  }
+
+message("Created summary bar plot, UpSet plot, and detailed peak table.")
+
+# --- RETURN ---
+invisible(list(
+  summary_df = summary_df,
+  barplot = p_bar,
+  upsetplot = upset_plot,    
+  upset_df = upset_df,
+  peaks_table = peaks_all,
+  intersection_summary = intersection_summary
+))
+
+
+}
+
+
+```
+
+
+
+
+
+```{r}
+
+#plot_library_overlap_3lib(result_3lib)
+result <- plot_library_overlap_3lib(result_3lib, save_csv = FALSE)
+
+```
+
+```{r}
+library(grid)
+library(UpSetR)
+
+
+png("upset_capture.png", width = 8.9, height = 7.5, units = "cm", res = 600)
+
+UpSetR::upset(
+  result$upset_df,
+  sets = c("CSU_PMF", "Inhouse", "MoNA"),
+  keep.order = TRUE,
+  order.by = "freq",
+  main.bar.color = "#4E79A7",
+  sets.bar.color = "#F28E2B",
+  nintersects = NA,
+  show.numbers = "yes",
+  text.scale = 0.85,
+  mainbar.y.label = "Number of shared peaks",
+  sets.x.label = "Total peak count"
+)
+
+g <- grid.grab(wrap.grobs = TRUE)   # <-- important
+dev.off()
+
+
+shrink_bar_numbers <- function(gr, new_fontsize = 6, big_fs_threshold = 10) {
+
+  if (inherits(gr, "text")) {
+    lab <- gr$label
+
+
+    fs <- NA_real_
+    if (!is.null(gr$gp) && !is.null(gr$gp$fontsize)) fs <- gr$gp$fontsize
+
+    # labels may be vector; we only want pure integers
+    is_num <- rep(FALSE, length(lab))
+    if (is.character(lab)) {
+      is_num <- grepl("^[0-9]+$", lab)
+    }
+
+
+    if (any(is_num) && !is.na(fs) && fs >= big_fs_threshold) {
+      gr$gp$fontsize <- new_fontsize
+    }
+
+    return(gr)
+  }
+
+
+  if (!is.null(gr$grobs)) {
+    gr$grobs <- lapply(gr$grobs, shrink_bar_numbers,
+                       new_fontsize = new_fontsize,
+                       big_fs_threshold = big_fs_threshold)
+  }
+  if (!is.null(gr$children)) {
+    gr$children <- lapply(gr$children, shrink_bar_numbers,
+                          new_fontsize = new_fontsize,
+                          big_fs_threshold = big_fs_threshold)
+  }
+
+  gr
+}
+
+g2 <- shrink_bar_numbers(g, new_fontsize = 6, big_fs_threshold = 10)
+
+
+png("upset_small_numbers.png", width = 8.9, height = 7.5, units = "cm", res = 600)
+grid.newpage()
+grid.draw(g2)
+dev.off()
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+# barplot (left)
+# ggsave(
+#   "panel_A_bar.png",
+#   plot  = result$barplot,
+#   width = 8.9, height = 7.5, units = "cm",
+#   dpi   = 600
+# )
+# 
+# # upset (right)
+# png("panel_B_upset.png", width = 8.9, height = 7.5, units = "cm", res = 600)
+# par(family = "Times")   # optional, helps consistency
+# result$upsetplot()
+# dev.off()
+
+```
+
+
+```{r}
+library(magick)
+
+imgB <- image_read("panel_A_bar.png") %>% image_annotate("b", location = "+20+20", size = 60, weight = 700)
+imgA <- image_read("upset_small_numbers.png") %>% image_annotate("a", location = "+20+20", size = 60, weight = 700)
+
+combined <- image_append(c(imgA, imgB), stack = FALSE)
+image_write(combined, path = "bar_upset_1row_600dpi.png", format = "png")
+
+```
+
+
+
+
+```{r}
+ggsave(
+  "panel_A_bar.png",
+  plot  = result$barplot,
+  width = 14, height = 13, units = "cm",
+  dpi   = 600
+)
+
+
+
+png("panel_B_upset.png", width = 14, height = 13, units = "cm", res = 600)
+result$upsetplot()
+dev.off()
+
+
+```
+
+```{r}
+ggsave(
+  "bar_upset_2panel.pdf",
+  g_combined,
+  width = 17.8, height = 7, units = "cm",
+  device = cairo_pdf
+)
+
+```
+
+
+```{r}
+result$barplot
+result$upsetplot()
+```
+
+```{r}
+g_combined
+```
+
+
+
+```{r}
+ggsave(
+  "bar_upset_2panel.pdf",
+  g_combined,
+  width = 17.8, height = 7, units = "cm",
+  device = cairo_pdf
+)
+
+```
+
+
+```{r}
+png("All_common_compounds_upsetplot(2).png", width = 10, height = 10, units = "in", res = 600)
+result$upsetplot()   # replay the plot function
+dev.off()
+```
+
+
+```{r}
+pdf("All_common_compounds_upsetplot(2).pdf", width = 10, height = 8)
+result$upsetplot()   
+dev.off()
+
+```
+
+
+
+```{r}
+
+ggsave(
+  "All_common_19_compounds_3lib_barplot(2).pdf",
+  result$barplot ,
+  width = 10,
+  height = 8,
+  units = "in",
+  device = cairo_pdf
+)
+
+
+# png("All_common_19_compounds_3lib_barplot.png", width = 12, height = 10, units = "in", res = 600)
+# result$barplot   # replay the plot function
+# dev.off()
+```
+
+
+
+
+```{r}
+result$summary_df
+```
+
+
+```{r}
+summarize_peak_mz_all_libs <- function(in_house_list,
+                                       mona_lib_list,
+                                       csu_lib_list,
+                                       overlaps_df) {
+
+  safe_summary <- function(lib, lib_name) {
+    df <- summarize_peak_mz_cpp(lib)
+    if (nrow(df) == 0) {
+      message("No peaks found for ", lib_name)
+      df <- data.frame(Compound = character())
+    }
+    df
+  }
+
+  in_summary  <- safe_summary(in_house_list, "Inhouse")
+  mo_summary  <- safe_summary(mona_lib_list, "MoNA")
+  csu_summary <- safe_summary(csu_lib_list, "CSU_PMF")
+
+  in_summary  <- in_summary  %>% rename(Name_Inhouse = Compound)
+  mo_summary  <- mo_summary  %>% rename(Name_MoNA = Compound)
+  csu_summary <- csu_summary %>% rename(Name_CSU_PMF = Compound)
+
+  merged <- overlaps_df %>%
+    left_join(in_summary,  by = "Name_Inhouse",  suffix = c("", "_Inhouse")) %>%
+    left_join(mo_summary,  by = "Name_MoNA",     suffix = c("", "_MoNA")) %>%
+    left_join(csu_summary, by = "Name_CSU_PMF",  suffix = c("", "_CSU_PMF"))
+
+  return(merged)
+}
+
+
+```
+
+```{r}
+in_summary  <- summarize_peak_mz_cpp(inhouse_lib)
+mo_summary  <- summarize_peak_mz_cpp(mona_lib)
+csu_summary <- summarize_peak_mz_cpp(csu_lib)
+
+
+summarize_peak_mz_all_libs <- function(in_summary,
+                                       mo_summary,
+                                       csu_summary,
+                                       overlaps_df) {
+
+  # rename safely using base R
+  names(in_summary)[names(in_summary) == "Compound"] <- "Name_Inhouse"
+  names(mo_summary)[names(mo_summary) == "Compound"] <- "Name_MoNA"
+  names(csu_summary)[names(csu_summary) == "Compound"] <- "Name_CSU_PMF"
+
+  # perform joins
+  merged <- overlaps_df %>%
+    left_join(in_summary,  by = "Name_Inhouse",  suffix = c("", "_Inhouse")) %>%
+    left_join(mo_summary,  by = "Name_MoNA",     suffix = c("", "_MoNA")) %>%
+    left_join(csu_summary, by = "Name_CSU_PMF",  suffix = c("", "_CSU_PMF"))
+
+  return(merged)
+}
+
+summarize_peak_mz_all_libs_res <- summarize_peak_mz_all_libs(
+  in_summary,
+  mo_summary,
+  csu_summary,
+  library_3_overlap_unique
+)
+
+```
+
+```{r}
+summarize_peak_mz_all_libs_res %>% head()
+```
+
+## bar plot and box plot for all compound in the library
+
+
+```{r}
+plot_peak_distribution_all_libs <- function(summary_df,
+                                            lib_name = "Library",
+                                            save_prefix = NULL,
+                                            show_x_labels = TRUE,
+                                            show_total_labels = FALSE) {
+  library(dplyr)
+  library(tidyr)
+  library(ggplot2)
+
+  # --- Detect compound name column automatically ---
+  compound_col <- intersect(c("Compound", "Name_Inhouse", "Name", "Compound_name"), names(summary_df))
+  if (length(compound_col) == 0)
+    stop("no compound name column found (expected one of: Compound, Name_Inhouse, Name, Compound_name)")
+  compound_col <- compound_col[1]
+
+  # --- Flexible column detection ---
+  n_leq_col <- grep("n_smaller", names(summary_df), value = TRUE)
+  n_gt_col <- grep("n_bigger", names(summary_df), value = TRUE)
+  n_total_col <- grep("n_total", names(summary_df), value = TRUE)
+
+  if (length(c(n_leq_col, n_gt_col)) == 0)
+    stop("No 'n_smaller' or 'n_bigger' columns found — please check your input.")
+
+  # --- Long format for all libraries ---
+  plot_df <- summary_df %>%
+    select(Compound = all_of(compound_col),
+           all_of(c(n_leq_col, n_gt_col, n_total_col))) %>%
+    pivot_longer(
+      cols = matches("n_smaller|n_bigger"),
+      names_to = "Lib_Region",
+      values_to = "Count"
+    ) %>%
+    mutate(
+      Library = case_when(
+        grepl("_MoNA", Lib_Region, ignore.case = TRUE) ~ "MoNA",
+        grepl("_CSU_PMF", Lib_Region, ignore.case = TRUE) ~ "CSU–PMF",
+        TRUE ~ lib_name
+      ),
+      Region = case_when(
+        grepl("smaller", Lib_Region, ignore.case = TRUE) ~ "≤ [M+Na]+",
+        grepl("bigger", Lib_Region, ignore.case = TRUE) ~ "> [M+Na]+"
+      )
+    ) %>%
+    group_by(Compound, Library, Region) %>%
+    summarise(Count = sum(Count, na.rm = TRUE), .groups = "drop") %>%
+    group_by(Compound, Library) %>%
+    mutate(
+      n_total = sum(Count, na.rm = TRUE),
+      Percent = 100 * Count / n_total
+    ) %>%
+    ungroup()
+
+  # --- Order compounds by mean above/below balance ---
+  order_df <- plot_df %>%
+    group_by(Compound) %>%
+    summarise(mean_above = mean(Percent[Region == "> [M+Na]+"], na.rm = TRUE)) %>%
+    arrange(mean_above)
+  plot_df$Compound <- factor(plot_df$Compound, levels = order_df$Compound)
+
+
+  # --- Barplot ---
+  barplot <- ggplot(plot_df, aes(x = Compound, y = Percent, fill = Region)) +
+    geom_bar(stat = "identity", position = "stack", width = 0.8) +
+    facet_wrap(~ Library, ncol = 1, scales = "free_x") +
+    scale_fill_manual(
+      values = c("≤ [M+Na]+" = "#4E79A7", "> [M+Na]+" = "#E15759")
+    ) +
+    labs(
+    #  title = paste("Peak Distribution Relative to [M+Na]+ —", lib_name),
+      x = "Compound",
+      y = "Percentage of Peaks",
+      fill = "Region"
+    ) +
+    theme_bw(base_size = 13) +
+    theme(
+      axis.text.x = if (show_x_labels)
+        element_text(angle = 45, hjust = 1, vjust = 1, size = 10, face = "italic")
+      else
+        element_blank(),
+      axis.ticks.x = if (show_x_labels) element_line() else element_blank(),
+      strip.background = element_rect(fill = "gray90", color = "gray50"),
+      strip.text = element_text(face = "bold")
+    )
+
+  # --- Optionally show total counts ---
+  if (show_total_labels) {
+    barplot <- barplot +
+      geom_text(
+        data = plot_df %>% distinct(Compound, Library, n_total),
+        aes(x = Compound, y = 105, label = paste0("n=", n_total)),
+        inherit.aes = FALSE,
+        size = 3,
+        vjust = 0,
+        color = "black",
+        fontface = "italic"
+      )
+  }
+
+  # --- Summary statistics per library ---
+  summary_stats <- plot_df %>%
+    group_by(Library, Region) %>%
+    summarise(
+      mean_pct = mean(Percent, na.rm = TRUE),
+      median_pct = median(Percent, na.rm = TRUE),
+      sd_pct = sd(Percent, na.rm = TRUE),
+      .groups = "drop"
+    )
+
+  # --- Save results if requested ---
+  if (!is.null(save_prefix)) {
+    ggsave(paste0(save_prefix, "_barplot.png"), barplot, width = 10, height = 10, dpi = 300)
+    write.csv(summary_stats, paste0(save_prefix, "_summary_stats.csv"), row.names = FALSE)
+  }
+
+  list(
+    barplot = barplot,
+    summary_stats = summary_stats,
+    data = plot_df
+  )
+}
+
+
+```
+
+
+
+
+## bar plot and box plot for the common compounds in the 3-library
+
+
+```{r}
+# in_summary, mo_summary, csu_summary
+
+inhouse_plot <- plot_peak_distribution_all_libs(in_summary, lib_name = "Inhouse", save_prefix = "inhouse_peaks", show_x_labels = FALSE)
+mona_plot    <- plot_peak_distribution_all_libs(mo_summary, lib_name = "MoNA", save_prefix = "mona_peaks", show_x_labels = FALSE)
+csu_plot     <- plot_peak_distribution_all_libs(csu_summary, lib_name = "CSU_PMF", save_prefix = "csu_peaks", show_x_labels = FALSE)
+```
+
+
+```{r}
+inhouse_plot
+mona_plot
+csu_plot
+
+
+
+```
+
+
+
+
+
+```{r}
+ggsave("All_compounds_inhouse_plot_barplot.png", inhouse_plot$barplot,  width = 10, height = 10, dpi = 300)
+ggsave("All_compounds_mona_plot_barplot.png", mona_plot$barplot,  width = 10, height = 10, dpi = 300)
+ggsave("All_compounds_CSUPMF_plot_barplot.png", csu_plot$barplot,  width = 10, height = 10, dpi = 300)
+
+# ggsave("All_compounds_inhouse_plot_boxplot.png", inhouse_plot$boxplot,  width = 10, height = 10, dpi = 300)
+# ggsave("All_compounds_mona_plot_boxplot.png", mona_plot$boxplot,  width = 10, height = 10, dpi = 300)
+# ggsave("All_compounds_CSUPMF_plot_boxplot.png", csu_plot$boxplot,  width = 10, height = 10, dpi = 300)
+
+```
+
+
+## bar plot and box plot for the common compounds in the 3-library
+
+
+
+
+
+```{r}
+common_inhouse <- library_3_overlap_unique$Name_Inhouse
+common_mona    <- library_3_overlap_unique$Name_MoNA
+common_csu     <- library_3_overlap_unique$Name_CSU_PMF
+
+
+
+in_summary_filtered  <- in_summary  %>% filter(Compound %in% common_inhouse)
+mo_summary_filtered  <- mo_summary  %>% filter(Compound %in% common_mona)
+csu_summary_filtered <- csu_summary %>% filter(Compound %in% common_csu)
+
+# Build a mapping dataframe from your overlap info
+name_map <- library_3_overlap_unique %>%
+  dplyr::select(Name_Inhouse, Name_MoNA, Name_CSU_PMF) %>%
+  tidyr::pivot_longer(
+    cols = c(Name_MoNA, Name_CSU_PMF),
+    names_to = "Source",
+    values_to = "OldName"
+  ) %>%
+  dplyr::mutate(NewName = Name_Inhouse) %>%
+  dplyr::select(OldName, NewName) %>%
+  dplyr::distinct()
+
+# Helper to replace names
+unify_names <- function(df, column = "Compound", map_df) {
+  col_sym <- rlang::sym(column)
+  df %>%
+    dplyr::left_join(map_df, by = setNames("OldName", column)) %>%
+    dplyr::mutate(
+      Compound = ifelse(!is.na(NewName), NewName, !!col_sym)
+    ) %>%
+    dplyr::select(-NewName)
+}
+
+
+# Apply to all 3 summaries
+in_summary_filtered  <- unify_names(in_summary_filtered,  "Compound", name_map)
+mo_summary_filtered  <- unify_names(mo_summary_filtered,  "Compound", name_map)
+csu_summary_filtered <- unify_names(csu_summary_filtered, "Compound", name_map)
+
+common_check <- list(
+  Inhouse = unique(in_summary_filtered$Compound),
+  MoNA = unique(mo_summary_filtered$Compound),
+  CSU_PMF = unique(csu_summary_filtered$Compound)
+)
+
+setequal(common_check$Inhouse, common_check$MoNA) &&
+setequal(common_check$Inhouse, common_check$CSU_PMF)
+# should return TRUE now
+
+inhouse_plot_shared <- plot_peak_distribution_all_libs(
+  in_summary_filtered,
+  lib_name = "Inhouse (shared)",
+  show_total_labels = TRUE
+)
+
+mo_summary_filtered$Compound <- factor(mo_summary_filtered$Compound, levels = unique(mo_summary_filtered$Compound))
+
+mona_plot_shared <- plot_peak_distribution_all_libs(
+  mo_summary_filtered,
+  lib_name = "MoNA (shared)",
+  show_total_labels = TRUE
+)
+
+
+
+csu_plot_shared <- plot_peak_distribution_all_libs(
+  csu_summary_filtered,
+  lib_name = "CSU_PMF (shared)",
+  show_total_labels = TRUE
+)
+```
+
+
+```{r}
+
+
+
+# common_inhouse <- library_3_overlap_unique$Name_Inhouse
+# common_mona    <- library_3_overlap_unique$Name_MoNA
+# common_csu     <- library_3_overlap_unique$Name_CSU_PMF
+# 
+# 
+# 
+# in_summary_filtered  <- in_summary  %>% filter(Compound %in% common_inhouse)
+# mo_summary_filtered  <- mo_summary  %>% filter(Compound %in% common_mona)
+# csu_summary_filtered <- csu_summary %>% filter(Compound %in% common_csu)
+# 
+# inhouse_plot_shared <- plot_peak_distribution_all_libs(in_summary_filtered, lib_name = "Inhouse (shared)")
+# mona_plot_shared    <- plot_peak_distribution_all_libs(mo_summary_filtered, lib_name = "MoNA (shared)")
+# csu_plot_shared     <- plot_peak_distribution_all_libs(csu_summary_filtered, lib_name = "CSU_PMF (shared)")
+# 
+# names(in_summary_filtered)[names(in_summary_filtered) == "Name_Inhouse"] <- "Compound"
+# names(mo_summary_filtered)[names(mo_summary_filtered) == "Name_MoNA"] <- "Compound"
+# names(csu_summary_filtered)[names(csu_summary_filtered) == "Name_CSU_PMF"] <- "Compound"
+# 
+# inhouse_plot_shared <- plot_peak_distribution_all_libs(in_summary_filtered, "Inhouse",  show_total_labels = T)
+# mona_plot_shared    <- plot_peak_distribution_all_libs(mo_summary_filtered, "MoNA",  show_total_labels = T)
+# csu_plot_shared    <- plot_peak_distribution_all_libs(csu_summary_filtered, "CSU_PMF" , show_total_labels = T)
+
+```
+
+
+```{r}
+inhouse_plot_shared$barplot
+mona_plot_shared
+csu_plot_shared
+
+```
+
+```{r}
+ggsave("Common_compounds_inhouse_plot_barplot.png", inhouse_plot_shared$barplot,  width = 12, height = 10, dpi = 300)
+ggsave("Common_compounds_mona_plot_barplot.png", mona_plot_shared$barplot,  width = 12, height = 10, dpi = 300)
+ggsave("Common_compounds_CSUPMF_plot_barplot.png", csu_plot_shared$barplot,  width = 12, height = 10, dpi = 300)
+```
+
+
+### bind rows of the 3 library
+
+```{r}
+harmonize_compound_names <- function(df, lib_name, name_map) {
+  df <- df %>%
+    mutate(Library = lib_name,
+           Compound = as.character(Compound))
+
+  if (lib_name == "Inhouse") {
+    # Inhouse names are already canonical — just keep them
+    df <- df %>%
+      mutate(Compound = as.character(Compound))
+
+  } else if (lib_name == "MoNA") {
+    df <- df %>%
+      left_join(name_map, by = c("Compound" = "Name_MoNA")) %>%
+      mutate(
+        Compound = dplyr::coalesce(Name_Inhouse, Compound)
+      ) %>%
+      select(-starts_with("Name_"))
+
+  } else if (lib_name == "CSU_PMF") {
+    df <- df %>%
+      left_join(name_map, by = c("Compound" = "Name_CSU_PMF")) %>%
+      mutate(
+        Compound = dplyr::coalesce(Name_Inhouse, Compound)
+      ) %>%
+      select(-starts_with("Name_"))
+  }
+
+  # Optional: warn if any remain unmapped
+  n_missing <- sum(is.na(df$Compound))
+  if (n_missing > 0) {
+    warning(sprintf("[%s] %d compounds have no Inhouse mapping.", lib_name, n_missing))
+  }
+
+  return(df)
+}
+
+# name map
+name_map <- library_3_overlap_unique %>%
+  select(Name_Inhouse, Name_MoNA, Name_CSU_PMF)
+
+# harmonize each dataset
+inhouse_df <- harmonize_compound_names(inhouse_plot_shared$data, "Inhouse", name_map)
+mona_df    <- harmonize_compound_names(mona_plot_shared$data, "MoNA", name_map)
+csu_df     <- harmonize_compound_names(csu_plot_shared$data, "CSU_PMF", name_map)
+
+# combine
+combined_shared_df <- bind_rows(inhouse_df, mona_df, csu_df)
+
+
+
+combined_shared_df
+```
+
+
+
+
+```{r}
+is.na(mona_plot_shared$data $ Compound)
+
+```
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+plot_each_compound <- function(df, save_dir = NULL) {
+  # ensure output directory if saving
+  if (!is.null(save_dir) && !dir.exists(save_dir)) {
+    dir.create(save_dir, recursive = TRUE)
+  }
+
+  unique_compounds <- unique(df$Compound)
+
+  for (cmpd in unique_compounds) {
+    sub_df <- df %>% filter(Compound == cmpd)
+
+    p <- ggplot(sub_df, aes(x = Library, y = Percent, fill = Region)) +
+      geom_boxplot(outlier.shape = 21, alpha = 0.8) +
+      scale_fill_manual(
+        values = c("pct_below_or_equal" = "#4E79A7", "pct_above" = "#E15759"),
+        labels = c("pct_below_or_equal" = "≤ PI m/z", "pct_above" = "> PI m/z")
+      ) +
+      labs(
+        title = paste("Peak Distribution Comparison —", cmpd),
+        subtitle = paste("Across Libraries:", paste(unique(sub_df$Library), collapse = ", ")),
+        x = "Library",
+        y = "Percentage of Peaks",
+        fill = "Region"
+      ) +
+      theme_bw(base_size = 12) +
+      theme(
+        plot.title = element_text(face = "bold", size = 13),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "top"
+      )
+
+    print(p)  # show in viewer
+
+    if (!is.null(save_dir)) {
+      filename <- file.path(save_dir, paste0(gsub("[^A-Za-z0-9]+", "_", cmpd), "_comparison.png"))
+      ggsave(filename, p, width = 6, height = 4, dpi = 300)
+    }
+  }
+}
+```
+
+
+```{r}
+
+plot_each_compound(combined_shared_df, save_dir = "compound_plots")
+
+```
+
+```{r}
+plot_each_compound_bar <- function(df,
+                                   save_dir = NULL,
+                                   show_total_labels = TRUE,
+                                   label_position = c("above", "inside")) {
+  library(dplyr)
+  library(ggplot2)
+
+  label_position <- match.arg(label_position)
+
+  if (!is.null(save_dir) && !dir.exists(save_dir)) dir.create(save_dir, recursive = TRUE)
+
+  unique_compounds <- unique(df$Compound)
+
+  for (cmpd in unique_compounds) {
+    sub_df <- df %>% filter(Compound == cmpd)
+
+    # One total n per Library
+    totals <- sub_df %>%
+      distinct(Library, n_total)
+
+    # Base plot
+    p <- ggplot(sub_df, aes(x = Library, y = Percent, fill = Region)) +
+      geom_col(position = position_dodge(width = 0.8), width = 0.7) +
+      scale_fill_manual(
+        values = c("pct_below_or_equal" = "#4E79A7", "pct_above" = "#E15759"),
+        labels = c("pct_below_or_equal" = "≤ PI m/z", "pct_above" = "> PI m/z")
+      ) +
+      labs(
+        title = paste("Peak Distribution —", cmpd),
+        x = "Library",
+        y = "Percentage of Peaks",
+        fill = NULL
+      ) +
+      theme_bw(base_size = 12) +
+      theme(
+        plot.title = element_text(face = "bold", size = 13),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "top"
+      )
+
+    # Add total n labels if requested
+    if (show_total_labels) {
+      if (label_position == "above") {
+        p <- p +
+          geom_text(
+            data = totals,
+            aes(x = Library, y = 105, label = paste0("n=", n_total)),
+            inherit.aes = FALSE,
+            vjust = 0,
+            size = 3,
+            fontface = "italic"
+          )
+      } else if (label_position == "inside") {
+        p <- p +
+          geom_text(
+            data = totals,
+            aes(x = Library, y = 50, label = paste0("n=", n_total)),
+            inherit.aes = FALSE,
+            color = "white",
+            size = 3,
+            fontface = "bold"
+          )
+      }
+    }
+
+    print(p)
+
+    if (!is.null(save_dir)) {
+      filename <- file.path(save_dir, paste0(gsub("[^A-Za-z0-9]+", "_", cmpd), "_bar.png"))
+      ggsave(filename, p, width = 6, height = 4, dpi = 300)
+    }
+  }
+}
+
+
+```
+
+
+
+```{r}
+plot_each_compound_bar(combined_shared_df)
+```
+
+```{r}
+plot_each_compound_bar <- function(df,
+                                   save_dir = NULL,
+                                   show_total_labels = TRUE,
+                                   label_position = c("above", "inside")) {
+  library(dplyr)
+  library(ggplot2)
+
+  label_position <- match.arg(label_position)
+
+  if (!is.null(save_dir) && !dir.exists(save_dir)) dir.create(save_dir, recursive = TRUE)
+
+  unique_compounds <- unique(df$Compound)
+
+  for (cmpd in unique_compounds) {
+    sub_df <- df %>% filter(Compound == cmpd)
+
+    # one total n per library
+    totals <- sub_df %>%
+      distinct(Library, n_total)
+
+    p <- ggplot(sub_df, aes(x = Library, y = Percent, fill = Region)) +
+      geom_col(position = position_dodge(width = 0.8), width = 0.7, color = "black") +
+      scale_fill_manual(
+        values = c("pct_below_or_equal" = "#4E79A7", "pct_above" = "#E15759"),
+        labels = c("pct_below_or_equal" = "≤ PI m/z", "pct_above" = "> PI m/z")
+      ) +
+      labs(
+        title = paste("Peak Distribution —", cmpd),
+        x = "Library",
+        y = "Percentage of Peaks",
+        fill = "Region"
+      ) +
+      theme_bw(base_size = 12) +
+      theme(
+        plot.title = element_text(face = "bold", size = 13),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "top"
+      )
+
+    # n labels
+    if (show_total_labels) {
+      label_y <- if (label_position == "above") 105 else 50
+      label_color <- if (label_position == "inside") "white" else "black"
+      vjust_val <- if (label_position == "above") 0 else 1.5
+
+      p <- p +
+        geom_text(
+          data = totals,
+          aes(x = Library, y = label_y, label = paste0("n=", n_total)),
+          inherit.aes = FALSE,
+          color = label_color,
+          size = 3,
+          fontface = "italic",
+          vjust = vjust_val
+        )
+    }
+
+    print(p)
+
+    if (!is.null(save_dir)) {
+      filename <- file.path(save_dir, paste0(gsub("[^A-Za-z0-9]+", "_", cmpd), "_bar.png"))
+      ggsave(filename, p, width = 6, height = 4, dpi = 300)
+    }
+  }
+}
+
+```
+
+
+```{r}
+plot_each_compound_bar(
+  combined_shared_df,
+  label_position = "above",
+  show_total_labels = TRUE
+)
+
+```
+

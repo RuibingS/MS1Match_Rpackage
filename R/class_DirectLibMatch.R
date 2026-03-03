@@ -1,5 +1,6 @@
 #' Class for Direct Library Matching
 #'
+#' @description
 #' Represents a configuration for matching detected features against a compound library,
 #' using m/z and RT thresholds, ppm tolerance, MS level, and ion polarity.
 #'
@@ -10,6 +11,7 @@
 #' @slot ppm Numeric parts-per-million tolerance for m/z
 #' @slot ms_level Character, either \code{"MS1"} or \code{"MS2"}
 #' @slot polarity Character, either \code{"pos"} or \code{"neg"}
+#' @slot results List of matched results
 #'
 #' @export
 setClass("DirectLibMatch",
@@ -19,6 +21,8 @@ setClass("DirectLibMatch",
            diff_mz_thr = "numeric",
            diff_rt_thr = "numeric",
            ppm = "numeric",
-           ms_level = "character",   # "MS1" or "MS2"
-           polarity = "character"    # "pos" or "neg"
+           ms_level = "character",
+           polarity = "character",
+           results = "list"
+
          ))

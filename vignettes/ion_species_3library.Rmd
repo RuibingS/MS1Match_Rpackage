@@ -1,0 +1,1451 @@
+---
+title: "ion_species_3library"
+author: "Ruibing"
+date: "2025-11-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+adduct_table <- read.csv(system.file("extdata", "Adducts", "adducts.csv", package = "MS1Match"))
+
+neutral_loss_table <- read.csv(system.file("extdata", "Neutral loss", "neutral loss database.csv", package = "MS1Match"), check.names = TRUE)
+  
+```
+
+
+### adduct table annotaion all ion types
+
+```{r}
+
+
+df_inhouse <- classify_Ion_Forms_library(inhouse_lib, "In-house", character(0),adduct_table = adduct_table  )
+df_mona    <- classify_Ion_Forms_library(mona_lib, "MoNA", character(0), adduct_table = adduct_table)
+df_csu     <- classify_Ion_Forms_library(csu_lib, "CSU-PMF", character(0), adduct_table = adduct_table)
+
+
+# Combine and count
+combined <- bind_rows(df_inhouse, df_mona, df_csu) %>%
+  count(Library, Category)
+
+
+```
+
+
+### 19 common compounds
+
+```{r}
+df_inhouse_common <- classify_Ion_Forms_library(lib = inhouse_lib,  lib_name =  "In-house",adduct_table = adduct_table, filter_names =
+                                                            library_3_overlap_unique$Name_Inhouse)
+df_mona_common    <- classify_Ion_Forms_library(lib = mona_lib,  lib_name = "MoNA", adduct_table = adduct_table, filter_names = 
+                                                            library_3_overlap_unique$Name_MoNA)
+df_csu_common    <- classify_Ion_Forms_library(lib = csu_lib,  lib_name = "CSU-PMF", adduct_table = adduct_table,filter_names =
+                                                           library_3_overlap_unique$Name_CSU_PMF)
+```
+
+```{r}
+# 19 common compounds
+
+
+# Combine and count
+combined_common <- bind_rows(df_inhouse_common, df_mona_common, df_csu_common) %>%
+  count(Library, Category)
+
+```
+
+
+
+
+### bar plot for ALL ion adducts
+2 plots in one 
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(forcats)
+library(patchwork)
+
+# --- color palette ---
+make_rank_palette <- function(n) {
+  hues <- seq(15, 375, length.out = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
+}
+
+# --- cut point ---
+get_cut_info <- function(df_lib) {
+  max_n <- max(df_lib$n)
+  if (max_n > 3000) return(list(cut = 700, factor = 25))
+  if (max_n > 1000) return(list(cut = 200, factor = 15))
+  if (max_n > 200)  return(list(cut = 50,  factor = 10))
+  return(NULL)
+}
+
+# ---  BAR + PIE with axis break ---
+plot_ion_dist_duo <- function(df, lib_name, pie_label_min_pct = 1) {
+  # Aggregate data
+  df_lib <- df %>%
+    filter(Library == lib_name) %>%
+    group_by(Category) %>%
+    summarise(n = sum(n), .groups = "drop") %>%
+    arrange(desc(n)) %>%
+    mutate(
+      rank = row_number(),
+      prop = 100 * n / sum(n),
+      Category = fct_reorder(Category, n)
+    )
+
+  rank_palette <- make_rank_palette(nrow(df_lib))
+
+  # Detect cut (fake break)
+  cut_info <- get_cut_info(df_lib)
+
+  if (!is.null(cut_info)) {
+    cut_val <- cut_info$cut
+    comp <- cut_info$factor
+    df_lib <- df_lib %>%
+      mutate(
+        n_adj = ifelse(n > cut_val,
+                       cut_val + (n - cut_val) / comp,
+                       n)
+      )
+  } else {
+    df_lib <- df_lib %>% mutate(n_adj = n)
+  }
+
+  # === BAR plot ===
+  p_bar <- ggplot(df_lib, aes(x = n_adj, y = Category, fill = factor(rank))) +
+    geom_col(width = 0.7, color = "black", linewidth = 0.25) +
+    geom_text(
+      aes(x = n_adj + 0.03 * max(n_adj),
+          label = paste0(n, " (", sprintf("%.2f", prop), "%)")),
+      hjust = 0, size = 3.5
+    ) +
+    scale_fill_manual(values = rank_palette, guide = "none") +
+    theme_minimal(base_size = 14) +
+    theme(
+      panel.grid.major.y = element_blank(),
+      axis.text.x = element_text(size = 11),
+      axis.text.y = element_text(size = 11),
+      plot.title = element_text(face = "bold", size = 15, hjust = 0.5),
+      axis.title = element_text(size = 12)
+    ) +
+    labs(
+      title = paste("Ion adduct distribution —", lib_name),
+      x = "Number of peaks (compressed scale)",
+      y = "Ion form"
+    )
+
+  # Adjust axis ticks
+  if (!is.null(cut_info)) {
+    p_bar <- p_bar +
+      scale_x_continuous(
+        breaks = c(
+          seq(0, cut_info$cut, length.out = 6),
+          max(df_lib$n_adj)
+        ),
+        labels = c(
+          as.character(round(seq(0, cut_info$cut, length.out = 6))),
+          as.character(max(df_lib$n))
+        )
+      )
+  }
+
+  # === PIE plot ===
+  df_pie <- df_lib %>%
+    arrange(desc(n)) %>%
+    mutate(
+      ypos = cumsum(n) - 0.5 * n,
+      label = ifelse(prop >= pie_label_min_pct,
+                     paste0(Category, " (", sprintf("%.2f", prop), "%)"),
+                     "")
+    )
+
+  p_pie <- ggplot(df_pie, aes(x = "", y = n, fill = factor(rank))) +
+    geom_bar(stat = "identity", width = 1, color = "white") +
+    coord_polar("y", start = 0) +
+    scale_fill_manual(values = rank_palette, guide = "none") +
+    theme_void(base_size = 14) +
+    labs(title = paste("Adduct composition —", lib_name)) +
+    theme(plot.title = element_text(face = "bold", size = 15, hjust = 0.5))
+
+  # Combine side by side
+  p_bar + p_pie + plot_layout(ncol = 2, widths = c(2, 1))
+}
+
+
+```
+
+
+```{r}
+# --- Generate plots for each library ---
+# p_inhouse <- plot_ion_dist_duo(combined, "In-house")
+# p_mona    <- plot_ion_dist_duo(combined, "MoNA")
+# p_csu     <- plot_ion_dist_duo(combined, "CSU-PMF")
+# 
+# # --- Display ---
+# p_inhouse
+# p_mona
+# p_csu
+
+
+
+
+
+
+```
+
+```{r}
+# ggsave("Ion_Full_adduct_mz_distribution_inhouse.png", p_inhouse,  width = 15, height = 10, dpi = 300)
+# ggsave("Ion_Fu11_adduct_mz_distribution_mona.png", p_mona,  width = 15, height = 10, dpi = 300)
+# ggsave("Ion_Full_adduct_mz_distribution_csu.png", p_csu,  width = 15, height = 10, dpi = 300)
+```
+
+
+
+
+
+
+2 plots sepreated 
+
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(forcats)
+library(patchwork)
+
+# --- Dynamic color palette ---
+make_rank_palette <- function(n) {
+  hues <- seq(15, 375, length.out = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
+}
+
+# --- Main plotting function (now accepts cut_info) ---
+plot_ion_dist_duo <- function(df, lib_name,
+                              cut_info = NULL,
+                              pie_label_min_pct = 1) {
+
+  # --- Default compression values ---
+  if (is.null(cut_info)) {
+    cut_info <- switch(
+      lib_name,
+      "In-house" = list(cut = 800, factor = 25),
+      "MoNA"     = list(cut = 750, factor = 20),
+      "CSU-PMF"  = list(cut = 750, factor = 30),
+      list(cut = 500, factor = 20) # fallback
+    )
+  }
+
+  # --- Aggregate data ---
+  df_lib <- df %>%
+    filter(Library == lib_name) %>%
+    group_by(Category) %>%
+    summarise(n = sum(n), .groups = "drop") %>%
+    arrange(desc(n)) %>%
+    mutate(
+      rank = row_number(),
+      prop = 100 * n / sum(n),
+      Category = fct_reorder(Category, n)
+    )
+
+  # --- Apply compression  ---
+  df_lib <- df_lib %>%
+    mutate(
+      n_adj = ifelse(n > cut_info$cut,
+                     cut_info$cut + (n - cut_info$cut) / cut_info$factor,
+                     n)
+    )
+
+  # --- Shared color palette ---
+  rank_palette <- make_rank_palette(nrow(df_lib))
+
+  # === BAR plot ===
+  p_bar <- ggplot(df_lib, aes(x = n_adj, y = Category, fill = factor(rank))) +
+    geom_col(width = 0.7, color = "black", linewidth = 0.25) +
+    geom_text(
+      aes(x = n_adj + 0.03 * max(n_adj),
+          label = paste0(n, " (", sprintf("%.2f", prop), "%)")),
+      hjust = 0, size = 5
+    ) +
+    scale_fill_manual(values = rank_palette, guide = "none") +
+    scale_x_continuous(
+      breaks = c(seq(0, cut_info$cut, length.out = 6), max(df_lib$n_adj)),
+      labels = c(as.character(round(seq(0, cut_info$cut, length.out = 6))),
+                 as.character(max(df_lib$n)))
+    ) +
+    expand_limits(x = max(df_lib$n_adj) * 1.1) +
+    coord_cartesian(clip = "off") +
+    theme_minimal(base_size = 14) +
+    theme(
+      panel.grid.major.y = element_blank(),
+      axis.text.x = element_text(size = 14),
+      axis.text.y = element_text(size = 14),
+     # plot.title = element_text(face = "bold", size = 15, hjust = 0.5),
+      axis.title = element_text(size = 14),
+      axis.line.x = element_line()
+    ) +
+    labs(
+  #    title = paste("Ion species distribution —", lib_name),
+      x = "Number of peaks",
+      y = "Ion form"
+    )
+
+  # === PIE plot ===
+  df_pie <- df_lib %>%
+    arrange(desc(n)) %>%
+    mutate(
+      ypos = cumsum(n) - 0.5 * n,
+      label = ifelse(prop >= pie_label_min_pct,
+                     paste0(Category, " (", sprintf("%.2f", prop), "%)"),
+                     "")
+    )
+
+  p_pie <- ggplot(df_pie, aes(x = "", y = n, fill = factor(rank))) +
+    geom_bar(stat = "identity", width = 1, color = "white") +
+    coord_polar("y", start = 0) +
+    scale_fill_manual(values = rank_palette, guide = "none") +
+    theme_void(base_size = 14) +
+    #labs(title = paste("Adduct composition —", lib_name)) +
+    theme(plot.title = element_text(face = "bold", size = 15, hjust = 0.5))
+
+  # return both plots
+  list(
+    bar_plot = p_bar,
+    pie_plot = p_pie
+  )
+}
+
+```
+
+
+
+```{r}
+plots_subset <- plot_ion_dist_duo(
+  df = combined_common,
+  lib_name = "CSU-PMF",
+  cut_info = list(cut = 400, factor = 10) # custom for subset
+)
+plots_subset$bar_plot
+
+```
+
+```{r}
+# --- Generate plots for each library ---
+plots_subset_inhouse <- plot_ion_dist_duo(combined_common, "In-house" ,  cut_info = list(cut = 40, factor = 8) )
+plots_subset_mona    <- plot_ion_dist_duo(combined_common, "MoNA",  cut_info = list(cut = 10, factor = 3) )
+plots_subset_csu     <- plot_ion_dist_duo(combined_common, "CSU-PMF", cut_info = list(cut = 400, factor = 10) )
+
+# --- Display ---
+plots_subset_inhouse$bar_plot
+plots_subset_mona$bar_plot
+plots_subset_csu$bar_plot
+
+
+plots_subset_inhouse$pie_plot
+plots_subset_mona$pie_plot
+plots_subset_csu$pie_plot
+
+
+
+
+
+
+
+```
+
+
+```{r}
+ggsave("Ion_adduct_19_commom_mz_distribution_inhouse_bar_plot.png", plots_subset_inhouse$bar_plot,  width = 15, height = 10, dpi = 600)
+
+ggsave("Ion_adduct_19_commom_mz_distribution_mona.png", plots_subset_mona$bar_plot,  width = 15, height = 10, dpi = 600)
+
+ggsave("Ion_adduct_19_commom_mz_distribution_csu.png", plots_subset_csu$bar_plot,  width = 15, height = 10, dpi = 600)
+
+ggsave("Ion_adduct_19_commom_mz_distribution_inhouse_pie.png", plots_subset_inhouse$pie_plot,  width = 15, height = 10, dpi = 600)
+
+ggsave("Ion_adduct_19_commom_mz_distribution_mona_pie.png", plots_subset_mona$pie_plot,  width = 15, height = 10, dpi = 600)
+
+ggsave("Ion_adduct_19_commom_mz_distribution_csu_pie.png", plots_subset_csu$pie_plot,  width = 15, height = 10, dpi = 600)
+```
+
+
+```{r}
+ggsave(
+  "Ion_adduct_19_commom_mz_distribution_inhouse_bar_plot.pdf",
+  plots_subset_inhouse$bar_plot,
+  width = 14,
+  height = 8,
+  units = "in",
+  device = cairo_pdf
+)
+ggsave(
+  "Ion_adduct_19_commom_mz_distribution_mona.pdf",
+  plots_subset_mona$bar_plot,
+  width = 14,
+  height = 8,
+  units = "in",
+  device = cairo_pdf
+)
+ggsave(
+  "Ion_adduct_19_commom_mz_distribution_csu.pdf",
+  plots_subset_csu$bar_plot,
+  width = 14,
+  height =8,
+  units = "in",
+  device = cairo_pdf
+)
+
+
+ggsave(
+  "Ion_adduct_19_commom_mz_distribution_inhouse_pie.pdf",
+  plots_subset_inhouse$pie_plot,
+  width = 5,
+  height = 4,
+  units = "in",
+  device = cairo_pdf
+)
+
+ggsave(
+  "Ion_adduct_19_commom_mz_distribution_mona_pie.pdf",
+  plots_subset_mona$pie_plot,
+  width = 5,
+  height = 4,
+  units = "in",
+  device = cairo_pdf
+)
+
+ggsave(
+  "Ion_adduct_19_commom_mz_distribution_csu_pie.pdf",
+  plots_subset_csu$pie_plot,
+  width = 5,
+  height = 4,
+  units = "in",
+  device = cairo_pdf
+)
+
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(forcats)
+library(patchwork)
+
+# --- Dynamic color palette ---
+make_rank_palette <- function(n) {
+  hues <- seq(15, 375, length.out = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
+}
+
+# --- Main plotting function (simulated break, returns list) ---
+plot_ion_dist_duo <- function(df, lib_name, pie_label_min_pct = 1) {
+
+  # --- Hard-coded compression per library (simulated break) ---
+  cut_info <- switch(
+    lib_name,
+    "In-house" = list(cut = 800, factor = 25),
+    "MoNA"     = list(cut = 750, factor = 20),
+    "CSU-PMF"  = list(cut = 750, factor = 30),
+    list(cut = 500, factor = 20) # fallback
+  )
+
+  # --- Aggregate data ---
+  df_lib <- df %>%
+    filter(Library == lib_name) %>%
+    group_by(Category) %>%
+    summarise(n = sum(n), .groups = "drop") %>%
+    arrange(desc(n)) %>%
+    mutate(
+      rank = row_number(),
+      prop = 100 * n / sum(n),
+      Category = fct_reorder(Category, n)
+    )
+
+  # --- Apply compression (fake break) ---
+  df_lib <- df_lib %>%
+    mutate(
+      n_adj = ifelse(n > cut_info$cut,
+                     cut_info$cut + (n - cut_info$cut) / cut_info$factor,
+                     n)
+    )
+
+  # --- Shared color palette ---
+  rank_palette <- make_rank_palette(nrow(df_lib))
+
+  # === BAR plot ===
+  p_bar <- ggplot(df_lib, aes(x = n_adj, y = Category, fill = factor(rank))) +
+    geom_col(width = 0.7, color = "black", linewidth = 0.25) +
+    geom_text(
+      aes(x = n_adj + 0.03 * max(n_adj),
+          label = paste0(n, " (", sprintf("%.2f", prop), "%)")),
+      hjust = 0, size = 5
+    ) +
+    scale_fill_manual(values = rank_palette, guide = "none") +
+    scale_x_continuous(
+      breaks = c(
+        seq(0, cut_info$cut, length.out = 6),
+        max(df_lib$n_adj)
+      ),
+      labels = c(
+        as.character(round(seq(0, cut_info$cut, length.out = 6))),
+        as.character(max(df_lib$n))
+      )
+    ) +
+    expand_limits(x = max(df_lib$n_adj) * 1.1) +
+    coord_cartesian(clip = "off") +
+    theme_minimal(base_size = 14) +
+    theme(
+      panel.grid.major.y = element_blank(),
+      axis.text.x = element_text(size = 14),
+      axis.text.y = element_text(size = 14),
+      #plot.title = element_text(face = "bold", size = 15, hjust = 0.5),
+      axis.title = element_text(size = 14),
+      axis.line.x = element_line()
+    ) +
+    labs(
+      #title = paste("Ion adduct distribution —", lib_name),
+      x = "Number of peaks",
+      y = "Ion form"
+    )
+
+  # === PIE plot ===
+  df_pie <- df_lib %>%
+    arrange(desc(n)) %>%
+    mutate(
+      ypos = cumsum(n) - 0.5 * n,
+      label = ifelse(prop >= pie_label_min_pct,
+                     paste0(Category, " (", sprintf("%.2f", prop), "%)"),
+                     "")
+    )
+
+  p_pie <- ggplot(df_pie, aes(x = "", y = n, fill = factor(rank))) +
+    geom_bar(stat = "identity", width = 1, color = "white") +
+    coord_polar("y", start = 0) +
+    scale_fill_manual(values = rank_palette, guide = "none") +
+    theme_void(base_size = 14) +
+    # labs(title = paste("Adduct composition —", lib_name)) +
+    theme(plot.title = element_text(face = "bold", size = 15, hjust = 0.5))
+
+  # eturn both plots separately
+  list(
+    bar_plot = p_bar,
+    pie_plot = p_pie
+  )
+}
+
+```
+
+
+```{r}
+# --- each library ---
+p_inhouse <- plot_ion_dist_duo(combined, "In-house")
+p_mona    <- plot_ion_dist_duo(combined, "MoNA")
+p_csu     <- plot_ion_dist_duo(combined, "CSU-PMF")
+
+# 
+p_inhouse$bar_plot
+p_mona$bar_plot
+p_csu$bar_plot
+
+
+p_inhouse$pie_plot
+p_mona$pie_plot
+p_csu$pie_plot
+
+
+ ggsave("Ion_adduct_FULL_mz_distribution_inhouse_bar_plot_V2.png", p_inhouse$bar_plot,  width = 15, height = 10, dpi = 300)
+# 
+ ggsave("Ion_adduct_FULL_mz_distribution_mona_V2.png", p_mona$bar_plot,  width = 15, height = 10, dpi = 300)
+# 
+ ggsave("Ion_adduct_FULL_mz_distribution_csu_V2.png", p_csu$bar_plot,  width = 15, height = 10, dpi = 300)
+#  
+ ggsave("Ion_adduct_FULL_mz_distribution_inhouse_pie_V2.png", p_inhouse$pie_plot,  width = 15, height = 10, dpi = 300)
+# 
+ ggsave("Ion_adduct_FULL_mz_distribution_mona_pie_V2.png", p_mona$pie_plot,  width = 15, height = 10, dpi = 300)
+# 
+ ggsave("Ion_adduct_FULL_mz_distribution_csu_pie_V2.png", p_csu$pie_plot,  width = 15, height = 10, dpi = 300)
+```
+
+
+
+```{r}
+ggsave(
+  "Ion_adduct_FULL_mz_distribution_inhouse_bar_plot.pdf",
+  p_inhouse$bar_plot,
+  width = 16,
+  height = 12,
+  units = "in",
+  device = cairo_pdf
+)
+ggsave(
+  "Ion_adduct_FULL_mz_distribution_mona.pdf",
+   p_mona$bar_plot,
+  width = 16,
+  height = 12,
+  units = "in",
+  device = cairo_pdf
+)
+ggsave(
+  "Ion_adduct_FULL_mz_distribution_csu.pdf",
+  p_csu$bar_plot,
+  width = 16,
+  height = 12,
+  units = "in",
+  device = cairo_pdf
+)
+
+
+ggsave(
+  "Ion_adduct_FULL_mz_distribution_inhouse_pie.pdf",
+  p_inhouse$pie_plot,
+  width = 5,
+  height = 4,
+  units = "in",
+  device = cairo_pdf
+)
+
+ggsave(
+  "Ion_adduct_FULL_mz_distribution_mona_pie.pdf",
+  p_mona$pie_plot,
+  width = 5,
+  height = 4,
+  units = "in",
+  device = cairo_pdf
+)
+
+ggsave(
+  "Ion_adduct_FULL_mz_distribution_csu_pie.pdf",
+  p_csu$pie_plot,
+  width = 5,
+  height = 4,
+  units = "in",
+  device = cairo_pdf
+)
+
+
+
+
+```
+
+
+
+
+
+
+-----------------------------------------------------------------------------
+## REMOVE
+#### only subset of ion types
+
+```{r}
+# Load adduct and neutral loss tables
+adduct_table <- read.csv(system.file("extdata", "Adducts", "adducts.csv", package = "MS1Match"))
+
+adduct_table
+```
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(forcats)
+library(tidyr)
+
+# Combine and count
+combined <- bind_rows(df_inhouse, df_mona, df_csu) %>%
+  count(Library, Category)
+
+
+
+
+# Ion order exactly as in the paper (no Anions)
+ion_order <- c(
+  "[M+H]+", "[M+Na]+", "[M+NH4]+", "[M+K]+",
+  "[M-H2O+H]+", "[M]+", "[M+2H]2+",
+ "[2M+H]+", "Other smaller m/z", "Other larger m/z"
+)
+
+# Ensure all categories exist in every library (fill zeros)
+combined <- combined %>%
+  complete(Library, Category = ion_order, fill = list(n = 0)) %>%
+  mutate(Category = factor(Category, levels = rev(ion_order)))
+
+# Colors from the paper (no anion color)
+ion_colors <- c(
+  "[M+H]+" = "#9e0059",
+  "[M+Na]+" = "#6da7de",
+  "[M+NH4]+" = "#dee000",
+  "[M+K]+" = "#d82222",
+  "[M-H2O+H]+" = "#63c5b5",
+  "[M]+" = "#ff38ba",
+  "[M+2H]2+" = "#eb861e",
+  "[2M+H]+" = "#ee266d",
+  "Other larger m/z" = "#868b8e",
+  "Other smaller m/z" = "#5ea15d"
+)
+
+# Helper for individual plots
+plot_ion_dist <- function(df, lib_name) {
+  df %>%
+    filter(Library == lib_name) %>%
+    ggplot(aes(x = n, y = Category, fill = Category)) +
+    geom_col(width = 0.7, color = "black", linewidth = 0.2) +
+    scale_fill_manual(values = ion_colors, drop = FALSE) +
+    theme_minimal(base_size = 14) +
+    theme(
+      panel.grid.major.y = element_blank(),
+      axis.text.x = element_text(size = 12),
+      axis.text.y = element_text(size = 12),
+      plot.title = element_text(face = "bold", size = 16, hjust = 0.5),
+      legend.position = "none"
+    ) +
+    labs(
+      title = paste("Ion adduct distribution —", lib_name),
+      x = "Number of spectra",
+      y = "Ion form"
+    )
+}
+
+# Create 3 separate plots
+p_inhouse <- plot_ion_dist(combined, "In-house")
+p_mona    <- plot_ion_dist(combined, "MoNA")
+p_csu     <- plot_ion_dist(combined, "CSU-PMF")
+
+# Display them
+p_inhouse
+p_mona
+p_csu
+
+
+
+
+```
+
+```{r}
+library(ggbreak)
+
+plot_ion_dist <- function(df, lib_name) {
+  # Select dynamic x break based on library
+  xbreak <- switch(lib_name,
+    "In-house" = c(800, 2500),
+    "MoNA"     = c(1000, 7000),
+    "CSU-PMF"  = c(2000, 20000),
+    c(1000, 5000) # default fallback
+  )
+
+  df %>%
+    filter(Library == lib_name) %>%
+    ggplot(aes(x = n, y = Category, fill = Category)) +
+    geom_col(width = 0.7, color = "black", linewidth = 0.2) +
+    # scale_fill_manual(values = ion_colors, drop = FALSE) +
+    scale_x_break(xbreak, scales = 0.3) +
+    theme_minimal(base_size = 14) +
+    theme(
+      panel.grid.major.y = element_blank(),
+      axis.text.x = element_text(size = 12),
+      axis.text.y = element_text(size = 12),
+      plot.title = element_text(face = "bold", size = 16, hjust = 0.5),
+      legend.position = "none"
+    ) +
+    labs(
+    #  title = paste("Ion adduct distribution —", lib_name),
+      x = "Number of spectra",
+      y = "Ion form"
+    )
+}
+
+```
+
+
+```{r}
+p_inhouse <- plot_ion_dist(combined, "In-house")
+p_mona    <- plot_ion_dist(combined, "MoNA")
+p_csu     <- plot_ion_dist(combined, "CSU-PMF")
+```
+
+
+```{r}
+p_inhouse
+p_mona
+p_csu
+
+
+# ggsave("Ion_adduct_mz_distribution_inhouse.png", p_inhouse,  width = 15, height = 10, dpi = 300)
+# 
+# ggsave("Ion_adduct_mz_distribution_mona.png", p_mona,  width = 15, height = 10, dpi = 300)
+# 
+# ggsave("Ion_adduct_mz_distribution_csu.png", p_csu,  width = 15, height = 10, dpi = 300)
+```
+
+```{r}
+
+
+library(dplyr)
+library(ggplot2)
+library(forcats)
+library(tidyr)
+
+# Combine and count from your Rcpp outputs
+combined_common <- bind_rows(df_inhouse_common, df_mona_common, df_csu_common) %>%
+  count(Library, Category)
+
+combined_common
+```
+
+
+
+
+```{r}
+library(ggbreak)
+library(ggplot2)
+library(dplyr)
+
+plot_ion_dist_common <- function(df, lib_name) {
+  # choose x-axis breakpoints dynamically
+  xbreak <- switch(lib_name,
+    "In-house" = c(40, 160),
+    "CSU-PMF"  = c(30, 700),
+    "MoNA"     = NULL,
+    NULL
+  )
+
+  p <- df %>%
+    filter(Library == lib_name) %>%
+    ggplot(aes(x = n, y = Category, fill = Category)) +
+    geom_col(width = 0.7, color = "black", linewidth = 0.2) +
+    scale_fill_manual(values = ion_colors, drop = FALSE) +
+    theme_minimal(base_size = 14) +
+    theme(
+      panel.grid.major.y = element_blank(),
+      axis.text.x = element_text(size = 12),
+      axis.text.y = element_text(size = 12),
+      plot.title = element_text(face = "bold", size = 16, hjust = 0.5),
+      legend.position = "none"
+    ) +
+    labs(
+      x = "Number of spectra",
+      y = "Ion form"
+    )
+
+  # add break only if defined
+  if (!is.null(xbreak)) {
+    p <- p + scale_x_break(xbreak, scales = 0.3)
+  }
+
+  p
+}
+
+# Generate three plots
+p_inhouse_common <- plot_ion_dist_common(combined_common, "In-house")
+p_mona_common    <- plot_ion_dist_common(combined_common, "MoNA")
+p_csu_common     <- plot_ion_dist_common(combined_common, "CSU-PMF")
+```
+
+
+```{r}
+p_inhouse_common
+
+p_mona_common
+
+p_csu_common
+```
+
+
+```{r}
+ggsave("Ion_adduct_mz_distribution_inhouse_common.png", p_inhouse_common,  width = 15, height = 10, dpi = 300)
+
+ggsave("Ion_adduct_mz_distribution_mona_common.png", p_mona_common,  width = 15, height = 10, dpi = 300)
+
+ggsave("Ion_adduct_mz_distribution_csu_common.png", p_csu_common,  width = 15, height = 10, dpi = 300)
+```
+
+
+
+
+```{r}
+library(dplyr)
+
+combined <- bind_rows(df_inhouse, df_mona, df_csu)
+
+# Count peaks per category per library
+combined_summary <- combined %>%
+  count(Library, Category) %>%
+  group_by(Library) %>%
+  mutate(prop = n / sum(n)) %>%
+  ungroup()
+
+```
+
+
+```{r}
+ion_colors <- c(
+  "[M+H]+" = "#9e0059",
+  "[M+Na]+" = "#6da7de",
+  "[M+NH4]+" = "#dee000",
+  "[M+K]+" = "#d82222",
+  "[M-H2O+H]+" = "#63c5b5",
+  "[M]+" = "#ff38ba",
+  "[M+2H]2+" = "#eb861e",
+  "[2M+H]+" = "#ee266d",
+  "Other in-source fragments" = "#868b8e",
+  "Undefined" = "#5ea15d"
+)
+
+
+library(ggplot2)
+
+ggplot(combined_summary, aes(x = Library, y = prop, fill = Category)) +
+  geom_bar(stat = "identity", position = "fill") +
+  labs(
+    title = "Distribution of ion types across MS1 libraries",
+    x = NULL,
+    y = "Proportion of ion forms"
+  ) +
+  scale_y_continuous(labels = scales::percent_format()) +
+  scale_fill_manual(values = ion_colors, drop = FALSE) +
+  theme_minimal(base_size = 14) +
+  theme(
+    axis.text.x = element_text(size = 13, face = "bold"),
+    axis.text.y = element_text(size = 12),
+    legend.title = element_blank(),
+    legend.text = element_text(size = 12)
+  )
+
+```
+
+```{r}
+ggplot(combined_summary, aes(x = Category, y = n, fill = Library)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(y = "Number of MS1 peaks", x = "Ion form") +
+  theme_minimal(base_size = 14) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+
+```{r}
+summarize_and_plot_ion_forms <- function(..., normalize = TRUE, title = "Ion form distribution across libraries") {
+  library(dplyr)
+  library(tidyr)
+  library(ggplot2)
+  library(scales)
+
+  # Combine all input data frames
+  combined <- bind_rows(...)
+
+  # Canonical ion categories
+  ion_levels <- c(
+    "[M+H]+", "[M+Na]+", "[M+NH4]+", "[M+K]+",
+    "[M-H2O+H]+", "[M]+", "[M+2H]2+", "[2M+H]+",
+    "Other in-source fragments", "Undefined"
+  )
+
+ion_colors <- c(
+  "[M+H]+" = "#9e0059",
+  "[M+Na]+" = "#6da7de",
+  "[M+NH4]+" = "#dee000",
+  "[M+K]+" = "#d82222",
+  "[M-H2O+H]+" = "#63c5b5",
+  "[M]+" = "#ff38ba",
+  "[M+2H]2+" = "#eb861e",
+  "[2M+H]+" = "#ee266d",
+  "Other in-source fragments" = "#868b8e",
+  "Undefined" = "#5ea15d"
+)
+
+  # Distinct library colors (for normalize = FALSE)
+  library_colors <- c(
+    "In-house" = "#2ca02c",
+    "MoNA" = "#1f77b4",
+    "CSU-PMF" = "#ff7f0e"
+  )
+
+  # Clean categories
+  combined <- combined %>%
+    mutate(Category = trimws(Category),
+           Category = gsub("fragment$", "fragments", Category, ignore.case = TRUE),
+           Category = ifelse(Category %in% ion_levels, Category, "Undefined"),
+           Category = factor(Category, levels = ion_levels))
+
+  # Summarize
+  summary_df <- combined %>%
+    count(Library, Category) %>%
+    complete(Library, Category = ion_levels, fill = list(n = 0)) %>%
+    group_by(Library) %>%
+    mutate(prop = n / sum(n)) %>%
+    ungroup()
+
+  # Plot
+  if (normalize) {
+    p <- ggplot(summary_df, aes(x = Library, y = prop, fill = Category)) +
+      geom_bar(stat = "identity", position = "fill") +
+      scale_y_continuous(labels = percent_format()) +
+      scale_fill_manual(values = ion_colors, drop = FALSE) +
+      labs(y = "Proportion of ion forms", x = NULL, title = title)
+  } else {
+    p <- ggplot(summary_df, aes(x = Category, y = n, fill = Library)) +
+      geom_bar(stat = "identity", position = "dodge") +
+      scale_fill_manual(values = library_colors, drop = FALSE) +
+      labs(y = "Number of MS1 peaks", x = "Ion form", title = title)
+  }
+
+  p <- p +
+    theme_minimal(base_size = 14) +
+    theme(
+      axis.text.x = element_text(angle = if (normalize) 0 else 45, hjust = 1, size = 12),
+      axis.text.y = element_text(size = 12),
+      legend.title = element_blank(),
+      legend.text = element_text(size = 12),
+      plot.title = element_text(size = 16, face = "bold")
+    )
+
+  return(list(summary = summary_df, plot = p))
+}
+
+
+
+```
+
+
+```{r}
+res_full <- summarize_and_plot_ion_forms(df_inhouse, df_mona, df_csu , title = NULL)
+res_full_absolute <- summarize_and_plot_ion_forms(df_inhouse, df_mona, df_csu, normalize = FALSE, title = NULL)
+
+res_full$plot
+res_full_absolute$plot
+
+
+# ggsave("full_3libray_ion_compositions.png", res_full$plot, width = 10, height = 8, dpi = 300)
+# ggsave("full_3libray_ion_compositions_absolute.png", res_full_absolute$plot, width = 10, height = 8, dpi = 300)
+
+```
+
+
+
+### read adduct table
+
+```{r}
+adduct_table <- read.csv(here::here("data","Adducts","adducts.csv"))
+```
+
+
+```{r}
+#Rcpp::sourceCpp("src/annotate_from_adduct_table.cpp")
+
+
+df_inhouse_adduct_anno <- annotate_from_adduct_table(inhouse_lib, adduct_table, "In-house", desired_polarity = "pos", tol = 0.01)
+df_mona_adduct_anno    <- annotate_from_adduct_table(mona_lib,    adduct_table, "MoNA",     desired_polarity = "pos", tol = 0.01)
+df_csu_adduct_anno     <- annotate_from_adduct_table(csu_lib,     adduct_table, "CSU-PMF",  desired_polarity = "pos", tol = 0.01)
+
+```
+
+```{r}
+df_inhouse_adduct_anno[which(df_inhouse_adduct_anno$Compound%in% "(2-Aminoethyl)phosphonate"),]
+```
+
+
+### Composition Plots
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(forcats)
+library(scales)
+library(ggrepel)
+library(patchwork) # optional, to combine plots
+
+# --- Combine and summarize ---
+combined <- bind_rows(
+  df_inhouse_adduct_anno,
+  df_mona_adduct_anno,
+  df_csu_adduct_anno
+)
+
+adduct_summary <- combined %>%
+  filter(Category != "Undefined") %>%
+  group_by(Library, Category) %>%
+  summarise(n = n(), .groups = "drop") %>%
+  group_by(Library) %>%
+  mutate(prop = n / sum(n) * 100) %>%
+  mutate(Category = ifelse(prop < 0.0, "Other", Category)) %>%
+  group_by(Library, Category) %>%
+  summarise(n = sum(n), prop = sum(prop), .groups = "drop_last") %>%
+  arrange(Library, desc(prop)) %>%
+  group_by(Library) %>%
+  mutate(rank = row_number())
+
+# --- Function to create one library palette ---
+make_rank_palette <- function(n) {
+  hues <- seq(15, 375, length.out = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
+}
+
+# --- Shared plotting helper (generates color mapping first) ---
+plot_adduct_library <- function(df, lib_name) {
+  df_lib <- df %>% filter(Library == lib_name)
+  rank_palette <- make_rank_palette(nrow(df_lib))
+  
+  # BAR plot
+  p_bar <- ggplot(df_lib, aes(
+    x = fct_reorder(Category, prop),
+    y = prop,
+    fill = factor(rank)
+  )) +
+    geom_col(width = 0.7, color = "black", linewidth = 0.25) +
+  geom_text(
+    aes(
+      label = paste0(
+        n, " (",
+        ifelse(
+          prop < 1,
+          formatC(prop, format = "f", digits = 2),  # two decimals if < 1%
+          round(prop, 1)                            # otherwise one decimal
+        ),
+        "%)"
+      )
+    ),
+    hjust = -0.05, size = 4, family = "sans"
+  ) +
+    scale_fill_manual(values = rank_palette, guide = "none") +
+    coord_flip() +
+    theme_minimal(base_size = 14) +
+    theme(
+      panel.grid.major.y = element_blank(),
+      axis.text.x = element_text(size = 12),
+      axis.text.y = element_text(size = 12),
+      plot.title = element_text(face = "bold", size = 16, hjust = 0.5),
+      axis.title = element_text(size = 13)
+    ) +
+    labs(
+     # title = paste("Adduct composition –", lib_name),
+      x = "Adduct ion species",
+      y = "Percentage of total identified adducts (%)"
+    ) +
+    scale_y_continuous(expand = expansion(mult = c(0, 0.15)))
+  
+  # PIE plot (same color scale)
+  df_lib <- df_lib %>%
+    arrange(desc(prop)) %>%
+    mutate(
+      ypos = cumsum(prop) - 0.5 * prop,
+      label = ifelse(prop >= 1, paste0(Category, " (", round(prop, 2), "%)"), "")
+    )
+  
+  p_pie <- ggplot(df_lib, aes(x = "", y = prop, fill = factor(rank))) +
+    geom_bar(stat = "identity", width = 1, color = "white") +
+    coord_polar("y", start = 0) +
+    scale_fill_manual(values = rank_palette, guide = "none") +
+    theme_void(base_size = 14) +
+    # geom_text_repel(
+    #   aes(y = ypos, label = label),
+    #                #       size = 4.5,
+    #                # nudge_x = 0.6,
+    #                # min.segment.length = 0,
+    #  size = 4.2,
+    #  nudge_x = 1,
+    # # direction = "y",
+    #  segment.size = 0.3,
+    #  segment.alpha = 0.3,
+    #   show.legend = FALSE
+    # ) +
+   # labs(title = paste("Adduct composition –", lib_name)) +
+    theme(plot.title = element_text(face = "bold", size = 16, hjust = 0.5))
+  
+  # Combine side by side (optional)
+  combined_plot <- p_bar + p_pie + plot_layout(widths = c(1.2, 1))
+  return(combined_plot)
+}
+
+
+
+```
+
+
+
+
+
+
+
+```{r}
+
+adduct_summary %>% 
+  filter(Library%in%"CSU-PMF")
+
+```
+
+
+```{r}
+p_inhouse_pie <- plot_adduct_library(adduct_summary, "In-house")
+p_mona_pie    <- plot_adduct_library(adduct_summary, "MoNA")
+p_csu_pie     <- plot_adduct_library(adduct_summary, "CSU-PMF")
+
+# --- Display  ---
+p_inhouse_pie
+p_mona_pie
+p_csu_pie
+```
+
+
+```{r}
+ggsave("Ion_adduct_inhouse_full_bar_pie.png", p_inhouse_pie,  width = 15, height = 10, dpi = 300)
+
+ggsave("Ion_adduct_mona_full_bar_pie.png", p_mona_pie,  width = 15, height = 10, dpi = 300)
+
+ggsave("Ion_adduct_csu_full_bar_pie.png", p_csu_pie,  width = 15, height = 10, dpi = 300)
+
+```
+
+
+## 19 common compounds bar and pie plot
+
+```{r}
+#Rcpp::sourceCpp("src/annotate_from_adduct_table.cpp")
+
+
+df_inhouse_adduct_anno_common <- annotate_from_adduct_table(inhouse_lib, adduct_table, "In-house", desired_polarity = "pos", tol = 0.01, filter_names =library_3_overlap_unique$Name_Inhouse )
+
+df_mona_adduct_anno_common    <- annotate_from_adduct_table(mona_lib,    adduct_table, "MoNA",     desired_polarity = "pos", tol = 0.01, filter_names=library_3_overlap_unique$Name_MoNA)
+
+df_csu_adduct_anno_common     <- annotate_from_adduct_table(csu_lib,     adduct_table, "CSU-PMF",  desired_polarity = "pos", tol = 0.01, filter_names=library_3_overlap_unique$Name_CSU_PMF)
+
+```
+
+```{r}
+df_inhouse_adduct_anno_common[which(df_inhouse_adduct_anno_common$Compound%in% "3,4-Dihydroxy-L-phenylalanine"),]
+```
+
+
+
+
+
+```{r}
+# --- Combine and summarize ---
+combined_common_adduct <- bind_rows(
+  df_inhouse_adduct_anno_common,
+  df_mona_adduct_anno_common,
+  df_csu_adduct_anno_common
+)
+
+
+adduct_summary_common <- combined_common_adduct %>%
+  filter(Category != "Undefined") %>%
+  group_by(Library, Category) %>%
+  summarise(n = n(), .groups = "drop") %>%
+  group_by(Library) %>%
+  mutate(prop = n / sum(n) * 100) %>%
+  mutate(Category = ifelse(prop < 0, "Other", Category)) %>%
+  group_by(Library, Category) %>%
+  summarise(n = sum(n), prop = sum(prop), .groups = "drop_last") %>%
+  arrange(Library, desc(prop)) %>%
+  group_by(Library) %>%
+  mutate(rank = row_number())
+```
+
+
+```{r}
+
+p_inhouse_pie_common <- plot_adduct_library(adduct_summary_common, "In-house")
+p_mona_pie_common    <- plot_adduct_library(adduct_summary_common, "MoNA")
+p_csu_pie_common     <- plot_adduct_library(adduct_summary_common, "CSU-PMF")
+
+# --- Display or save ---
+p_inhouse_pie_common
+p_mona_pie_common
+p_csu_pie_common
+```
+
+
+
+
+
+```{r}
+ggsave("Ion_adduct_inhouse_common_bar_pie.png", p_inhouse_pie_common,  width = 15, height = 10, dpi = 300)
+
+ggsave("Ion_adduct_mona_common_bar_pie.png", p_mona_pie_common,  width = 15, height = 10, dpi = 300)
+
+ggsave("Ion_adduct_csu_common_bar_pie.png", p_csu_pie_common,  width = 15, height = 10, dpi = 300)
+
+```
+
+
+
+
+
+
+
+###############################################
+
+## 19 common compounds #
+
+```{r}
+res_common <- summarize_and_plot_ion_forms(df_inhouse_common, df_mona_common, df_csu_common, title = NULL)
+res_common$plot
+
+res_common_absolute <- summarize_and_plot_ion_forms(df_inhouse_common, df_mona_common, df_csu_common, title = NULL, normalize = FALSE)
+
+res_common_absolute$plot
+ggsave("common_19compound_3libray_ion_compositions.png", res_common$plot, width = 10, height = 8, dpi = 300)
+ggsave("common_19compound_3libray_ion_compositions_absolute.png", res_common_absolute$plot, width = 10, height = 8, dpi = 300)
+```
+
+```{r}
+library(dplyr)
+
+df_inhouse_sum <- df_inhouse %>%
+  count(Library, Category)
+
+df_mona_sum <- df_mona %>%
+  count(Library, Category)
+
+df_csu_sum <- df_csu %>%
+  count(Library, Category)
+
+
+combined <- bind_rows(df_inhouse_sum, df_mona_sum, df_csu_sum) %>%
+  mutate(
+    Category = factor(Category, levels = names(ion_colors)),
+    Library = factor(Library, levels = c("In-house", "MoNA", "CSU-PMF"))
+  )
+
+max_count <- ifelse(nrow(combined) > 0, max(combined$n, na.rm = TRUE), 0)
+
+```
+
+```{r}
+library(ggplot2)
+
+plot_library <- function(data, lib_name) {
+  ggplot(filter(data, Library == lib_name),
+         aes(x = Category, y = n, fill = Category)) +
+    geom_bar(stat = "identity", width = 0.8) +
+    scale_fill_manual(values = ion_colors, drop = FALSE) +
+    scale_y_continuous(limits = c(0, max_count)) +  # shared y-scale
+    coord_flip() +
+    theme_minimal(base_size = 14) +
+    theme(
+      legend.position = "none",
+      axis.text.y = element_text(size = 12),
+      plot.title = element_text(face = "bold")
+    ) +
+    labs(
+      title = lib_name,
+      x = "Ion form",
+      y = "Number of compounds"
+    )
+}
+
+
+
+
+```
+
+```{r}
+p_inhouse <- plot_library(combined, "In-house")
+p_mona    <- plot_library(combined, "MoNA")
+p_csu     <- plot_library(combined, "CSU-PMF")
+
+
+p_inhouse 
+p_mona   
+p_csu    
+```
+
+```{r}
+main_ions <- c(
+  "[M+H]+", "[M+Na]+", "[M+K]+", "[M+NH4]+",
+  "[M-H2O+H]+", "[M]+", "[M+2H]2+", "[2M+H]+"
+)
+
+
+combined_main <- combined %>%
+  filter(Category %in% main_ions) %>%
+  group_by(Library) %>%
+  mutate(prop = n / sum(n)) %>%
+  ungroup()
+
+combined_main_common <- combined_common %>%
+  filter(Category %in% main_ions) %>%
+  group_by(Library) %>%
+  mutate(prop = n / sum(n)) %>%
+  ungroup()
+
+library(ggplot2)
+library(dplyr)
+
+plot_main_ions_ranked <- function(data, lib_name) {
+  df <- data %>%
+    filter(Library == lib_name) %>%
+    arrange(desc(prop)) %>%
+    mutate(Category = factor(Category, levels = rev(Category)))  # reverse levels for coord_flip()
+  
+  ggplot(df, aes(x = Category, y = prop, fill = reorder(Category, prop))) +
+    geom_bar(stat = "identity", width = 0.8) +
+    scale_y_continuous(labels = scales::percent_format()) +
+    scale_fill_brewer(palette = "Paired", direction = -1) +
+    coord_flip() +
+    theme_minimal(base_size = 14) +
+    theme(
+      legend.position = "none",
+      axis.text.y = element_text(size = 12),
+      plot.title = element_text(face = "bold")
+    ) +
+    labs(
+      title = paste0(lib_name, " — Main ion species"),
+      x = "Ion form (ranked by proportion)",
+      y = "Proportion of ion forms"
+    )
+}
+
+
+```
+
+```{r}
+p_inhouse <- plot_main_ions_ranked(combined_main, "In-house")
+p_mona    <- plot_main_ions_ranked(combined_main, "MoNA")
+p_csu     <- plot_main_ions_ranked(combined_main, "CSU-PMF")
+
+```
+
+```{r}
+p_inhouse 
+
+p_mona  
+p_csu    
+
+```
+
+```{r}
+p_inhouse_common <- plot_main_ions_ranked(combined_main_common, "In-house")
+p_mona_common    <- plot_main_ions_ranked(combined_main_common, "MoNA")
+p_csu_common    <- plot_main_ions_ranked(combined_main_common, "CSU-PMF")
+
+```
+
+```{r}
+p_inhouse_common
+
+p_mona_common
+p_csu_common  
+
+```

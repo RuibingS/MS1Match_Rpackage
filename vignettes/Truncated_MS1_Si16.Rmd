@@ -1,0 +1,1035 @@
+---
+title: "Truncated_MS1"
+author: "Ruibing"
+date: "2025-10-01"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(MS1Match)
+```
+
+## import Truncated MS1 msp library
+
+```{r import-MS1-library}
+
+PA14_truncated_library <- import_msp(system.file("extdata", "CBIO", "filtered_truncated_CBIO.msp", package = "MS1Match"),
+                                                    ionPolarity = "pos",spectrum_type ="MS1")
+
+
+  
+```
+
+
+
+##
+
+```{r}
+PA14_truncated_library[[1]]
+```
+```{r}
+Si16_library <- parse_library(file_path = system.file("extdata", "StM16_library", "Si16.library", package = "MS1Match"),
+                                                    ionPolarity = "pos",spectrum_type ="MS1")
+```
+
+
+
+
+
+```{r}
+# Now truncate the parsed data to keep only [M+H]+ and isotopes
+truncated_Si16_list <- truncate_parsed_library_cpp(
+  Si16_library,
+  max_isotope = 2,  
+  adduct_type = "[M+Na]+", 
+  export_path = NULL # "filtered_Si16_MS1.msp" # optional export as MSP file
+)
+```
+
+
+```{r}
+truncated_Si16_list[[1]]
+```
+
+
+```{r}
+sapply(truncated_Si16_list, function(x) x$Name)
+```
+## mirror plot 
+
+```{r}
+# res <- plotMirrorFullVsTrunc(
+#   full_list  = Si16_library,
+#   trunc_list = truncated_Si16_list,
+#   output_dir = "plots_mirror_trunc",
+#   pdf_name   = "compare_truncated.pdf"
+# )
+
+```
+### Workflow
+
+
+```{r import-data}
+result_StM16 <- readRDS(system.file("extdata", "result_StM16.rds", package = "MS1Match"))
+
+```
+
+### Prepare the Feature Table
+
+We now create a feature table by combining the output from `result_StM16[[2]]` (feature definitions) and `result_StM16[[3]]` (intensity values). The table is then cleaned and prepared for downstream annotation.
+
+In particular:
+
+1. Convert the result to a data frame (**required**)
+2. Rename the first column to `feature_name` (**required**)
+3. Remove the `peakidx` column (**optional**)
+4. Calculate a new column `intensity_mean` as the row-wise mean across samples (**required** if using multiple samples)
+5. Sort the table by RT or m/z (**optional**)
+6. Filter by retention time using `dplyr::filter()` (**optional**)  
+   – In this example, we keep features with RT between 60 and 1200 seconds.
+
+```{r create-FT}
+result_StM16_FT_filtered <- processFeatureTable(result_StM16, sample_cols = "mzxml", sort_by ="rtmed") #,rt_range = c(60,1200))
+
+```
+
+```{r,echo=FALSE}
+head(result_StM16_FT_filtered)
+```
+
+Step 1: Create a `DirectLibMatch` object. It requires the feature table and library, and define matching parameters such as m/z tolerance, RT tolerance, and polarity:
+```{r create-direct-libmatch}
+truncated_DirectLibMatch_obj <- createDirectLibMatch(
+  FT = result_StM16_FT_filtered,
+  compounds_list = truncated_Si16_list,
+  diff_mz_thr = 0.01,
+  diff_rt_thr = 20,
+  ppm = 10,
+  ms_level = "MS1",
+  polarity = "pos"
+)
+
+
+
+
+
+```
+
+
+
+
+
+We can now annotate the feature table using the direct MS1 library match.
+
+Run the library annotation process. By default, this also computes inner and outer cosine similarity scores and :
+```{r}
+#direct_match_Stm16_obj <- libAnnotate(DirectLibMatch_obj, compute_cosine = TRUE)
+
+library(doParallel)
+
+# Start a cluster using available cores
+n_cores <- max(1, parallel::detectCores() - 1)
+cl <- makeCluster(n_cores)
+# 
+# # Register it so %dopar% uses it
+ registerDoParallel(cl)
+
+
+system.time(truncated_direct_match_Stm16_obj <- libAnnotate(
+  truncated_DirectLibMatch_obj,
+  compute_cosine = TRUE,
+  ppm = 20
+))
+
+
+
+
+```
+The result from `libAnnotate()` is a list containing matched annotations.
+
+Retrieve the results using the `results()`` accessor:
+```{r, results='hide'}
+truncated_direct_match_Stm16_res_MS1 <- results(truncated_direct_match_Stm16_obj)
+
+```
+
+```{r}
+truncated_direct_match_Stm16_res_MS1[[1]]
+```
+
+
+
+
+
+
+ You can convert it to a data frame for easier inspection:
+```{r, results='hide'}
+
+truncated_direct_match_Stm16_res_MS1_df <- results_df(truncated_direct_match_Stm16_obj, collapse_full = TRUE, remove_full = TRUE, suffix = "_merge")
+head(truncated_direct_match_Stm16_res_MS1_df,50)
+
+
+```
+
+
+### Visualizing MS1 Spectral Matches
+`MS1Match` provides visualization tools to help inspect the quality of spectral matches between query features and reference library compounds using mirror.
+This function `plotMirrorSpectraSingle` creates a mirror plot using the matched feature peaks (on top) and reference library spectrum (on bottom).
+The cosine similarity score (inner and outer cosine from `Spectra`) and the match score are displayed in the plot.
+If no `output_dir` is provided, only the plot is shown. If `output_dir` is set, the plot will be saved as a PNG file instead.
+
+```{r}
+plotMirrorSpectraSingle(object = truncated_direct_match_Stm16_obj, match = truncated_direct_match_Stm16_res_MS1[[5]], output_dir = NULL)
+
+#plotMirrorSpectraSingle(match = truncated_direct_match_Stm16_res_MS1[[5]], output_dir = NULL)
+
+```
+
+
+
+```{r}
+truncated_direct_match_Stm16_res_MS1[[5]]
+```
+
+
+
+
+
+## Annotation of MS1-Matched Features
+
+
+
+### Import Supporting Tables
+We first import the adduct and neutral loss tables:
+```{r import-supporting-tables, message=FALSE}
+# Load adduct and neutral loss tables
+adduct_table <- read.csv(system.file("extdata", "Adducts", "adducts.csv", package = "MS1Match"))
+
+neutral_loss_table <- read.csv(system.file("extdata", "Neutral loss", "neutral loss database.csv", package = "MS1Match"), check.names = TRUE)
+  
+
+
+```
+
+
+
+
+After identifying candidate features through direct MS1 library matching, we initialize a `PeakAnnotation` S4 object to annotate the features using adducts, neutral losses, and isotopic patterns
+```{r}
+
+# Create PeakAnnotation object
+PeakAnnotation_obj_truncated <- createPeakAnnotation(compounds = truncated_Si16_list,
+                                              FT =  result_StM16_FT_filtered,
+                                             
+                                              neutral_loss_table = neutral_loss_table,
+                                              adducts_df = adduct_table,
+                                              PI_rt_threshold = 10 ,
+                                              polarity = "positive")
+```
+
+Finally, we call the `annotate` to generate detailed annotations:
+```{r}
+StM16_annotate_res_truncated <- annotate(PeakAnnotation_obj_truncated)
+```
+The output is a list which includes primary ion, adduct, neutral loss, and isotope annotations for each feature.
+```{r, results='hide'}
+# check output
+StM16_annotate_res_truncated[[1]]
+```
+
+
+convert list to data frame
+
+```{r, results='hide'}
+annotate_peaks_StM16_result_df_truncated <- annotations_df(StM16_annotate_res_truncated)
+
+```
+
+```{r}
+head(annotate_peaks_StM16_result_df_truncated)
+```
+
+### merge library match and annotation
+
+
+```{r}
+StM16_join_annotation_results_truncated <- join_annotation_results(FT = result_StM16_FT_filtered,
+                                                                   dirct_lib_list =  truncated_direct_match_Stm16_res_MS1, 
+                                                                   lib_anno_list = StM16_annotate_res_truncated, 
+                                                                   target_match_list = NULL)
+
+```
+```{r}
+str(StM16_join_annotation_results_truncated)
+```
+
+### compare truncated to full range
+
+```{r}
+StM16_join_annotation_results_2merge <- readRDS(here::here("Archive","RDS_files", "StM16_join_annotation_results_2merge.RDS"))
+```
+
+
+```{r}
+StM16_join_annotation_join_truncated <- StM16_join_annotation_results_2merge$export_reduced_anno_table %>% 
+  dplyr::left_join(., StM16_join_annotation_results_truncated$export_reduced_anno_table, by = "feature_name", suffix = c("_full", "_truncated")) %>% 
+  dplyr::group_by(Lib_group_full) %>%   
+  dplyr::arrange(mzmed_full, .by_group = TRUE) %>% 
+  dplyr::select(PI_match_full, dplyr::everything())
+```
+
+```{r}
+head(StM16_join_annotation_join_truncated)
+```
+```{r}
+# subset the truncated 
+
+StM16_join_annotation_join_truncated_subset <- StM16_join_annotation_join_truncated[which(!is.na(StM16_join_annotation_join_truncated$mzmed_truncated)),]
+```
+
+
+
+
+
+### summary 
+
+
+```{r}
+library(dplyr)
+library(stringr)
+library(tidyr)
+
+
+summarize_redundant_features_refined <- function(df, ppm_tol = 10) {
+
+
+  # --- helpers ---
+  ppm_error <- function(obs, ref) abs(obs - ref) / ref * 1e6
+  extract_pi_mz <- function(x) as.numeric(str_extract(x, "(?i)([0-9]+\\.[0-9]+)(?!.*[0-9])"))
+
+  # Choice A (positive mode): any '-' inside [...] => treat as NL
+  has_minus_inside_brackets <- function(x) {
+    str_detect(x %||% "", "\\[[^\\]]*-[^\\]]*\\]")
+  }
+
+  # --- clean empty strings ---
+  df <- df %>%
+    mutate(across(where(is.character), ~ ifelse(.x == "", NA_character_, .x)))
+
+  # --- exclusive feature-level classification (so totals add up) ---
+  df <- df %>%
+    mutate(
+      has_PI  = !is.na(PI_match_full) & str_trim(PI_match_full) != "",
+      has_iso = !is.na(iso_annotation_full) &
+        str_trim(iso_annotation_full) != "" &
+        str_detect(iso_annotation_full, "\\[M\\+\\d+\\]"),
+      has_NL  = (!is.na(NL_match_full) & str_trim(NL_match_full) != "") |
+        (!is.na(adduct_match_full) & str_trim(adduct_match_full) != "" &
+           has_minus_inside_brackets(adduct_match_full)),
+      has_adduct_any = !is.na(adduct_match_full) & str_trim(adduct_match_full) != "",
+      feature_class = case_when(
+        has_PI ~ "PI",
+        has_NL ~ "NL",
+        has_adduct_any ~ "Adduct",
+        has_iso ~ "Isotope",
+        TRUE ~ "Unannotated"
+      )
+    )
+
+  # --- group-level exclusive totals (these sum to n_features_total) ---
+  group_totals <- df %>%
+    group_by(Lib_group_full) %>%
+    summarise(
+      n_features_total        = n(),
+      n_features_with_NL      = sum(feature_class == "NL"),
+      n_features_with_adduct  = sum(feature_class == "Adduct"),
+      n_iso_features          = sum(feature_class == "Isotope"),
+      n_unannotated_features  = sum(feature_class == "Unannotated"),
+      perc_unannotated        = round(100 * n_unannotated_features / n_features_total, 1),
+      .groups = "drop"
+    )
+
+  # --- compound map (one row per PI per group) ---
+  compound_map <- df %>%
+    filter(!is.na(PI_match_full), str_trim(PI_match_full) != "") %>%
+    distinct(Lib_group_full, PI_match_full) %>%
+    mutate(PI_mz = extract_pi_mz(PI_match_full))
+
+  if (nrow(compound_map) == 0L) {
+    warning("No compounds with PI_match_full found.")
+    return(group_totals)
+  }
+
+  # --- (optional but useful) valid adduct feature count per PI ---
+  adduct_long <- df %>%
+    filter(!is.na(adduct_match_full), str_trim(adduct_match_full) != "") %>%
+    select(Lib_group_full, feature_name, adduct_match_full) %>%
+    mutate(adduct_split = str_split(adduct_match_full, ";\\s*")) %>%
+    unnest_longer(adduct_split, values_to = "adduct_entry") %>%
+    mutate(
+      adduct_entry  = str_trim(adduct_entry),
+      adduct_label  = str_extract(adduct_entry, "\\[[^\\]]+\\]"),
+      adduct_ref_mz = suppressWarnings(as.numeric(str_extract(adduct_entry, "([0-9]+\\.[0-9]+)\\s*$")))
+    )
+
+  adduct_eval <- compound_map %>%
+    nest_join(adduct_long, by = "Lib_group_full") %>%
+    unnest(cols = c(adduct_long)) %>%
+    mutate(
+      adduct_ppm_vs_PI = ifelse(!is.na(adduct_ref_mz) & !is.na(PI_mz),
+                                ppm_error(adduct_ref_mz, PI_mz), NA_real_),
+      adduct_is_valid_for_PI = case_when(
+        is.na(adduct_ref_mz) ~ NA,
+        adduct_ppm_vs_PI <= ppm_tol ~ TRUE,
+        TRUE ~ FALSE
+      )
+    )
+
+  adduct_summary_min <- adduct_eval %>%
+    group_by(Lib_group_full, PI_match_full) %>%
+    summarise(
+      n_valid_adduct_features = n_distinct(feature_name[adduct_is_valid_for_PI %in% TRUE]),
+      .groups = "drop"
+    )
+
+  # --- final lean output ---
+  final <- compound_map %>%
+    left_join(group_totals, by = "Lib_group_full") %>%
+    left_join(adduct_summary_min, by = c("Lib_group_full", "PI_match_full")) %>%
+    mutate(
+      n_valid_adduct_features = replace_na(n_valid_adduct_features, 0)
+    ) %>%
+    select(
+      Lib_group_full,
+      PI_match_full,
+      n_features_total,
+      n_unannotated_features,
+      n_features_with_adduct,
+      n_features_with_NL,
+      n_iso_features,
+      perc_unannotated,
+      n_valid_adduct_features
+    ) %>%
+    arrange(Lib_group_full, PI_match_full)
+
+  return(final)
+}
+
+```
+
+
+```{r}
+# summarize_redundant_features_refined <- function(df, ppm_tol = 10) {
+#   library(dplyr)
+#   library(stringr)
+#   library(tidyr)
+# 
+#   # --- helpers ---
+#   ppm_error <- function(obs, ref) abs(obs - ref) / ref * 1e6
+#   extract_pi_mz <- function(x) as.numeric(str_extract(x, "(?i)([0-9]+\\.[0-9]+)(?!.*[0-9])"))
+# 
+#   # --- clean empty strings ---
+#   df <- df %>%
+#     mutate(across(where(is.character), ~ ifelse(.x == "", NA_character_, .x)))
+# 
+#   # --- 0) totals per Lib_group_full ---
+#   group_totals <- df %>%
+#     group_by(Lib_group_full) %>%
+#     summarise(
+#       n_features_total = n(),
+#       n_unannotated_features = sum(
+#         (is.na(adduct_match_full) | adduct_match_full == "") &
+#           (is.na(NL_match_full) | NL_match_full == "") &
+#           (is.na(iso_annotation_full) | iso_annotation_full == "")
+#       ),
+#       .groups = "drop"
+#     )
+# 
+#   # --- 1) compound map ---
+#   compound_map <- df %>%
+#     filter(!is.na(PI_match_full), str_trim(PI_match_full) != "") %>%
+#     distinct(Lib_group_full, PI_match_full) %>%
+#     mutate(PI_mz = extract_pi_mz(PI_match_full))
+# 
+#   if (nrow(compound_map) == 0L) {
+#     warning("No compounds with PI_match_full found.")
+#     return(group_totals)
+#   }
+# 
+#   # --- 2) expand adducts ---
+#   adduct_long <- df %>%
+#     filter(!is.na(adduct_match_full), adduct_match_full != "") %>%
+#     select(Lib_group_full, feature_name, adduct_match_full) %>%
+#     mutate(adduct_split = str_split(adduct_match_full, ";\\s*")) %>%
+#     unnest_longer(adduct_split, values_to = "adduct_entry") %>%
+#     mutate(
+#       adduct_entry = str_trim(adduct_entry),
+#       adduct_label = str_extract(adduct_entry, "\\[[^\\]]+\\]"),
+#       adduct_ref_mz = suppressWarnings(as.numeric(str_extract(adduct_entry, "([0-9]+\\.[0-9]+)\\s*$"))),
+#       adduct_class = if_else(str_detect(adduct_label %||% "", "(?i)[2-9]M"), "multimer", "adduct")
+#     )
+# 
+#   adduct_eval <- compound_map %>%
+#     nest_join(adduct_long, by = "Lib_group_full") %>%
+#     unnest(cols = c(adduct_long)) %>%
+#     mutate(
+#       adduct_ppm_vs_PI = ifelse(!is.na(adduct_ref_mz) & !is.na(PI_mz),
+#                                 ppm_error(adduct_ref_mz, PI_mz), NA_real_),
+#       adduct_is_valid_for_PI = case_when(
+#         is.na(adduct_ref_mz) ~ NA,
+#         adduct_ppm_vs_PI <= ppm_tol ~ TRUE,
+#         TRUE ~ FALSE
+#       )
+#     )
+# 
+#   adduct_summary <- adduct_eval %>%
+#     group_by(Lib_group_full, PI_match_full) %>%
+#     summarise(
+#       n_features_with_any_adduct = n_distinct(feature_name),
+#       n_valid_adduct_labels      = n_distinct(adduct_label[adduct_is_valid_for_PI %in% TRUE]),
+#       n_valid_adduct_features    = n_distinct(feature_name[adduct_is_valid_for_PI %in% TRUE]),
+#       example_valid_adducts      = str_c(unique(na.omit(adduct_label[adduct_is_valid_for_PI %in% TRUE]))[1:5], collapse = "; "),
+#       n_conflict_adduct_labels   = n_distinct(adduct_label[adduct_is_valid_for_PI %in% FALSE]),
+#       example_conflict_adducts   = str_c(unique(na.omit(adduct_label[adduct_is_valid_for_PI %in% FALSE]))[1:5], collapse = "; "),
+#       n_multimer_labels          = n_distinct(adduct_label[adduct_class == "multimer"]),
+#       example_multimers          = str_c(unique(na.omit(adduct_label[adduct_class == "multimer"]))[1:5], collapse = "; "),
+#       .groups = "drop"
+#     )
+# 
+#   # --- 3) neutral losses ---
+#   nl_long <- df %>%
+#     filter(!is.na(NL_match_full), NL_match_full != "") %>%
+#     select(Lib_group_full, feature_name, NL_match_full) %>%
+#     mutate(NL_split = str_split(NL_match_full, ";\\s*")) %>%
+#     unnest_longer(NL_split, values_to = "NL_label") %>%
+#     mutate(NL_label = str_trim(NL_label))
+# 
+#   nl_eval <- compound_map %>%
+#     nest_join(nl_long, by = "Lib_group_full") %>%
+#     unnest(cols = c(nl_long))
+# 
+#   nl_summary <- nl_eval %>%
+#     group_by(Lib_group_full, PI_match_full) %>%
+#     summarise(
+#       n_features_with_NL = n_distinct(feature_name),
+#       n_NL_labels        = n_distinct(NL_label),
+#       example_NLs        = str_c(unique(na.omit(NL_label))[1:5], collapse = "; "),
+#       .groups = "drop"
+#     )
+# 
+# # --- 4) isotopes (include only [M+1]+, [M+2]2+, etc.)
+# iso_long <- df %>%
+#   filter(!is.na(iso_annotation_full), iso_annotation_full != "") %>%
+#   # only keep isotopic forms (exclude monoisotopic [M]+, [M]2+, etc.)
+#   filter(str_detect(iso_annotation_full, "\\[M\\+\\d+\\]")) %>%
+#   select(Lib_group_full, feature_name, iso_annotation_full)
+# 
+# iso_eval <- compound_map %>%
+#   nest_join(iso_long, by = "Lib_group_full") %>%
+#   unnest(cols = c(iso_long))
+# 
+# iso_summary <- iso_eval %>%
+#   group_by(Lib_group_full, PI_match_full) %>%
+#   summarise(
+#     n_iso_features = n_distinct(feature_name),
+#     example_isos   = str_c(unique(na.omit(iso_annotation_full))[1:5], collapse = "; "),
+#     .groups = "drop"
+#   )
+# 
+# 
+#   # --- 5) combine ---
+#   final <- compound_map %>%
+#     left_join(group_totals, by = "Lib_group_full") %>%
+#     left_join(adduct_summary, by = c("Lib_group_full", "PI_match_full")) %>%
+#     left_join(nl_summary, by = c("Lib_group_full", "PI_match_full")) %>%
+#     left_join(iso_summary, by = c("Lib_group_full", "PI_match_full")) %>%
+#     mutate(across(where(is.numeric), ~ replace_na(.x, 0))) %>%
+#     mutate(
+#       n_total_redundant = n_features_total - n_unannotated_features,
+#       perc_unannotated = round(100 * n_unannotated_features / n_features_total, 1)
+#     ) %>%
+#     arrange(Lib_group_full, PI_match_full)
+# 
+#   return(final)
+# }
+
+
+```
+
+
+```{r}
+summary_tbl <- summarize_redundant_features_refined(StM16_join_annotation_join_truncated)
+
+#write.csv(summary_tbl, "Stm16_Table1_summary.csv", row.names = FALSE)
+
+summary_tbl 
+
+```
+
+```{r}
+summary_tbl <- summarize_redundant_features_refined(StM16_join_annotation_join_truncated)
+
+summary_tbl %>% arrange(n_features_total) %>% filter()
+  
+
+
+```
+
+
+
+```{r}
+
+# summary subst of 
+summary_tbl_subset <- summarize_redundant_features_refined(StM16_join_annotation_join_truncated_subset)
+
+#write.csv(summary_tbl_subset, "Stm16_Table1_summary_truncated_subset.csv", row.names = FALSE)
+
+summary_tbl_subset
+
+```
+
+
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(ggplot2)
+
+# Prepare tidy data
+plot_df <- summary_tbl %>%
+    dplyr::filter(Lib_group_full!= "Lib_group_13") %>% 
+  mutate(
+    Compound = str_trim(str_remove(PI_match_full, "\\s*\\[.*$"))
+  ) %>%
+  select(
+    Compound,
+    n_valid_adduct_features,
+    n_features_with_NL,
+    n_iso_features,
+    n_unannotated_features
+  ) %>%
+  pivot_longer(
+    cols = c(n_valid_adduct_features, n_features_with_NL, n_iso_features, n_unannotated_features),
+    names_to = "Feature_type",
+    values_to = "Count"
+  ) %>%
+  mutate(
+    Feature_type = recode(
+      Feature_type,
+      n_valid_adduct_features = "Adduct",
+      n_features_with_NL      = "Neutral loss",
+      n_iso_features          = "Isotope",
+      n_unannotated_features  = "Unannotated"
+    )
+  )
+
+# Order compounds by total redundant features
+plot_df <- plot_df %>%
+  group_by(Compound) %>%
+  mutate(total_features = sum(Count, na.rm = TRUE)) %>%
+  ungroup() %>%
+  arrange(desc(total_features))
+
+
+
+# Plot: x = compound name, y = feature count
+bar_plot<- ggplot(plot_df, aes(x = reorder(Compound, -total_features), y = Count, fill = Feature_type)) +
+  geom_bar(stat = "identity", width = 0.7, color = "black", size = 0.2) +
+  labs(
+    x = "Compound",
+    y = "Number of redundant features",
+    fill = "Feature type" #,
+   # title = "Overview of redundant feature annotations per compound"
+  ) +
+  scale_fill_manual(
+    values = c(
+      "Adduct"      = "#66c2a5",
+      "Neutral loss"= "#fc8d62",
+      "Isotope"     = "#8da0cb",
+      "Unannotated" = "#bdbdbd"
+    )
+  ) +
+  theme_bw(base_size = 13) +
+  theme(
+    panel.grid.major.x = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
+    legend.position = "bottom",
+    legend.title = element_text(face = "bold"),
+    plot.title = element_text(face = "bold", hjust = 0.5)
+  )
+
+print(bar_plot)
+```
+
+
+
+```{r}
+ggsave("Overview of redundant feature annotations per compound_full_range.png", bar_plot, width = 15, height = 10, dpi = 300)
+```
+
+
+
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(ggplot2)
+
+# Prepare tidy data
+plot_df_subset <- summary_tbl_subset %>%
+  dplyr::filter(Lib_group_full!= "Lib_group_13") %>% 
+  mutate(
+    Compound = str_trim(str_remove(PI_match_full, "\\s*\\[.*$"))
+  ) %>%
+  select(
+    Compound,
+    n_valid_adduct_features,
+    n_features_with_NL,
+    n_iso_features,
+    n_unannotated_features
+  ) %>%
+  pivot_longer(
+    cols = c(n_valid_adduct_features, n_features_with_NL, n_iso_features, n_unannotated_features),
+    names_to = "Feature_type",
+    values_to = "Count"
+  ) %>%
+  mutate(
+    Feature_type = recode(
+      Feature_type,
+      n_valid_adduct_features = "Adduct",
+      n_features_with_NL      = "Neutral loss",
+      n_iso_features          = "Isotope",
+      n_unannotated_features  = "Unannotated"
+    )
+  )
+
+compound_order <- unique(plot_df$Compound)
+
+
+# Order compounds by total redundant features
+plot_df_subet_arrange <- plot_df_subset %>%
+  group_by(Compound) %>%
+  mutate(total_features = sum(Count, na.rm = TRUE)) %>%
+  ungroup() %>%
+  arrange(desc(total_features)) %>%
+  mutate(Compound = factor(Compound, levels = compound_order))
+
+# Plot: x = compound name, y = feature count
+bar_plot_subset <- ggplot(plot_df_subet_arrange, aes(x = reorder(Compound, -total_features), y = Count, fill = Feature_type)) +
+  geom_bar(stat = "identity", width = 0.7, color = "black", size = 0.2) +
+  scale_y_continuous(limits = c(0, 130), expand = expansion(mult = c(0, 0.05)))+
+
+  labs(
+    x = "Compound",
+    y = "Number of redundant features",
+    fill = "Feature type"# ,
+   # title = "Overview of redundant feature annotations per compound"
+  ) +
+  scale_fill_manual(
+    values = c(
+      "Adduct"      = "#66c2a5",
+      "Neutral loss"= "#fc8d62",
+      "Isotope"     = "#8da0cb",
+      "Unannotated" = "#bdbdbd"
+    )
+  ) +
+  theme_bw(base_size = 13) +
+  theme(
+    panel.grid.major.x = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
+    legend.position = "bottom",
+    legend.title = element_text(face = "bold"),
+    plot.title = element_text(face = "bold", hjust = 0.5)
+  )
+
+print(bar_plot_subset)
+```
+
+
+
+```{r}
+ggsave("Overview of redundant feature annotations per compound_truncated_range.png", bar_plot_subset, width = 15, height = 10, dpi = 300)
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(ggplot2)
+library(patchwork)
+
+# === Full range dataset ===
+plot_df <- summary_tbl %>%
+  filter(Lib_group_full != "Lib_group_13") %>%
+  mutate(Compound = str_trim(str_remove(PI_match_full, "\\s*\\[.*$"))) %>%
+  select(
+    Compound,
+    n_valid_adduct_features,
+    n_features_with_NL,
+    n_iso_features,
+    n_unannotated_features
+  ) %>%
+  pivot_longer(
+    cols = c(n_valid_adduct_features, n_features_with_NL, n_iso_features, n_unannotated_features),
+    names_to = "Feature_type",
+    values_to = "Count"
+  ) %>%
+  mutate(
+    Feature_type = recode(
+      Feature_type,
+      n_valid_adduct_features = "Adduct",
+      n_features_with_NL      = "Neutral loss",
+      n_iso_features          = "Isotope",
+      n_unannotated_features  = "Unannotated"
+    )
+  ) %>%
+  group_by(Compound) %>%
+  mutate(total_features = sum(Count, na.rm = TRUE)) %>%
+  ungroup() %>%
+  arrange(desc(total_features))
+
+# === Subset (truncated range) dataset ===
+plot_df_subset <- summary_tbl_subset %>%
+  filter(Lib_group_full != "Lib_group_13") %>%
+  mutate(Compound = str_trim(str_remove(PI_match_full, "\\s*\\[.*$"))) %>%
+  select(
+    Compound,
+    n_valid_adduct_features,
+    n_features_with_NL,
+    n_iso_features,
+    n_unannotated_features
+  ) %>%
+  pivot_longer(
+    cols = c(n_valid_adduct_features, n_features_with_NL, n_iso_features, n_unannotated_features),
+    names_to = "Feature_type",
+    values_to = "Count"
+  ) %>%
+  mutate(
+    Feature_type = recode(
+      Feature_type,
+      n_valid_adduct_features = "Adduct",
+      n_features_with_NL      = "Neutral loss",
+      n_iso_features          = "Isotope",
+      n_unannotated_features  = "Unannotated"
+    )
+  ) %>%
+  group_by(Compound) %>%
+  mutate(total_features = sum(Count, na.rm = TRUE)) %>%
+  ungroup() %>%
+  mutate(Compound = factor(Compound, levels = unique(plot_df$Compound)))
+```
+
+
+```{r}
+# --- Shared color palette ---
+fill_colors <- c(
+  "Adduct"      = "#66c2a5",
+  "Neutral loss"= "#fc8d62",
+  "Isotope"     = "#8da0cb",
+  "Unannotated" = "#bdbdbd"
+)
+
+# === Upper plot ===
+p_upper <- ggplot(plot_df, aes(x = reorder(Compound, -total_features), y = Count, fill = Feature_type)) +
+  geom_bar(stat = "identity", width = 0.7, color = "black", size = 0.2) +
+  scale_y_continuous(limits = c(0, 125), expand = expansion(mult = c(0, 0.05))) +
+  scale_fill_manual(values = fill_colors) +
+  #labs(y = "Number of redundant features", x = NULL, fill = "Feature type") +
+  theme_bw(base_size = 13) +
+  theme(
+    panel.grid.major.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    legend.position = "none"
+  )
+
+# === Lower plot ==
+p_lower <- ggplot(plot_df_subset, aes(x = reorder(Compound, -total_features), y = Count, fill = Feature_type)) +
+  geom_bar(stat = "identity", width = 0.7, color = "black", size = 0.2) +
+  scale_y_continuous(limits = c(0, 125), expand = expansion(mult = c(0, 0.05))) +
+  scale_fill_manual(values = fill_colors) +
+  #labs(y = "Number of redundant features", x = "Compound", fill = "Feature type") +
+  theme_bw(base_size = 13) +
+  theme(
+    panel.grid.major.x = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
+    legend.position = "bottom",
+    legend.title = element_text(face = "bold")
+  )
+
+# === Combine (mirror-style stacked plots) ===
+combined_plot <- p_upper / p_lower +
+  plot_layout(heights = c(1, 1.2))  # adjust relative panel sizes
+
+print(combined_plot)
+
+```
+
+
+
+```{r}
+
+ggsave( "combined_redundant_anno_features_plot.png" , combined_plot, width = 15, height = 10, dpi = 300)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+#----------------------------------------------------------------------------------------------------------------------------
+
+```{r}
+StM16_join_annotation_join_truncated %>% 
+  dplyr::group_by(Lib_group_full) %>%
+   dplyr::summarise(
+  
+    truncated_mz  = sum(is.na(mzmed_truncated)) 
+  
+  ) 
+```
+
+```{r}
+write.csv(StM16_join_annotation_join_truncated, "StM16_join_annotation_full_truncated.csv")
+```
+
+
+```{r}
+FT_na_summary <- StM16_join_annotation_join_truncated %>%
+  dplyr::group_by(Lib_group_full,PI_match_full) %>%
+  dplyr::summarise(
+    total_rows = dplyr::n(),
+    rows_with_NA = sum(!stats::complete.cases(.)),
+    na_fraction = rows_with_NA / total_rows
+  ) %>%
+  dplyr::arrange(dplyr::desc(rows_with_NA))
+
+```
+
+```{r}
+# FT_na_summary <- StM16_join_annotation_join_truncated %>%
+#   dplyr::group_by(Lib_group_full) %>%
+#   dplyr::summarise(
+#     compound_name = dplyr::first(PI_match_full[PI_match_full != ""], default = NA_character_),
+#     full_mz    = dplyr::n(),
+#     truncated_mz  = sum(is.na(mzmed_truncated)),  
+#     fraction   = truncated_mz / full_mz,
+#     .groups = "drop"
+#   ) %>%
+#   dplyr::mutate(
+#     compound_name = sub(" \\[.*", "", compound_name)
+#   ) %>% 
+#   dplyr::arrange(dplyr::desc(truncated_mz))
+
+library(dplyr)
+library(tidyr)
+
+FT_na_summary <- StM16_join_annotation_join_truncated %>%
+  dplyr::group_by(Lib_group_full) %>%
+  dplyr::summarise(
+    # collect all unique, non-empty compound names (stripped of "[...]")
+    compound_names = list({
+      nm <- sub(" \\[.*", "", PI_match_full)
+      nm <- nm[!(is.na(nm) | nm == "")]
+      unique(nm)
+    }),
+    full_mz      = dplyr::n(),
+    truncated_mz = sum(is.na(mzmed_truncated)),
+    fraction     = truncated_mz / full_mz,
+    .groups = "drop"
+  ) %>%
+  tidyr::unnest(compound_names) %>%
+  dplyr::rename(compound_name = compound_names) %>%
+  dplyr::arrange(dplyr::desc(truncated_mz)) %>% 
+   dplyr::filter(Lib_group_full!= "Lib_group_13")
+
+
+
+FT_na_summary
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+
+FT_na_plot_df <- FT_na_summary %>%
+  mutate(non_na_rows = full_mz - truncated_mz) %>%
+  select(compound_name, full_mz, truncated_mz, non_na_rows) %>%
+  tidyr::pivot_longer(
+    cols = c(truncated_mz, non_na_rows),
+    names_to = "Status",
+    values_to = "Count"
+  ) %>%
+  mutate(
+    Status = recode(Status,
+                    "truncated_mz" = "bigger",
+                    "non_na_rows" = "smaller"),
+    Percent = Count / full_mz * 100
+  )
+
+# Create order vector (descending non_na_rows)
+compound_order <- FT_na_plot_df %>%
+  filter(Status == "smaller") %>%
+  arrange(desc(Count)) %>%
+  pull(compound_name) %>%
+  unique()
+
+
+FT_na_plot_df <- FT_na_plot_df %>%
+  mutate(compound_name = factor(compound_name, levels = compound_order))
+```
+
+
+```{r}
+p <- ggplot(
+  FT_na_plot_df,
+  aes(
+    x = reorder(compound_name, -Count, subset = Status == "smaller"),  # ✅ order by "smaller" count
+    y = Percent,
+    fill = Status
+  )
+) +
+  geom_col(position = "fill") +
+  scale_y_continuous(labels = scales::percent_format(scale = 100)) +
+  scale_fill_manual(values = c("bigger" = "firebrick", "smaller" = "steelblue"), labels = c("bigger" = "Bigger m/z", "smaller" = "Truncated m/z")) +
+  labs(
+    title = "Percentage of Bigger m/z vs Truncated m/z",
+    x = "Compound Name",
+    y = "Percentage of Rows",
+    fill = "Type"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+p
+```
+
+```{r}
+ggsave(
+  filename = "Si16 Percentage of Bigger mz vs Truncated mz.png", 
+  plot = p,
+  width = 10, height = 6, units = "in",  
+  dpi = 300                           
+)
+```
+

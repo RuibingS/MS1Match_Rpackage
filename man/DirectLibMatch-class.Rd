@@ -24,5 +24,7 @@ using m/z and RT thresholds, ppm tolerance, MS level, and ion polarity.
 \item{\code{ms_level}}{Character, either \code{"MS1"} or \code{"MS2"}}
 
 \item{\code{polarity}}{Character, either \code{"pos"} or \code{"neg"}}
+
+\item{\code{results}}{List of matched results}
 }}
 

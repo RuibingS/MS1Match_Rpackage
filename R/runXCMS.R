@@ -40,82 +40,238 @@
 #'   rep("Novo", 3), rep("PA14wt", 3)
 #' )
 #' polarity <- "positive"
-#' @export
+
+
+#' Run full XCMS preprocessing with beta + CPC metrics
 #'
-#' @import xcms
-#' @import MSnbase
+#' @param files_dir Directory with mzML/mzXML files.
+#' @param cwp CentWaveParam (optional, default reasonable).
+#' @param pdp PeakDensityParam (optional, default reasonable).
+#' @param cpc_param CPC parameters (optional, default reasonable).
+#' @param sample_name Sample names.
+#' @param sample_group Sample groups.
+#' @return List with objects and merged feature table.
+#' @export
+runXCMS <- function(
+    files_dir,
+    cwp = NULL,
+    pdp = NULL,
+    cpc_param = NULL,
+    sample_name = NULL,
+    sample_group = NULL
+) {
+  MS_files <- list.files(files_dir, pattern = "\\.(mzXML|mzML)$", full.names = TRUE)
+  if (!length(MS_files)) stop("No mzXML/mzML files in ", files_dir)
 
-runXCMS <- function(files_dir,
-                    peakwidth,
-                    ppm,
-                    snthresh,
-                    mzdiff,
-                    prefilter,
-                    noise,
-                    bw,
-                    sample_name,
-                    sample_group,
-                    minFraction) {
-
-
-
-  MS_files <- list.files(files_dir,
-                             recursive = FALSE,
-                             pattern = "\\.mzXML$|\\.mzML$",
-                             full.names = TRUE)
-
-
-  if (is.null(sample_group)) {
-    sample_group <- rep(1:length(MS_files))
-  }
-  if (is.null(sample_name)) {
-    sample_name <- rep(1:length(MS_files))
-  }
+  if (is.null(sample_group)) sample_group <- seq_along(MS_files)
+  if (is.null(sample_name))  sample_name  <- basename(MS_files)
 
   pd <- data.frame(sample_name = sample_name,
                    sample_group = sample_group,
                    stringsAsFactors = FALSE)
 
-  # Load raw MS data
-  raw_data <- MSnbase::readMSData(files = MS_files,
-                         pdata = new("AnnotatedDataFrame", pd),
-                         mode = "onDisk")
-
-  # Peak detection with CentWave
-  cwp <- CentWaveParam(peakwidth = peakwidth, ppm = ppm,
-                       snthresh = snthresh, mzdiff = mzdiff,
-                       prefilter = prefilter, noise = noise)
-
-  xdata <- findChromPeaks(raw_data, param = cwp)
-
-  # Filter MS1 level
-  xdata_MS1 <- filterMsLevel(xdata, msLevel = 1L)
-
-
-  # Retention time correction alignment
-  if (length(MS_files) > 1) {
-    xdata_MS1 <- adjustRtime(xdata_MS1, param = ObiwarpParam())
+  # defaults
+  if (is.null(cwp)) {
+    cwp <- CentWaveParam(peakwidth = c(10, 25), ppm = 10,
+                         snthresh = 10, mzdiff = 0.01,
+                         prefilter = c(3, 1000), noise = 200,
+                         verboseBetaColumns = TRUE)
+  }
+  if (is.null(pdp)) {
+    pdp <- PeakDensityParam(sampleGroups = sample_group,
+                            bw = 5, minFraction = 0.5)
+  }
+  if (is.null(cpc_param)) {
+    cpc_param <- cpc::cpcProcParam(min_sn = 10, min_pts = 10,
+                                   min_intensity = 2000)
   }
 
+  # --- XcmsExperiment pipeline (for beta) ---
+  raw_exp <- MsExperiment::readMsExperiment(spectraFiles = MS_files, sampleData = pd)
+  x_exp <- findChromPeaks(raw_exp, param = cwp, msLevel = 1L)
+  if (length(MS_files) > 1) x_exp <- adjustRtime(x_exp, ObiwarpParam())
+  x_exp <- groupChromPeaks(x_exp, param = pdp)
+  x_exp <- fillChromPeaks(x_exp, ChromPeakAreaParam())
 
-  # Peak correspondence across samples
-  pdp <- PeakDensityParam(sampleGroups = xdata$sample_group,
-                          minFraction = minFraction, bw = bw)
+  fea_def <- featureDefinitions(x_exp)
+  feature_chroms <- featureChromatograms(x_exp, features = seq_len(nrow(fea_def)))
 
-  xdata_MS1 <- groupChromPeaks(xdata_MS1, param = pdp)
+  # --- XCMSnExp pipeline (for CPC) ---
+  raw_nexp <- MSnbase::readMSData(files = MS_files,
+                                  pdata = new("AnnotatedDataFrame", pd),
+                                  mode = "onDisk")
+  x_nexp <- findChromPeaks(raw_nexp, param = cwp, msLevel = 1L)
+  cpc_obj <- cpc::filter_xcms_peaklist(xd = x_nexp,
+                                       return_type = "cpc",
+                                       param = cpc_param)
 
-  # Fill missing peaks
-  xdata_MS1 <- fillChromPeaks(xdata_MS1, param = ChromPeakAreaParam())
+  # --- Merge metrics ---
+  fd_beta <- link_feature_CP_wide(x_exp, append_intensity = FALSE)
+  fd_cpc  <- link_feature_CPC_wide(x_nexp, cpc_obj, append_intensity = FALSE)
+  fint    <- featureValues(x_exp, value = "into")
 
 
-  # feature definition
-  fea_def <- featureDefinitions(xdata_MS1)
 
-  # feature intensity value
-  fea_int <- featureValues(xdata_MS1, value = "into")
+  # --- Merge metrics ---
+  message("Merging feature-level metrics")
 
-  # feature chromatograms
-  feature_chroms <- featureChromatograms(xdata_MS1, features = 1:nrow(fea_def))
+  fd_beta <- link_feature_CP_wide(x_exp, append_intensity = FALSE)
+  message("fd_beta rows: ", nrow(fd_beta))
 
-  return(list(xdata=xdata_MS1,feature_def=fea_def,feature_int=fea_int,feature_chroms=feature_chroms))
+  fd_cpc  <- link_feature_CPC_wide(x_nexp, cpc_obj, append_intensity = FALSE)
+  message("fd_cpc rows: ", nrow(fd_cpc))
+
+  fint    <- featureValues(x_exp, value = "into")
+  message("fint rows: ", nrow(fint))
+
+
+  fd_final <- cbind(
+    fd_beta,
+    fd_cpc,
+    fint
+  )
+
+  message("fd_final rows: ", nrow(fd_final))
+
+  list(
+    x_exp          = x_exp,
+    x_nexp         = x_nexp,
+    cpc            = cpc_obj,
+    features       = fd_final,
+    feature_chroms = feature_chroms
+  )
 }
+
+# runXCMS <- function(files_dir,
+#                     cwp = NULL,
+#                     pdp = NULL,
+#                     cpc_param = NULL,
+#                     sample_name = NULL,
+#                     sample_group = NULL) {
+#   ## -----------------------------
+#   ## 0. File handling
+#   ## -----------------------------
+#   MS_files <- list.files(files_dir,
+#                          pattern = "\\.(mzXML|mzML)$",
+#                          full.names = TRUE)
+#   if (!length(MS_files)) stop("No mzXML/mzML files found in ", files_dir)
+#
+#   if (is.null(sample_group)) sample_group <- seq_along(MS_files)
+#   if (is.null(sample_name))  sample_name  <- basename(MS_files)
+#
+#   pd <- data.frame(sample_name = sample_name,
+#                    sample_group = sample_group,
+#                    stringsAsFactors = FALSE)
+#
+#
+#   ## -----------------------------
+#   ## 1. Build parameter objects
+#   ## -----------------------------
+#   if (is.null(cwp)) {
+#     message("Creating CentWaveParam with defaults")
+#     cwp <- CentWaveParam(peakwidth = c(10, 25), ppm = 10,
+#                          snthresh = 10, mzdiff = 0.01,
+#                          prefilter = c(3, 1000), noise = 200,
+#                          verboseBetaColumns = TRUE)
+#   }
+#   if (is.null(pdp)) {
+#     message("Creating PeakDensityParam with sample groups")
+#     pdp <- PeakDensityParam(sampleGroups = sample_group,
+#                             bw = 5, minFraction = 0.5)
+#   }
+#   if (is.null(cpc_param)) {
+#     message("Creating CPC parameters with defaults")
+#     cpc_param <- cpc::cpcProcParam(min_sn = 10,
+#                                    min_pts = 10,
+#                                    min_intensity = 2000)
+#   }
+#
+#   ## -----------------------------
+#   ## 2. XcmsExperiment workflow
+#   ## -----------------------------
+#   message("Starting XcmsExperiment pipeline")
+#
+#   raw_exp <- readMsExperiment(spectraFiles = MS_files, sampleData = pd)
+#
+#   message(" - Peak detection")
+#   x_exp <- findChromPeaks(raw_exp, param = cwp, msLevel = 1L)
+#
+#   if (length(MS_files) > 1) {
+#     message(" - Retention time alignment (obiwarp)")
+#     x_exp <- adjustRtime(x_exp, ObiwarpParam())
+#   }
+#
+#   message(" - Grouping features")
+#   x_exp <- groupChromPeaks(x_exp, param = pdp)
+#
+#   message(" - Gap filling")
+#   x_exp <- fillChromPeaks(x_exp, ChromPeakAreaParam())
+#
+#   fea_def <- featureDefinitions(x_exp)
+#   feature_chroms <- featureChromatograms(x_exp,
+#                                          features = seq_len(nrow(fea_def)))
+#
+#   ## -----------------------------
+#   ## 3. XCMSnExp workflow for CPC
+#   ## -----------------------------
+#   message("Running CPC (requires XCMSnExp backend)")
+#
+#   raw_nexp <- MSnbase::readMSData(files = MS_files,
+#                                   pdata = new("AnnotatedDataFrame", pd),
+#                                   mode = "onDisk")
+#   x_nexp <- findChromPeaks(raw_nexp, param = cwp, msLevel = 1L)
+#
+#   #if (length(MS_files) > 1) {
+#    # x_nexp <- adjustRtime(x_nexp, ObiwarpParam())
+#   #}
+#
+#   #x_nexp <- groupChromPeaks(x_nexp, param = pdp)
+#   #x_nexp <- fillChromPeaks(x_nexp, ChromPeakAreaParam())
+#
+#   message(" - Characterizing peaks with CPC")
+#   cpc_obj <- cpc::filter_xcms_peaklist(
+#     xd = x_nexp,
+#     return_type = "cpc",
+#     param = cpc_param
+#   )
+#   #cpc_tab <- cpc::cpt(cpc_obj)
+#
+#
+#   ## -----------------------------
+#   ## 4. Merge metrics
+#   ## -----------------------------
+#   message("Merging feature-level metrics")
+#
+#   fd_beta <- link_feature_CP_wide(
+#     x_exp,
+#     metrics = c("beta_cor", "beta_snr"),
+#     append_intensity = FALSE
+#   )
+#
+#   fd_cpc <- link_feature_CPC_wide(
+#     x_nexp,
+#     cpc_obj,
+#     append_intensity = FALSE
+#   )
+#
+#   fint <- featureValues(x_exp, value = "into")
+#
+#   fd_final <- cbind(
+#     fd_beta,
+#     fd_cpc[, setdiff(colnames(fd_cpc), colnames(fd_beta))],
+#     fint
+#   )
+#
+#   message("Pipeline finished")
+#
+#   ## -----------------------------
+#   return(list(
+#     x_exp          = x_exp,
+#     x_nexp         = x_nexp,
+#     cpc            = cpc_obj,
+#     features       = fd_final,
+#     feature_chroms = feature_chroms
+#   ))
+# }
+
+

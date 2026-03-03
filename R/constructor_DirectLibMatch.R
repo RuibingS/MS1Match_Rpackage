@@ -19,5 +19,7 @@ createDirectLibMatch <- function(FT, compounds_list, diff_mz_thr, diff_rt_thr, p
       diff_rt_thr = diff_rt_thr,
       ppm = ppm,
       ms_level = ms_level,
-      polarity = polarity)
+      polarity = polarity,
+      results = list()
+      )
 }

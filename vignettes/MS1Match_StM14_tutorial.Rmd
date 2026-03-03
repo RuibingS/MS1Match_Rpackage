@@ -1,0 +1,549 @@
+---
+title: "MS1Match StM14 Tutorial"
+author: "Ruibing Shi"
+output:
+  BiocStyle::html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+vignette: >
+  %\VignetteIndexEntry{MS1Match StM14 Tutorial}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+   message = FALSE,
+  warning = FALSE
+)
+```
+
+
+## Load Required Packages
+
+First, load all required packages:
+
+```{r load-packages,}
+library(MS1Match)
+library(xcms)
+library(Spectra)
+library(BiocParallel)
+library(tibble)
+library(dplyr)
+library(tidyr)
+```
+
+## Overview
+
+This vignette demonstrates the MS1Match workflow using the `StM14` demo dataset. The workflow includes direct matching of detected features to MS1 and MS2 libraries, followed by feature-level ion annotation using adduct and neutral loss reference tables, and direct target list matching.
+
+The workflow consists of the following main steps:
+
+1. Raw data processing and feature table import  
+2. Library parsing  
+3. Library-guided feature grouping and annotation  
+4. Feature-level ion annotation  
+5. Direct target list matching  
+
+
+
+## Data Import and Peak Detection
+
+### Load Demo Dataset
+
+We begin by loading the preprocessed LC–MS demo dataset `StM14`from **xcms**, included in the `MS1Match` package.
+
+```{r import-data}
+result_StM14 <- readRDS(
+  system.file("extdata", "result_StM14.rds", package = "MS1Match")
+)
+```
+
+The object `result_StM14` is a list containing four elements:
+
+- `result_StM14[[1]]`: an `XCMSnExp` objectfrom **xcms**
+- `result_StM14[[2]]`: feature definition table  
+- `result_StM14[[3]]`: feature intensity table  
+- `result_StM14[[4]]`: an `XChromatograms` object storing extracted ion chromatograms (EICs)  
+
+### Prepare the Feature Table
+
+We now create a feature table by combining the output from `result_StM14[[2]]` (feature definitions) and `result_StM14[[3]]` (intensity values). The table is then cleaned and prepared for downstream annotation.
+
+In particular:
+
+1. Convert the result to a data frame (**required**)
+2. Rename the first column to `feature_name` (**required**)
+3. Remove the `peakidx` column (**optional**)
+4. Calculate a new column `intensity_mean` as the row-wise mean across samples (**required** if using multiple samples)
+5. Sort the table by RT or m/z (**optional**)
+6. Filter by retention time using `dplyr::filter()` (**optional**)  
+   – In this example, we keep features with RT between 60 and 1200 seconds.
+
+
+
+```{r create-FT}
+result_StM14_FT_filtered <- processFeatureTable(result_StM14, sample_cols = "mzxml", sort_by ="rtmed") 
+
+```
+
+check the feature table:
+```{r}
+head(result_StM14_FT_filtered)
+```
+
+
+
+### Run XCMS on Custom Files
+Users can run `runXCMS()` to process their own `mzXML` or `mzML` files by specifying appropriate parameters from `xcms`.
+
+```{r runXCMS-mzXML, eval = FALSE}
+runXCMS_result <- runXCMS(files_dir,
+                    peakwidth,
+                    ppm,
+                    snthresh,
+                    mzdiff,
+                    prefilter,
+                    noise,
+                    bw,
+                    sample_name,
+                    sample_group,
+                    minFraction)
+
+```
+
+
+
+## Import Mass Spectral Libraries
+
+### Import MS1 Spectral Library
+
+To perform direct MS1 library matching, we import the in-house spectral library `Si14.library`, which contains MS1 spectra for 14 pure reference compounds.
+
+```{r import-MS1-library}
+Si14_library <- parse_library(
+  file_path = system.file(
+    "extdata",
+    "StM14_library",
+    "Si14.library",
+    package = "MS1Match"
+  ),
+  ionPolarity = "pos",
+  spectrum_type = "MS1"
+)
+```
+
+### Import MS2 Spectral Library
+
+Similarly, we import the corresponding MS2 library by specifying `spectrum_type = "MS2"`:
+
+```{r import-MS2-library}
+StM14_MS2_library <- parse_library(
+  file_path = system.file(
+    "extdata",
+    "StM14_library",
+    "Si14_library_MS2.library",
+    package = "MS1Match"
+  ),
+  ionPolarity = "pos",
+  spectrum_type = "MS2"
+)
+```
+
+
+## MS1 library-guided feature grouping and annotation  
+
+### MS1 Library Matching
+
+Detected features are matched to an MS1 reference library by comparing feature *m/z* values to library primary ions (e.g., `[M+H]+`). If a primary ion match is found within tolerance, additional library peaks of the same compound are matched to neighboring features under a retention time (RT) constraint.
+
+### Creating a `DirectLibMatch` Object (MS1)
+
+The constructor function `createDirectLibMatch()` generates a `DirectLibMatch` object that stores the feature table, the reference library, and all parameters required for matching.
+
+```{r create-direct-libmatch-ms1}
+DirectLibMatch_MS1_obj <- createDirectLibMatch(
+  FT = result_StM14_FT_filtered,
+  compounds_list = Si14_library,
+  diff_mz_thr = 0.01,
+  diff_rt_thr = 20,
+  ppm = 10,
+  ms_level = "MS1",
+  polarity = "pos"
+)
+```
+
+### Running MS1 Library Matching
+
+The matching procedure is executed using `libAnnotate()`.
+
+```{r run-lib-annotate-ms1}
+direct_match_StM14_MS1_obj <- libAnnotate(
+  DirectLibMatch_MS1_obj,
+  compute_cosine = TRUE,
+  ppm = 20,
+  BPPARAM = SerialParam()
+)
+```
+
+### Accessing MS1 Matching Results
+
+```{r extract-results-ms1, results='hide'}
+direct_match_StM14_res_MS1 <- results(direct_match_StM14_MS1_obj)
+```
+
+
+### Convert MS1 Results to Data Frame
+
+```{r results-to-df-ms1, results='hide'}
+direct_match_StM14_res_MS1_df <- results_df(
+  direct_match_StM14_MS1_obj,
+  collapse_full = TRUE,
+  remove_full = TRUE,
+  suffix = "_merge"
+)
+```
+
+```{r, eval=FALSE}
+head(direct_match_StM14_res_MS1_df)
+```
+
+### Visualizing MS1 Matches Output
+`MS1Match` provides visualization tools to help inspect the quality of spectral matches between query features and reference library compounds using mirror.
+This function `plotMirrorSpectraSingle` creates a mirror plot using the matched feature peaks (on top) and reference library spectrum (on bottom).
+The cosine similarity score (inner and outer cosine from `Spectra`) and the match score are displayed in the plot.
+If no `output_dir` is provided, only the plot is shown. If `output_dir` is set, the plot will be saved as a PNG file instead.
+
+```{r}
+plotMirrorSpectraSingle(object = direct_match_StM14_MS1_obj, match = direct_match_StM14_res_MS1[[1]], output_dir = NULL)
+
+
+```
+
+### Plot All Matches and Export
+To generate and export mirror plots for all matched compounds at once:
+
+```{r, eval=FALSE}
+plotMirrorSpectra(object = direct_match_StM14_MS1_obj, matches = direct_match_StM14_res_MS1, output_dir = "mirror_plots_StM14_res_MS1")
+```
+
+
+
+### MS2 library-guided feature grouping and annotation  
+
+For MS2 matching, candidate metabolites are first linked to features via precursor *m/z* matching. After identifying the precursor-matched feature, MS2 fragment peaks are directly matched to neighboring features. Cosine similarity scores may be computed but are not used as filtering criteria in this workflow.
+
+### Creating a `DirectLibMatch` Object (MS2)
+
+```{r create-direct-libmatch-ms2}
+DirectLibMatch_MS2_obj <- createDirectLibMatch(
+  FT = result_StM14_FT_filtered,
+  compounds_list = StM14_MS2_library,
+  diff_mz_thr = 0.01,
+  diff_rt_thr = 20,
+  ppm = 10,
+  ms_level = "MS2",
+  polarity = "pos"
+)
+```
+
+### Running MS2 Library Matching
+
+```{r run-lib-annotate-ms2}
+direct_match_StM14_MS2_obj <- libAnnotate(
+  DirectLibMatch_MS2_obj,
+  compute_cosine = TRUE,
+  BPPARAM = SerialParam()
+)
+```
+
+### Accessing MS2 Matching Results
+
+```{r extract-results-ms2, results='hide'}
+direct_match_StM14_res_MS2 <- results(direct_match_StM14_MS2_obj)
+```
+
+
+
+### Convert MS2 Results to Data Frame
+
+```{r}
+direct_match_StM14_res_MS2_df <- results_df(
+  direct_match_StM14_MS2_obj,
+  collapse_full = TRUE,
+  remove_full = TRUE,
+  suffix = "_merge"
+)
+```
+
+```{r,eval=FALSE}
+head(direct_match_StM14_res_MS2_df)
+```
+
+
+### Visualizing MS2 Spectral Matches
+
+Similarly, we plot the spectral mirror plot for the MS2 library matching result:
+```{r}
+plotMirrorSpectraSingle(object = DirectLibMatch_MS2_obj, match = direct_match_StM14_res_MS2[[5]])
+```
+And export for all matched compound: 
+
+```{r, eval=FALSE}
+plotMirrorSpectra(object = DirectLibMatch_MS2_obj, matches = direct_match_StM14_res_MS2, output_dir = "mirror_plots_StM14_res_MS2")
+```
+
+
+### Compare MS1 and MS2 library matching results
+
+To evaluate the annotation performance, we compare the number of features directly matched using the MS1 library versus the MS2 library.
+```{r}
+direct_match_res_MS1_df_subset <- direct_match_StM14_res_MS1_df[,c("Compound_name", "Matched_peaks","Total_library_peaks")] %>% distinct()
+
+direct_match_res_MS2_df_subset <- direct_match_StM14_res_MS2_df[,c("Compound_name", "Matched_peaks","Total_library_peaks")] %>% distinct()
+
+
+
+direct_match_res_MS1_MS2_join <- full_join(direct_match_res_MS1_df_subset, direct_match_res_MS2_df_subset, by = c("Compound_name"),
+                                           suffix = c("_MS1", "_MS2"))
+```
+
+The result:
+```{r, echo=FALSE}
+direct_match_res_MS1_MS2_join
+```
+
+
+
+## Feature-Level Ion Annotation
+
+### Import Supporting Tables
+
+```{r import-supporting-tables}
+adduct_table <- read.csv(
+  system.file("extdata", "Adducts", "adducts.csv", package = "MS1Match")
+)
+
+neutral_loss_table <- read.csv(
+  system.file("extdata", "Neutral loss", "neutral loss database.csv", package = "MS1Match"),
+  check.names = TRUE
+)
+```
+
+
+
+
+
+### Feature Annotation Based on MS1 Matching
+
+Using the MS1 matching results (`direct_match_StM14_res_MS1`), we assign ion species such as primary ions, adducts, neutral losses, and isotopes.
+
+```{r create-annotation-ms1}
+PeakAnnotation_obj_MS1 <- createPeakAnnotationFromLibraryMatch(
+  library_matches = direct_match_StM14_res_MS1,
+  adducts_df = adduct_table,
+  neutral_loss_table = neutral_loss_table,
+  polarity = "positive"
+)
+
+StM14_annotate_res_ms1 <- annotate(PeakAnnotation_obj_MS1)
+```
+
+
+
+```{r}
+annotate_peaks_StM14_result_df_ms1 <- annotations_df(StM14_annotate_res_ms1)
+```
+
+```{r}
+head(annotate_peaks_StM14_result_df_ms1)
+```
+
+
+
+
+
+### Feature Annotation Based on MS2 Matching
+
+Using the MS2 matching results (`direct_match_StM14_res_MS2`), we assign ion species to the precursor- and fragment-matched features.
+
+```{r create-annotation-ms2}
+PeakAnnotation_obj_MS2 <- createPeakAnnotationFromLibraryMatch(
+  library_matches = direct_match_StM14_res_MS2,
+  adducts_df = adduct_table,
+  neutral_loss_table = neutral_loss_table,
+  polarity = "positive"
+)
+
+StM14_annotate_res_ms2 <- annotate(PeakAnnotation_obj_MS2)
+```
+
+
+```{r}
+annotate_peaks_StM14_result_df_ms2 <- annotations_df(StM14_annotate_res_ms2)
+```
+
+```{r}
+head(annotate_peaks_StM14_result_df_ms2)
+```
+
+
+
+
+## Direct Target List Matching
+
+In this section, we perform direct matching between feature table `m/z` values and target lists using known compounds from curated databases.
+
+### Import Target Lists
+
+We first import the **PAMDB** target list for *Pseudomonas aeruginosa* metabolites:
+
+```{r, message=FALSE, warning=FALSE, results='hide'}
+PA14_target_list <- PAMD_target_list_import(target_list_path = system.file("extdata", "Pseudomonas_target_list", "PaMetV2.csv", package = "MS1Match"))
+                                              
+```
+
+
+```{r}
+head(PA14_target_list)
+```
+
+
+The MS1Match package also includes a target list for human plasma metabolites (HMDB):
+
+```{r}
+hmdb_target_list <- HMDB_target_list_import(target_list_path = system.file("extdata", "hmdb", "hmdb_blood_detected.csv", package = "MS1Match"), IonPolarity = "pos")
+
+```
+
+```{r}
+head(hmdb_target_list)
+```
+
+
+## Match Features to a Target List
+
+In addition to library-based matching, features can be directly matched to an external target list based on the *m/z* of primary ions.
+
+Matching is performed using:
+
+- `[M+H]+` in positive ion mode  
+- `[M−H]−` in negative ion mode  
+
+```{r}
+DirectTarget_obj <- DirectTargetMatch(
+  result_StM14_FT_filtered,
+  PA14_target_list,
+  PIon = "[M+H]+",
+  diff_mz_thr = 0.005,
+  ppm = 10
+)
+
+StM14_PAMDB_PI_match <- PImatch_target(DirectTarget_obj)
+```
+
+The returned object is a list containing primary ion matches.  
+For easier inspection, convert the results to a data frame:
+
+```{r}
+StM14_PAMDB_PI_match_df <- PImatch_df(StM14_PAMDB_PI_match)
+
+head(StM14_PAMDB_PI_match_df)
+```
+
+
+
+## Join Annotation Results
+
+To facilitate downstream analysis and export, the function `join_annotation_results()` merges:
+
+- MS1 or MS2 direct library matching results  (**required**) 
+- Feature-level annotation results (adducts, neutral losses, isotopes)  (**optional**) 
+- external target list matches (**optional**) 
+
+All results are joined to the feature table (`FT`) using a match-level key.
+
+
+This ensures that features assigned to multiple compounds or library groups are handled correctly.
+
+```{r, eval=FALSE}
+StM14_join_annotation_results <- join_annotation_results(
+  FT = result_StM14_FT_filtered,
+  direct_lib_list = direct_match_StM14_res_MS1,
+  lib_anno_list = StM14_annotate_res_ms1,
+  target_match_list = StM14_PAMDB_PI_match
+)
+```
+
+```{r, eval=FALSE}
+str(StM14_join_annotation_results)
+```
+
+The output is a list containing:
+
+- `export_match_table` — library match level results  
+- `export_feature_compound_summary` — summarized feature–compound mapping  
+- `export_reduced_table` — reduced feature table  
+- `export_reduced_anno_table` — reduced table including annotations  
+- `export_full_table` — full merged feature table  
+
+
+
+### Export Only Library and Annotation Results
+
+If target list matching is not required, set `target_match_list = NULL`:
+
+```{r}
+StM14_join_annotation_results_2merge <- join_annotation_results(
+  FT = result_StM14_FT_filtered,
+  direct_lib_list = direct_match_StM14_res_MS1,
+  lib_anno_list = StM14_annotate_res_ms1,
+  target_match_list = NULL
+)
+```
+
+```{r, eval=FALSE}
+str(StM14_join_annotation_results_2merge)
+```
+
+
+
+## Export Results
+
+The reduced annotation table can be exported as a CSV file:
+
+```{r, eval=FALSE}
+write.csv(
+  StM14_join_annotation_results$export_match_table,
+  "StM14_export_match_table.csv",
+  row.names = FALSE
+)
+
+write.csv(
+  StM14_join_annotation_results$export_feature_compound_summary,
+  "StM14_feature_compound_summary.csv",
+  row.names = FALSE
+)
+
+write.csv(
+  StM14_join_annotation_results$export_reduced_table,
+  "StM14_reduced_table.csv",
+  row.names = FALSE
+)
+
+write.csv(
+  StM14_join_annotation_results$export_reduced_anno_table,
+  "StM14_reduced_anno_table.csv",
+  row.names = FALSE
+)
+
+write.csv(
+  StM14_join_annotation_results$export_full_table,
+  "StM14_full_table.csv",
+  row.names = FALSE
+)
+```

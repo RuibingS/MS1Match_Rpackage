@@ -7,7 +7,6 @@
 #' @importFrom Rcpp sourceCpp
 #' @importFrom Rcpp evalCpp
 #' @importFrom MSnbase readMSData
-#' @import doParallel
 #' @import xcms
 #' @import MetaboCoreUtils
 #' @import enviPat

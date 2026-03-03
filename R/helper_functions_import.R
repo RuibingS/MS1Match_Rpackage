@@ -18,7 +18,7 @@ PAMD_target_list_import <- function(target_list_path, IonPolarity){
   metabo_data <- metabo_data[,colSums(is.na(metabo_data))<nrow(metabo_data)]
 
   # calulate exact mass from formula
-  exactMass <- MetaboCoreUtils::calculateMass(metabo_data$Formula[[1]])
+  exactMass <- unname(MetaboCoreUtils::calculateMass(metabo_data$Formula))
 
 
 

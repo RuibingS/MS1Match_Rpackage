@@ -2,24 +2,39 @@
 % Please edit documentation in R/wrapper_join_annotation_results.R
 \name{join_annotation_results}
 \alias{join_annotation_results}
-\title{Join Rcpp annotation results}
+\title{Join lists of annotation results to library match output}
 \usage{
 join_annotation_results(
-  dirct_lib_list,
+  FT,
+  direct_lib_list,
   lib_anno_list = NULL,
   target_match_list = NULL
 )
 }
 \arguments{
-\item{dirct_lib_list}{Required list (library match output)}
+\item{FT}{Required data.frame. Feature table containing at least \code{feature_name}
+and mz/rt/intensity columns.}
 
-\item{lib_anno_list}{Optional list to join by \code{Matched_features_to_peaks}}
+\item{direct_lib_list}{Required list. Output of direct library matching.}
 
-\item{target_match_list}{Optional list to join by \code{Matched_features_to_peaks}}
-}
-\value{
-A data.frame of joined annotation results
+\item{lib_anno_list}{Optional list. Output of annotation (e.g., \code{annotate()}),
+either a list of small lists or a data.frame.}
+
+\item{target_match_list}{Optional list/data.frame. Optional targetlist annotations.
+
+Join direct library matches + feature annotations (+ optional target PI matches) onto FT
+\itemize{
+\item FT is the base (one row per measured feature).
+\item direct_lib_list is match/peak-level evidence and can contain multiple rows per FT feature.
+\item lib_anno_list is feature-level annotation (PI/adduct/NL/iso) and is joined by FT feature id.
+\item To avoid .x/.y duplicates, we DROP overlapping columns from the right tables before joining.
+}}
 }
 \description{
-Join Rcpp annotation results
+Combine direct library match results (MS1/MS2) with downstream annotation results
+(adduct/NL/isotope), using a match-level key:
+\code{feature_name + Lib_group + Compound_name}.
+
+This supports cases where the same feature appears in multiple library groups or
+is assigned to multiple compounds.
 }

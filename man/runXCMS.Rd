@@ -6,20 +6,25 @@
 \usage{
 runXCMS(
   files_dir,
-  peakwidth,
-  ppm,
-  snthresh,
-  mzdiff,
-  prefilter,
-  noise,
-  bw,
-  sample_name,
-  sample_group,
-  minFraction
+  cwp = NULL,
+  pdp = NULL,
+  cpc_param = NULL,
+  sample_name = NULL,
+  sample_group = NULL
 )
 }
 \arguments{
-\item{files_dir}{A file directory of mzXML or mzXL files.}
+\item{files_dir}{Directory with mzML/mzXML files.}
+
+\item{cwp}{CentWaveParam (optional, default reasonable).}
+
+\item{pdp}{PeakDensityParam (optional, default reasonable).}
+
+\item{cpc_param}{CPC parameters (optional, default reasonable).}
+
+\item{sample_name}{Sample names.}
+
+\item{sample_group}{Sample groups.}
 
 \item{peakwidth}{CentWave parameter, refer to XCMS.}
 
@@ -31,16 +36,14 @@ runXCMS(
 
 \item{bw}{\code{PeakDensityParam} parameter, refer to XCMS.}
 
-\item{sample_name}{The name of samples. Please using "_A","_B" and "_C" or "_1","_2","_3" for replicates.}
-
-\item{sample_group}{The sample group names.}
+\item{polarity}{The ion mode. "positive" or "negative".}
 
 \item{minFraction}{\code{PeakDensityParam}paramters, refer to XCMS.}
-
-\item{polarity}{The ion mode. "positive" or "negative".}
 }
 \value{
 It returns a list with a feature table and EIC object.
+
+List with objects and merged feature table.
 }
 \description{
 XCMS preprocessing
@@ -71,4 +74,6 @@ sample_group <- c(
   rep("Novo", 3), rep("PA14wt", 3)
 )
 polarity <- "positive"
+Run full XCMS preprocessing with beta + CPC metrics
+
 }

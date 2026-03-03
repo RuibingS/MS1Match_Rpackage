@@ -6,7 +6,7 @@ Description: Provides functions for direct MS1 peak matching for LC-MS and FIA-M
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE, roclets = c("namespace", "rd"))
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Imports:
     xcms (>= 3.20.0),
     MSnbase,
@@ -18,5 +18,14 @@ Imports:
     Rcpp,
     RcppArmadillo,
     MetaboCoreUtils,
-    enviPat
+    enviPat,
+    stringr,
+    stats
 LinkingTo: Rcpp, RcppArmadillo, BH
+Suggests:
+    knitr,
+    rmarkdown,
+    BiocStyle,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+VignetteBuilder: knitr

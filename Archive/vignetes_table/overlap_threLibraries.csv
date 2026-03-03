@@ -1,0 +1,39 @@
+Formula,Name_Inhouse,Name_MoNA,Name_CSU_PMF,Inhouse,MoNA,CSU_PMF,Match_type
+C6H6N2O2,Urocanate,Urocanic acid,Urocanic acid,TRUE,TRUE,TRUE,3-library_overlap
+C6H6N2O2,Urocanate,Urocanic acid,Urocanic acid,TRUE,TRUE,TRUE,3-library_overlap
+C27H30O16,Rutin,Rutine,Rutin,TRUE,TRUE,TRUE,3-library_overlap
+C27H30O16,Rutin,Rutine,Rutin,TRUE,TRUE,TRUE,3-library_overlap
+C9H11NO3,L-Tyrosine,Tyrosine,L-Tyrosine,TRUE,TRUE,TRUE,3-library_overlap
+C9H11NO3,L-Tyrosine,Tyrosine,L-Tyrosine,TRUE,TRUE,TRUE,3-library_overlap
+C11H12N2O2,L-Tryptophan,L-Tryptophan,L-Tryptophan,TRUE,TRUE,TRUE,3-library_overlap
+C11H12N2O2,L-Tryptophan,L-Tryptophan,L-Tryptophan,TRUE,TRUE,TRUE,3-library_overlap
+C5H12N2O2,L-Ornithine,L-Ornithine,Ornithine,TRUE,TRUE,TRUE,3-library_overlap
+C5H12N2O2,L-Ornithine,L-Ornithine,Ornithine,TRUE,TRUE,TRUE,3-library_overlap
+C10H12N2O3,L-Kynurenine,Kynurenine,L-Kynurenine,TRUE,TRUE,TRUE,3-library_overlap
+C10H12N2O3,L-Kynurenine,Kynurenine,L-Kynurenine,TRUE,TRUE,TRUE,3-library_overlap
+C6H11N3O,L-Histidinol,Histidinol,L-Histidinol,TRUE,TRUE,TRUE,3-library_overlap
+C6H11N3O,L-Histidinol,Histidinol,L-Histidinol,TRUE,TRUE,TRUE,3-library_overlap
+C6H9N3O2,L-Histidine,Histidine,L-Histidine,TRUE,TRUE,TRUE,3-library_overlap
+C6H9N3O2,L-Histidine,Histidine,L-Histidine,TRUE,TRUE,TRUE,3-library_overlap
+C5H9NO4,L-Glutamic acid,Glutamic acid,L-Glutamic acid,TRUE,TRUE,TRUE,3-library_overlap
+C5H9NO4,L-Glutamic acid,Glutamic acid,L-Glutamic acid,TRUE,TRUE,TRUE,3-library_overlap
+C6H13NO2,Leucine,DL-Leucine,L-Leucine,TRUE,TRUE,TRUE,3-library_overlap
+C6H13NO2,Leucine,DL-Leucine,L-Leucine,TRUE,TRUE,TRUE,3-library_overlap
+C7H15NO3,L-Carnitine,L-Carnitine,L-Carnitine,TRUE,TRUE,TRUE,3-library_overlap
+C7H15NO3,L-Carnitine,L-Carnitine,L-Carnitine,TRUE,TRUE,TRUE,3-library_overlap
+C6H14N4O2,L-Arginine,L-Arginine,L-Arginine,TRUE,TRUE,TRUE,3-library_overlap
+C6H14N4O2,L-Arginine,L-Arginine,L-Arginine,TRUE,TRUE,TRUE,3-library_overlap
+C15H10O6,Kaempferol,Kaempferol,Kaempferol,TRUE,TRUE,TRUE,3-library_overlap
+C15H10O6,Kaempferol,Kaempferol,Kaempferol,TRUE,TRUE,TRUE,3-library_overlap
+C5H9N3,Histamine,Histamine,Histamine,TRUE,TRUE,TRUE,3-library_overlap
+C5H9N3,Histamine,Histamine,Histamine,TRUE,TRUE,TRUE,3-library_overlap
+C9H9NO3,Hippurate,Hippuric acid,Hippuric acid,TRUE,TRUE,TRUE,3-library_overlap
+C9H9NO3,Hippurate,Hippuric acid,Hippuric acid,TRUE,TRUE,TRUE,3-library_overlap
+C6H13N3O3,Citrullline,Citrulline,Citrulline,TRUE,TRUE,TRUE,3-library_overlap
+C6H13N3O3,Citrullline,Citrulline,Citrulline,TRUE,TRUE,TRUE,3-library_overlap
+C9H14N4O3,Carnosine,L-Carnosine,Carnosine,TRUE,TRUE,TRUE,3-library_overlap
+C9H14N4O3,Carnosine,L-Carnosine,Carnosine,TRUE,TRUE,TRUE,3-library_overlap
+C5H11NO2,Betaine,Betaine,Betaine,TRUE,TRUE,TRUE,3-library_overlap
+C5H11NO2,Betaine,Betaine,Betaine,TRUE,TRUE,TRUE,3-library_overlap
+C9H11NO4,"3,4-Dihydroxy-L-phenylalanine","3,4-Dihydroxy-L-phenylalanine",L-Dopa,TRUE,TRUE,TRUE,3-library_overlap
+C9H11NO4,"3,4-Dihydroxy-L-phenylalanine","3,4-Dihydroxy-L-phenylalanine",L-Dopa,TRUE,TRUE,TRUE,3-library_overlap

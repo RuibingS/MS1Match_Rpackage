@@ -1,0 +1,55 @@
+Formula,Name_in_house,Synonyms_CBIO,Name_Massbank,Synonyms_Massbank,Match_type
+C10H14N2,(S)-Nicotine,3-[(2S)-1-Methylpyrrolidin-2-yl]pyridine (IUPAC),Nicotine,,Formula+Name
+C10H13N5O3,2'-Deoxyadenosine,,2'-Deoxyadenosine,,Formula+Name
+C9H14N3O7P,2'-Deoxycytidine 5'-monophosphate,,2'-Deoxycytidine 5'-monophosphate,,Formula+Name
+C10H14N5O7P,2'-Deoxyguanosine 5'-monophosphate,,2'-Deoxyguanosine 5'-monophosphate,,Formula+Name
+C9H11NO4,"3,4-Dihydroxy-L-phenylalanine",,"3,4-Dihydroxy-L-phenylalanine",,Formula+Name
+C10H13N5O4,Adenosine,,Adenosine,,Formula+Name
+C5H11NO2,Betaine,,Betaine,,Formula+Name
+C16H12O5,Biochanin A,,Biochanin A,,Formula+Name
+C10H16N2O3S,Biotin,,Biotin,,Formula+Name
+C8H10N4O2,Caffeine,,Caffeine,,Formula+Name
+C9H14N4O3,Carnosine,,L-Carnosine,,Formula+Name
+C11H12Cl2N2O5,Chloramphenicol,"2,2-Dichloro-N-[(1R,2R)-2-hydroxy-1-(hydroxymethyl)-2-(4-nitrophenyl)ethyl]acetamide  (IUPAC)",Chloramphenicol,,Formula+Name
+C6H13N3O3,Citrullline,,Citrulline,,Formula_only
+C4H7N3O,Creatinine,,Creatinine,,Formula+Name
+C9H13N3O5,Cytidine,,Cytidine,,Formula+Name
+C4H7NO4,D-Aspartate,,Aspartic Acid,,Formula_only
+C9H13N3O4,Deoxycytidine,,2'-Deoxycytidine,,Formula+Name
+C9H13NO3,DL-normetanephrine,,Epinephrine,,Formula_only
+C5H12N2O2,D-Ornithine,,L-Ornithine,,Formula_only
+C6H12O6,D-Tagatose,,Fructose (Generic Ketohexose),,Formula_only
+C9H13NO3,Epinephrine,,Epinephrine,,Formula+Name
+C37H67NO13,Erythromycin,,Erythromycin,,Formula+Name
+C19H19N7O6,Folic acid,,Folic acid,Vitamin M,Formula+Name
+C10H13N5O5,Guanosine,,Guanosine,,Formula+Name
+C10H14N5O8P,Guanosine 5'-monophosphate,,Guanosine 5'-monophosphate,,Formula+Name
+C9H9NO3,Hippurate,,Hippuric acid,,Formula_only
+C5H9N3,Histamine,,Histamine,,Formula+Name
+C10H12N4O5,Inosine,,Inosine,,Formula+Name
+C10H13N4O8P,Inosine 5'-monophosphate,,Inosine-5'-monophosphate,Inosinic acid,Formula_only
+C15H10O6,Kaempferol,,Kaempferol,,Formula+Name
+C10H9N5O,Kinetin,,Kinetin,,Formula+Name
+C6H14N4O2,L-Arginine,,L-Arginine,,Formula+Name
+C7H15NO3,L-Carnitine,,L-Carnitine,,Formula+Name
+C3H7NO5S,L-Cysteic acid,(2R)-2-Amino-3-sulfopropanoic acid,L-Cysteic acid,,Formula+Name
+C6H13NO2,Leucine,,DL-Leucine,,Formula+Name
+C5H9NO4,L-Glutamic acid,,Glutamic acid,,Formula+Name
+C6H9N3O2,L-Histidine,,Histidine,,Formula+Name
+C6H11N3O,L-Histidinol,,Histidinol,,Formula+Name
+C10H12N2O3,L-Kynurenine,,Kynurenine,,Formula+Name
+C5H12N2O2,L-Ornithine,,L-Ornithine,,Formula+Name
+C11H12N2O2,L-Tryptophan,,L-Tryptophan,,Formula+Name
+C9H11NO3,L-Tyrosine,,Tyrosine,,Formula+Name
+C13H16N2O2,Melatonin,,Melatonin,,Formula+Name
+C21H24O10,Phloridzin,,Phloridzin,,Formula+Name
+C8H9NO3,Pyridoxal,,Pyridoxal,,Formula+Name
+C17H20N4O6,Riboflavin,,Riboflavin,"7,8-dimethyl-10-(2,3,4,5-tetrahydroxypentyl)-3,10-dihydrobenzo[g]pteridine-2,4 -dione",Formula+Name
+C43H58N4O12,Rifampicin,,Rifampicin,,Formula+Name
+C27H30O16,Rutin,,Rutine,,Formula+Name
+C10H12N2O,Serotonin,,Serotonin,,Formula+Name
+C7H8N4O2,Theobromine,,Theobromine,,Formula+Name
+C10H14N2O5,Thymidine,,Thymidine,,Formula+Name
+C7H7NO2,Trigonelline,,Trigonelline,,Formula+Name
+C9H12N2O6,Uridine,,Uridine,,Formula+Name
+C10H12N4O6,Xanthosine,,Xanthosine,,Formula+Name

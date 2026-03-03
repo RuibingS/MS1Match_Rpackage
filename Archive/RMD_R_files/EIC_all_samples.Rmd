@@ -1,0 +1,228 @@
+---
+title: "eic_features"
+author: "Ruibing"
+date: "2025-08-20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+
+
+```{r}
+plot_multiple_EICs(eic_obj, feature_indices = c(131))
+```
+
+
+## TO DO: make method 
+
+
+
+```{r}
+
+plot_single_feature_EIC <- function(eic_data, i, j_vec) {
+  library(ggplot2)
+  library(dplyr)
+  library(purrr)
+  
+  # extract chromatograms for feature i across selected samples
+  df_list <- map(j_vec, function(j) {
+    chr <- eic_data[i, j]
+    data.frame(
+      rt = chr@rtime,
+      intensity = chr@intensity,
+      sample = paste0("Sample_", j)
+    )
+  })
+  
+  df <- bind_rows(df_list) %>%
+    filter(!is.na(intensity))
+  
+  ggplot(df, aes(x = rt, y = intensity, color = sample)) +
+    geom_line() +
+    geom_point(size = 0.8) +
+    labs(
+      title = paste("EIC for Feature", i, "across samples", paste(j_vec, collapse = ",")),
+      x = "Retention Time (s)",
+      y = "Intensity",
+      color = "Sample"
+    ) +
+    theme_minimal()
+}
+
+```
+
+
+
+
+
+
+
+```{r}
+# Feature 1, overlay samples 1 to 10
+plot_feature_EIC(eic_obj@eic_data, i = 131, j_vec = 7)
+
+```
+
+
+## xcms
+
+
+```{r}
+eic_obj@eic_data[[131]]
+```
+
+### extract all CP for each feature
+
+```{r}
+input_list_PA14 <-  as.vector(eic_obj@eic_data@.Data, mode = "list")
+```
+
+ features = result_PA14_FT_filtered,
+```{r}
+#feature_EIC_process_allCP_res <- feature_EIC_process_allCP_fun_cpp(input_list = input_list_PA14, nrows = nrow(result_PA14_FT_filtered),ncols = 24,eic_row_names = )
+
+
+ft_min <- result_PA14_FT_filtered[, c("feature_name","rtmed")]
+
+system.time(feature_EIC_process_allCP_res <- feature_EIC_process_full_fun_cpp(
+  input_list     = input_list_PA14,          
+  nrows = nrow(result_PA14_FT_filtered),
+  ncols = 24,
+  eic_row_names  = character(0),      
+  ft             = ft_min,
+  policy         = "medret",           
+  sn_min         = 0.0,
+  pad            = 0.0,
+  parallel      = TRUE,                         
+  n_threads     = 6    
+))
+```
+
+
+
+```{r}
+
+eic_sim_full_PA14 <- EIC_cor_pairs_by_sample(
+  feature_EIC_process = feature_EIC_process_allCP_res,
+  feature_pairs = pairs_for_ml_PA14,
+
+ 
+  rt_EIC_thr          = 0.2,
+  method              = "pearson",
+  parallel            = TRUE,
+  n_threads           = 6
+)
+
+head(eic_sim_full_PA14)
+
+
+```
+
+```{r}
+eic_sim_full_PA14[which(eic_sim_full_PA14$feature_1 %in% "FT0805" & eic_sim_full_PA14$feature_2 %in% "FT0637"),]
+```
+
+```{r}
+eic_sim_full_PA14[eic_sim_full_PA14$feature_1 == "FT0430" & eic_sim_full_PA14$feature_2 == "FT0380", ]
+```
+
+```{r}
+plot_multiple_EICs(all_EIC_list = feature_EIC_process_allCP_res@parsed_EIC, feature_indices = c(805,637))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

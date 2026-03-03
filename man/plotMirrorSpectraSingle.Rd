@@ -2,22 +2,22 @@
 % Please edit documentation in R/plotMirrorSpectra_function.R
 \name{plotMirrorSpectraSingle}
 \alias{plotMirrorSpectraSingle}
-\title{Plot mirror plot for a single match using Spectra}
+\title{Plot a mirror plot between a query feature and its reference compound}
 \usage{
 plotMirrorSpectraSingle(match, object, output_dir = NULL, ppm = 10)
 }
 \arguments{
-\item{match}{A single element of the output list from \code{libAnnotate()}}
+\item{match}{A single entry (list) from a DirectLibMatch result.}
 
-\item{object}{The DirectLibMatch object used to produce the match}
+\item{object}{The DirectLibMatch object containing @compounds_list.}
 
-\item{output_dir}{Optional directory to save the plot as PNG}
+\item{output_dir}{Optional directory to save the mirror plot as PNG.}
 
-\item{ppm}{Mass tolerance (in ppm) for matching peaks in cosine and mirror plots}
+\item{ppm}{m/z tolerance (default 10 ppm).}
 }
 \value{
-A named list with cosine scores and plot path
+Invisibly returns the ggplot object.
 }
 \description{
-Plot mirror plot for a single match using Spectra
+Plot a mirror plot between a query feature and its reference compound
 }

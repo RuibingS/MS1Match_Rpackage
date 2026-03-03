@@ -7,7 +7,7 @@
 annotate_has_rt(object)
 }
 \arguments{
-\item{object}{A \code{PeakAnnotationList} object}
+\item{object}{A \code{PeakAnnotation} object}
 }
 \value{
 Annotated data.frame or updates the object

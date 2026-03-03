@@ -48,18 +48,15 @@ List annotate_without_rt_cpp(List compounds_list, Rcpp::DataFrame FT,
                           Rcpp::DataFrame adducts_df,
                           Rcpp::DataFrame neutral_loss_table,
                           std::string polarity,
-                          NumericVector intensity,
                           double mz_threshold = 0.005,
                           double iso_threshold = 1.003355, int max_charge = 3, int max_isotope = 4,
                           bool run_PI_match = true, bool run_adduct_match = true, bool run_NL_match = true) {
 
   NumericVector FT_mz = get_column_with_fallback<NumericVector>(FT, "mzmed", "mz", "m/z");
   CharacterVector feature_name = get_required_column<CharacterVector>(FT, "feature_name");
+  NumericVector FT_intensity = get_intensity_from_FT(FT);
+
   // NumericVector FT_rt = get_column_with_fallback<NumericVector>(FT, "rtmed", "rt", "retention time");
-
-
-
-
 
   bool is_sorted = true;
   for (int i = 1; i < FT_mz.size(); ++i) {
@@ -74,6 +71,7 @@ List annotate_without_rt_cpp(List compounds_list, Rcpp::DataFrame FT,
     FT_mz = reorder_vector(FT_mz, idx);
     // FT_rt = reorder_vector(FT_rt, idx);
     feature_name = reorder_vector(feature_name, idx);
+    FT_intensity = reorder_vector(FT_intensity, idx);
   }
 
   int n_features = FT.nrows();
@@ -202,19 +200,19 @@ List annotate_without_rt_cpp(List compounds_list, Rcpp::DataFrame FT,
     }
   }
   Rcpp::Rcout << "Starting isotope anotation...\n";
-  CharacterVector isotope_labels = Check_Iso_Charge_no_rt(feature_name, FT_mz, intensity, iso_threshold, max_charge, max_isotope);
+  CharacterVector isotope_labels = Check_Iso_Charge_no_rt( feature_name,  FT_mz,  FT_intensity, iso_threshold, max_charge, max_isotope);
   Rcpp::Rcout << "Isotope anotation completed\n";
 
   List output_list(n_features);
   for (int i = 0; i < n_features; ++i) {
     output_list[i] = List::create(
-      Named("feature_name") = CharacterVector::create(feature_name[i]),
+      Named("feature_name") = feature_name[i],
       Named("mz") = FT_mz[i],
       // Named("rt") = FT_rt[i],
-      Named("PI_match") = CharacterVector::create(PI_annotations[i]),
-      Named("adduct_match") = CharacterVector::create(adduct_annotations[i]),
+      Named("PI_match") = PI_annotations[i],
+      Named("adduct_match") = adduct_annotations[i],
       Named("NL_match") = NL_annotations[i],
-      Named("iso_annotation") = CharacterVector::create(isotope_labels[i])
+      Named("iso_annotation") = isotope_labels[i]
     );
 
 
@@ -233,7 +231,7 @@ List annotate_without_rt_cpp(List compounds_list, Rcpp::DataFrame FT,
 
 
 // Isotope annotation
-
+// [[Rcpp::export]]
 Rcpp::CharacterVector Check_Iso_Charge_no_rt(Rcpp::CharacterVector name,
                                        Rcpp::NumericVector mz,
                                        Rcpp::NumericVector intensity,
@@ -273,7 +271,7 @@ Rcpp::CharacterVector Check_Iso_Charge_no_rt(Rcpp::CharacterVector name,
           double max_int_ratio = (mz[i] * c / 12) * 0.011;
 
           if (m == 1) {
-            if (std::abs(mz_diff - expected_mz_diff) <= 0.002 &&
+            if (std::abs(mz_diff - expected_mz_diff) <= 0.005 &&
                 intensity[i] * max_int_ratio >= intensity[j]) {
 
               labels[i] = Rcpp::String("[" + std::to_string(groupIndex) + "][M]" +

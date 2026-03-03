@@ -1,0 +1,347 @@
+---
+title: "ISF_MS1_MS2"
+author: "Ruibing"
+date: "2025-11-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+library(MS1Match)
+```
+
+
+```{r}
+Si16_inhouse_lib_MS1 <- parse_library(file_path = system.file("extdata", "StM16_library", "Si16.library", package = "MS1Match"),
+                                                    ionPolarity = "pos",spectrum_type ="MS1")
+
+Si16_inhouse_lib_MS2 <- parse_library(file_path = system.file("extdata", "StM16_library", "Si16.library", package = "MS1Match"),
+                                                    ionPolarity = "pos",spectrum_type ="MS2")
+```
+
+```{r}
+Si16_inhouse_lib_MS1[[which(sapply(Si16_inhouse_lib_MS1, function(x) x$Name)%in% "3-Indoleacetonitrile")]]
+```
+
+## compare to CAMERA
+
+### import CAMERA FT
+
+
+```{r}
+# CAMERA_FT <- read.csv(system.file("extdata", "CAMERA_StM16", "CAMERA_annotated_FT_StM16.csv", package = "MS1Match"))
+# 
+# 
+# head(CAMERA_FT)
+
+```
+
+
+
+
+
+### CAMERA FT processing 
+
+```{r}
+result_StM16 <- readRDS(system.file("extdata", "result_StM16.rds", package = "MS1Match"))
+
+```
+
+```{r}
+library(Biobase)
+
+
+
+pd <- data.frame(sample_name = c("PA14_Si11_10uM_A","PA14_Si11_10uM_B","PA14_Si11_10uM_C",
+                                 "PA14_Si11_4uM_A","PA14_Si11_4uM_B","PA14_Si11_4uM_C",
+                                 "PA14_Si11_8uM_A","PA14_Si11_8uM_B","PA14_Si11_8uM_C"),
+                 sample_group = c(rep("PA14_Si11_10uM",3),rep("PA14_Si11_4uM",3),
+                                  rep("PA14_Si11_8uM",3)
+                                  ),
+                 stringsAsFactors = FALSE)
+new_pd <- AnnotatedDataFrame(pd)
+
+# assign into the XCMSnExp
+result_StM16$xdata@phenoData <- new_pd
+class(result_StM16$xdata@phenoData)
+
+```
+
+
+
+
+
+```{r}
+xset <- as(result_StM16$xdata, "xcmsSet")
+
+```
+
+
+```{r}
+library(CAMERA)
+
+
+xsa <- xsAnnotate(xset)
+# 
+############################################################################################################
+#  CAMERA annotation                                                                                       #
+############################################################################################################ 
+anF <- groupFWHM(xsa, perfwhm = 0.6)
+
+anI <- findIsotopes(anF, mzabs = 0.01)
+
+anIC <- groupCorr(anI, cor_eic_th = 0.75)
+
+anFA <- findAdducts(anIC, polarity="positive")
+anFA
+
+peaklist <- getPeaklist(anFA)
+head(peaklist)
+dim(peaklist)
+
+```
+
+
+```{r}
+#saveRDS(peaklist, "CAMERA_annotated_StM16.RDS")
+
+
+
+CAMERA_annotated_StM16_FT <- readRDS( "CAMERA_annotated_StM16.RDS")
+
+
+
+CAMERA_annotated_StM16_FT <- CAMERA_annotated_StM16_FT %>%
+  dplyr::mutate(feature_name = sprintf("FT%04d", dplyr::row_number())) %>%
+  dplyr::select(feature_name, dplyr::everything())
+
+head(CAMERA_annotated_StM16_FT)
+
+# write.csv(peaklist, file='CAMERA_annotated_StM16.csv')
+# 
+```
+
+
+
+
+## read StM16 target list
+
+```{r}
+StM16_target <-  read.csv("C:/Users/rsh19/Downloads/MS1Match/inst/extdata/StM16_library/StM16_target_mz.csv")
+  #system.file("extdata", "StM16_library", "StM16_target_mz.csv", package = "MS1Match"))
+
+StM16_target
+```
+```{r}
+extract_pcgroups <- function(CAMERA_FT, StM16_target, 
+                             mz_tol = 0.001, rt_tol = 1) {
+  
+  library(dplyr)
+  library(purrr)
+  
+  # ---- helper function for a single compound ----
+  find_pcgroup_features <- function(compound_name, target_mz, target_rt) {
+    
+    # Step 1: find closest mz + rt match
+    match_row <- CAMERA_FT %>%
+      mutate(
+        mz_diff = abs(mz - target_mz),
+        rt_diff = abs(rt - target_rt)
+      ) %>%
+      filter(mz_diff <= mz_tol, rt_diff <= rt_tol) %>%
+      arrange(mz_diff + rt_diff) %>%
+      slice(1)
+    
+    # if no match found → return NULL
+    if (nrow(match_row) == 0) return(NULL)
+    
+    # Step 2: extract pcgroup
+    pc <- match_row$pcgroup
+    
+    # Step 3: all features in this pcgroup
+    pc_features <- CAMERA_FT %>%
+      filter(pcgroup == pc) %>%
+      mutate(
+        Compound = compound_name,
+        matched_pcgroup = pc
+      )
+    
+    return(pc_features)
+  }
+  StM16_target$Compound <- trimws(StM16_target$Compound)
+
+  # ---- apply function to all compounds ----
+  results_list <- pmap(
+    list(StM16_target$Compound,
+         StM16_target$m.z,
+         StM16_target$RT..s.),
+    find_pcgroup_features
+  )
+  
+  # remove compounds that produced no match
+  results_list <- results_list[!sapply(results_list, is.null)]
+  
+  # combine results
+  final_results <- bind_rows(results_list) %>% 
+    dplyr::select(feature_name, mz, rt, isotopes, adduct, pcgroup, Compound, matched_pcgroup)
+  
+  return(final_results)
+}
+
+```
+
+
+
+```{r}
+result <- extract_pcgroups(CAMERA_FT = CAMERA_annotated_StM16_FT  , StM16_target,
+                           mz_tol = 0.005,
+                           rt_tol = 5)
+```
+
+
+```{r}
+result
+
+```
+```{r}
+unique((result$Compound))
+```
+`
+
+```{r}
+match_pcgroup_to_library <- function(pcgroup_result, inhouse_lib_MS1,
+                                     mz_tol = 0.01) {
+
+  library(dplyr)
+  library(purrr)
+  
+  # extract library names
+  lib_names <- sapply(inhouse_lib_MS1, function(x) x$Name)
+  
+  # function to match a single compound group
+  match_single_compound <- function(df) {
+    
+    comp <- unique(df$Compound)
+    
+    # find matching library index
+    lib_idx <- which(lib_names == comp)
+    
+    # if no library entry exists → mark FALSE for all rows
+    if (length(lib_idx) == 0) {
+      df$library_match <- FALSE
+      return(df)
+    }
+    
+    # get library mz peaks
+    lib_mz <- inhouse_lib_MS1[[lib_idx]]$Peaks$mz
+    
+    # for each feature row in pcgroup: check if any mz matches library
+    df$library_match <- sapply(df$mz, function(feature_mz) {
+      any(abs(feature_mz - lib_mz) <= mz_tol)
+    })
+    
+    return(df)
+  }
+  
+  # split by compound before matching
+  result <- pcgroup_result %>%
+    split(.$Compound) %>%
+    map_df(match_single_compound)
+  
+  return(result)
+}
+
+```
+
+```{r}
+# step 1
+
+pc_result <- extract_pcgroups(CAMERA_FT=CAMERA_annotated_StM16_FT , StM16_target , mz_tol = 0.005, rt_tol = 5)
+```
+
+
+```{r}
+# step 2
+annotated_result <- match_pcgroup_to_library(pc_result, Si16_inhouse_lib_MS1,
+                                             mz_tol = 0.01)
+head(annotated_result)
+
+```
+
+
+
+
+
+
+
+```{r}
+annotated_result[which(annotated_result$Compound %in% "3-Indoleacetonitrile" ),]
+```
+
+
+```{r}
+export_pcgroups_to_xlsx <- function(df, file = "pcgroup_export.xlsx") {
+  library(dplyr)
+  library(openxlsx)
+  library(purrr)
+  
+  wb <- createWorkbook()
+  
+  split_list <- split(df, df$pcgroup)
+  
+  walk(split_list, function(group_df) {
+    
+    # COLLAPSE multiple compounds if present (fix for your error)
+    comp_raw <- unique(group_df$Compound)
+    comp <- paste(comp_raw, collapse = "_")  # ALWAYS length 1
+    
+    pcg  <- unique(group_df$pcgroup)
+    
+    # Safe sheet name
+    sheet_name <- paste0(gsub("[^A-Za-z0-9]+", "_", comp), "_pc", pcg)
+    sheet_name <- substr(sheet_name, 1, 31)  # Excel allows max 31 chars
+    
+    # Add sheet
+    addWorksheet(wb, sheet_name)
+    
+    # Write data
+    writeData(wb, sheet = sheet_name, x = group_df)
+  })
+  
+  saveWorkbook(wb, file, overwrite = TRUE)
+  
+  message("Excel written to: ", file)
+}
+
+
+```
+
+```{r}
+export_pcgroups_to_xlsx(annotated_result, "annotated_CAMERA_pcgroups_(V2).xlsx")
+
+```
+```{r}
+StM16_join_annotation_results_2merge <- readRDS("StM16_join_annotation_results_2merge.RDS")
+
+```
+
+```{r}
+unique(StM16_join_annotation_results_2merge$export_reduced_anno_table$PI_match)
+```
+```{r}
+StM16_join_annotation_results_CAMERA <- StM16_join_annotation_results_2merge$export_full_table %>% 
+  left_join(., annotated_result, by = "feature_name")
+```
+```{r}
+head(StM16_join_annotation_results_CAMERA)
+```
+
+```{r}
+write.csv(StM16_join_annotation_results_CAMERA, "StM16_join_annotation_results_CAMERA_(V2).csv")
+```
+

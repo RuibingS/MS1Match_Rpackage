@@ -1,0 +1,224 @@
+---
+title: "PA14_pairwise_compare"
+author: "Ruibing"
+date: "2025-08-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 
+
+
+Using all feature pair
+
+```{r}
+# Step 1: Generate feature pairs and labels
+#  feature_pairs <- pairwise_features_labels(
+#   feature_table = result_PA14_FT_filtered,
+#   feature_compounds = direct_match_PA14_res_MS1,
+#   rt_threshold = 10.0
+# )
+```
+## Including Plots
+
+
+
+```{r pressure, echo=FALSE}
+head(feature_pairs)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r}
+feature_pairs[which(feature_pairs$feature_2 %in% "FT0574" & feature_pairs$feature_1 %in% "FT0576"),]
+```
+
+
+
+```{r}
+table(feature_pairs$shared_compounds)
+```
+
+
+
+```{r}
+direct_match_PA14_res_MS1[[which(sapply(direct_match_PA14_res_MS1, function(x) x$Compound_name)%in% "Spermidine")]]
+```
+
+
+
+```{r}
+feature_pairs[which(feature_pairs$shared_compounds%in% "Spermidine" ),]
+```
+
+
+
+## generate PI pairs
+
+USing [M+H]+ feature as anchor, assign labels only to the neibouger feature (e.g. 5s, 10s), assign 1 when both found peak matching in to library and also with annotation. label 0 means negative or unsure in semi-supervised learning. 
+```{r}
+
+#pairs_for_ml_PA14 <- generate_PI_pairs(annotate_peaks_PA14_result_df, rt_threshold = 5)
+
+pairs_for_ml_PA14 <- generate_PI_pairs(annotate_peaks_PA14_result_df, rt_threshold = 10, ppm_tolerance = 20)
+
+
+```
+
+```{r}
+head(pairs_for_ml_PA14[which(pairs_for_ml_PA14$label %in% 1),],70)
+```
+
+## RT similarity
+```{r}
+
+
+rt_sim_obj <- calRTSimilarity(feature_table = result_PA14_FT_filtered,
+                        feature_pairs = pairs_for_ml_PA14,
+                        , method = "gaussian")
+
+
+rt_sim_res <- rt_similarity(rt_sim_obj)
+
+head(rt_sim_res)
+
+rt_distance_res <- rt_distance(rt_sim_obj)
+
+head(rt_distance_res)
+
+
+```
+```{r}
+rt_sim_res[rt_sim_res$feature_1 == "FT0430" & rt_sim_res$feature_2 == "FT0380", ]
+```
+
+
+
+
+## EIC similarity 
+based on pre calculate feature pair with labels, we calcualte the pairwise feature EIC similarity
+
+```{r}
+# step 1:  Create the object
+eicData_obj <- new("EICData",
+           features = result_PA14_FT_filtered,
+           eic_data = result_PA14[[4]])
+
+# step 2: Process EICs using Rcpp
+eic_obj <- feature_EIC_process(eicData_obj, nrows = nrow(result_PA14_FT_filtered), ncols = 24)
+
+```
+
+
+```{r}
+# step 3: calculate pairwise EIC similarity
+
+eic_result <- EIC_cor_mat_pairs(
+  feature_EIC_combined_result = eic_obj@parsed_EIC,
+  feature_pairs = pairs_for_ml_PA14,
+  rt_EIC_thr = 2.0,
+  method = "pearson"
+)
+
+```
+
+```{r}
+eic_result[eic_result$feature_1 == "FT0430" & eic_result$feature_2 == "FT0380", ]
+```
+
+
+
+
+## sample intensity correlation
+
+```{r}
+PA14_corintensity <- CorIntensityPair(feature_table = result_PA14_FT_filtered, feature_pairs = pairs_for_ml_PA14,intensity_cols = 18:41)
+```
+
+
+
+```{r}
+head(PA14_corintensity)
+
+
+PA14_corintensity[PA14_corintensity$feature_1 == "FT0430" & PA14_corintensity$feature_2 == "FT0380", ]
+
+```
+
+
+## Merge into one
+
+
+
+
+```{r}
+library(dplyr)
+
+
+merged_input <- pairs_for_ml_PA14 %>%
+  left_join(rt_sim_res, by = c("feature_1", "feature_2")) %>%
+
+  left_join(eic_result, by = c("feature_1", "feature_2")) %>%
+  left_join(PA14_corintensity, by = c("feature_1", "feature_2")) %>%
+  
+  mutate(
+    rt_similarity = replace_na(rt_similarity, 0),
+    cor_value = replace_na(cor_value, 0) ,
+    EIC_similarity = replace_na(EIC_similarity, 0)
+  )
+
+head(merged_input,30)
+
+
+```
+
+
+
+```{r}
+write.csv(merged_input,"merged_input_PA14_label_Merge.csv", row.names = FALSE)
+```
+
+
+## join the library annotation output
+
+```{r}
+head(direct_match_PA14_res_MS1_df)
+```
+
+
+
+```{r}
+merged_input_PA14_join_lib <- merged_input %>% 
+  left_join(., direct_match_PA14_res_MS1_df[, c("Matched_features_to_peaks", "Lib_group","Compound_name")],by =c("feature_2"="Matched_features_to_peaks") )
+```
+
+```{r}
+head(merged_input_PA14_join_lib,50)
+```
+
+```{r}
+write.csv(merged_input_PA14_join_lib, "merged_input_PA14_join_lib.csv",row.names=F)
+```
+
+
+
+
+
+
+
+
+
+
+## ML
+
+```{r}
+table(merged_input$label)
+```
+### chekc iso
+
+
+
+

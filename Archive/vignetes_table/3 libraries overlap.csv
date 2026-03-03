@@ -1,0 +1,867 @@
+,Formula,Name_Inhouse,Name_MoNA,Name_CSU_PMF,Inhouse,MoNA,CSU_PMF,Match_type
+2,C10H10O4,Ferulate,NA,trans-Ferulic acid,TRUE,FALSE,TRUE,2-library_overlap
+3,C10H10O4,Ferulate,NA,Isoferulic acid,TRUE,FALSE,TRUE,2-library_overlap
+4,C10H10O4,Ferulate,NA,trans-Ferulic acid,TRUE,FALSE,TRUE,2-library_overlap
+5,C10H10O4,Ferulate,NA,Isoferulic acid,TRUE,FALSE,TRUE,2-library_overlap
+7,C10H11NO,Indole-3-ethanol,NA,3-(2-hydroxyethylindole),TRUE,FALSE,TRUE,2-library_overlap
+8,C10H11NO,Indole-3-ethanol,NA,3-(2-hydroxyethylindole),TRUE,FALSE,TRUE,2-library_overlap
+13,C10H12N2O,Serotonin,Serotonin,NA,TRUE,TRUE,FALSE,2-library_overlap
+14,C10H12N2O,Serotonin,Cotinine,NA,TRUE,TRUE,FALSE,2-library_overlap
+15,C10H12N2O3,L-Kynurenine,Kynurenine,L-Kynurenine,TRUE,TRUE,TRUE,3-library_overlap
+16,C10H12N2O3,L-Kynurenine,Kynurenine,L-Kynurenine,TRUE,TRUE,TRUE,3-library_overlap
+17,C10H12N2O4,3-Hydroxy-Kynurenine,NA,Hydroxykynurenine,TRUE,FALSE,TRUE,2-library_overlap
+18,C10H12N2O4,3-Hydroxy-Kynurenine,NA,Hydroxykynurenine,TRUE,FALSE,TRUE,2-library_overlap
+20,C10H12N4O5,Inosine,Inosine,NA,TRUE,TRUE,FALSE,2-library_overlap
+21,C10H12N4O6,Xanthosine,Xanthosine,NA,TRUE,TRUE,FALSE,2-library_overlap
+29,C10H13N4O8P,Inosine 5'-monophosphate,Inosine-5'-monophosphate,NA,TRUE,TRUE,FALSE,2-library_overlap
+30,C10H13N4O8P,Inosine 5'-phosphate,Inosine-5'-monophosphate,NA,TRUE,TRUE,FALSE,2-library_overlap
+35,C10H13N5O3,2'-Deoxyadenosine,2'-Deoxyadenosine,NA,TRUE,TRUE,FALSE,2-library_overlap
+36,C10H13N5O3,5'-Deoxyadenosine,2'-Deoxyadenosine,NA,TRUE,TRUE,FALSE,2-library_overlap
+37,C10H13N5O3,2'-Deoxyadenosine,2'-Deoxyadenosine,NA,TRUE,TRUE,FALSE,2-library_overlap
+38,C10H13N5O4,2'-Deoxyguanosine,Adenosine,NA,TRUE,TRUE,FALSE,2-library_overlap
+39,C10H13N5O4,2'-Deoxyguanosine,Rhamnopterin,NA,TRUE,TRUE,FALSE,2-library_overlap
+40,C10H13N5O4,Adenosine,Adenosine,NA,TRUE,TRUE,FALSE,2-library_overlap
+41,C10H13N5O4,Adenosine,Rhamnopterin,NA,TRUE,TRUE,FALSE,2-library_overlap
+43,C10H13N5O5,Guanosine,Guanosine,NA,TRUE,TRUE,FALSE,2-library_overlap
+44,C10H13NO2,1-Methyl-6;7-dihydroxy-1;2;3;4-tetrahydroisoquinoline,Fusaric acid,NA,TRUE,TRUE,FALSE,2-library_overlap
+45,C10H13NO4,3-Methoxy-L-Tyrosine,NA,3-Methoxytyrosine,TRUE,FALSE,TRUE,2-library_overlap
+46,C10H13NO4,3-Methoxy-L-Tyrosine,NA,3-Methoxytyrosine,TRUE,FALSE,TRUE,2-library_overlap
+47,C10H14N2,(S)-Nicotine,Nicotine,NA,TRUE,TRUE,FALSE,2-library_overlap
+48,C10H14N2,(S)-Nicotine,Anabasine,NA,TRUE,TRUE,FALSE,2-library_overlap
+51,C10H14N2O5,Thymidine,Thymidine,NA,TRUE,TRUE,FALSE,2-library_overlap
+58,C10H14N5O6P,DAMP,2'-Deoxyadenosine-5'-monophosphoric acid,NA,TRUE,TRUE,FALSE,2-library_overlap
+59,C10H14N5O7P,2'-Deoxyguanosine 5'-monophosphate,3'-Adenylic acid,NA,TRUE,TRUE,FALSE,2-library_overlap
+60,C10H14N5O7P,2'-Deoxyguanosine 5'-monophosphate,2'-Deoxyguanosine 5'-monophosphate,NA,TRUE,TRUE,FALSE,2-library_overlap
+61,C10H14N5O7P,Adenosine 5'-monophosphate,3'-Adenylic acid,NA,TRUE,TRUE,FALSE,2-library_overlap
+62,C10H14N5O7P,Adenosine 5'-monophosphate,2'-Deoxyguanosine 5'-monophosphate,NA,TRUE,TRUE,FALSE,2-library_overlap
+63,C10H14N5O8P,Guanosine 5'-monophosphate,Guanosine 5'-monophosphate,NA,TRUE,TRUE,FALSE,2-library_overlap
+75,C10H15NO,NA,Ephedrine,Pseudoephedrine,FALSE,TRUE,TRUE,2-library_overlap
+76,C10H15NO,NA,Ephedrine,Pseudoephedrine,FALSE,TRUE,TRUE,2-library_overlap
+77,C10H16N2O3S,Biotin,Biotin,NA,TRUE,TRUE,FALSE,2-library_overlap
+81,C10H17N3O6S,Glutathione,NA,Glutathione,TRUE,FALSE,TRUE,2-library_overlap
+82,C10H17N3O6S,Glutathione,NA,Glutathione,TRUE,FALSE,TRUE,2-library_overlap
+103,C10H7NO3,4-Hydroxy-2-quinoline carboxylic acid,Kynurenic Acid,NA,TRUE,TRUE,FALSE,2-library_overlap
+111,C10H9N5O,Kinetin,Kinetin,NA,TRUE,TRUE,FALSE,2-library_overlap
+118,C11H12Cl2N2O5,Chloramphenicol,Chloramphenicol,NA,TRUE,TRUE,FALSE,2-library_overlap
+120,C11H12N2O2,L-Tryptophan,L-Tryptophan,L-Tryptophan,TRUE,TRUE,TRUE,3-library_overlap
+121,C11H12N2O2,L-Tryptophan,L-Tryptophan,L-Tryptophan,TRUE,TRUE,TRUE,3-library_overlap
+122,C11H12N2O2,D-Tryptophan,L-Tryptophan,L-Tryptophan,TRUE,TRUE,TRUE,3-library_overlap
+123,C11H12N2O2,D-Tryptophan,L-Tryptophan,L-Tryptophan,TRUE,TRUE,TRUE,3-library_overlap
+124,C11H12N2O3,5-Hydroxy-L-Tryptophan,Oxitriptan 1,NA,TRUE,TRUE,FALSE,2-library_overlap
+128,C11H13NO3,N-Acetyl-L-phenylalanine,NA,N-Acetyl-L-phenylalanine,TRUE,FALSE,TRUE,2-library_overlap
+129,C11H13NO3,N-Acetyl-L-phenylalanine,NA,N-Acetyl-L-phenylalanine,TRUE,FALSE,TRUE,2-library_overlap
+132,C11H14N2,N-Methyltryptamine,5-Methyltryptamine,NA,TRUE,TRUE,FALSE,2-library_overlap
+145,C11H19NO9,N-Acetylneuraminate,NA,N-Acetylneuraminic acid,TRUE,FALSE,TRUE,2-library_overlap
+146,C11H19NO9,N-Acetylneuraminate,NA,N-Acetylneuraminic acid,TRUE,FALSE,TRUE,2-library_overlap
+153,C11H8O3,1-Hydroxy-2-naphthoate,Plumbagin,NA,TRUE,TRUE,FALSE,2-library_overlap
+168,C12H14N2O2,N-Acetylserotonin,Abrine,NA,TRUE,TRUE,FALSE,2-library_overlap
+169,C12H14N2O2,N-Acetylserotonin,(-)-N-Formylcytisine,NA,TRUE,TRUE,FALSE,2-library_overlap
+185,C12H22O11,Melibiose,Isomaltose,alpha-D-Sophorose,TRUE,TRUE,TRUE,3-library_overlap
+186,C12H22O11,Melibiose,Isomaltose,alpha-D-Sophorose,TRUE,TRUE,TRUE,3-library_overlap
+187,C12H22O11,Melibiose,Isomaltose,Isomaltose,TRUE,TRUE,TRUE,3-library_overlap
+188,C12H22O11,Melibiose,Isomaltose,Alpha-Lactose,TRUE,TRUE,TRUE,3-library_overlap
+189,C12H22O11,Melibiose,Isomaltose,Isomaltose,TRUE,TRUE,TRUE,3-library_overlap
+190,C12H22O11,Melibiose,Isomaltose,Sucrose,TRUE,TRUE,TRUE,3-library_overlap
+191,C12H22O11,Melibiose,Isomaltose,Melibiose,TRUE,TRUE,TRUE,3-library_overlap
+192,C12H22O11,Melibiose,Isomaltose,Lactulose,TRUE,TRUE,TRUE,3-library_overlap
+193,C12H22O11,Melibiose,Isomaltose,Melibiose,TRUE,TRUE,TRUE,3-library_overlap
+194,C12H22O11,Melibiose,Isomaltose,Trehalose,TRUE,TRUE,TRUE,3-library_overlap
+195,C12H22O11,Melibiose,Isomaltose,Sucrose,TRUE,TRUE,TRUE,3-library_overlap
+196,C12H22O11,Melibiose,Isomaltose,Alpha-Lactose,TRUE,TRUE,TRUE,3-library_overlap
+197,C12H22O11,Melibiose,Isomaltose,Trehalose,TRUE,TRUE,TRUE,3-library_overlap
+198,C12H22O11,Melibiose,Isomaltose,Lactulose,TRUE,TRUE,TRUE,3-library_overlap
+199,C12H22O11,Sucrose,Isomaltose,alpha-D-Sophorose,TRUE,TRUE,TRUE,3-library_overlap
+200,C12H22O11,Sucrose,Isomaltose,alpha-D-Sophorose,TRUE,TRUE,TRUE,3-library_overlap
+201,C12H22O11,Sucrose,Isomaltose,Isomaltose,TRUE,TRUE,TRUE,3-library_overlap
+202,C12H22O11,Sucrose,Isomaltose,Alpha-Lactose,TRUE,TRUE,TRUE,3-library_overlap
+203,C12H22O11,Sucrose,Isomaltose,Isomaltose,TRUE,TRUE,TRUE,3-library_overlap
+204,C12H22O11,Sucrose,Isomaltose,Sucrose,TRUE,TRUE,TRUE,3-library_overlap
+205,C12H22O11,Sucrose,Isomaltose,Melibiose,TRUE,TRUE,TRUE,3-library_overlap
+206,C12H22O11,Sucrose,Isomaltose,Lactulose,TRUE,TRUE,TRUE,3-library_overlap
+207,C12H22O11,Sucrose,Isomaltose,Melibiose,TRUE,TRUE,TRUE,3-library_overlap
+208,C12H22O11,Sucrose,Isomaltose,Trehalose,TRUE,TRUE,TRUE,3-library_overlap
+209,C12H22O11,Sucrose,Isomaltose,Sucrose,TRUE,TRUE,TRUE,3-library_overlap
+210,C12H22O11,Sucrose,Isomaltose,Alpha-Lactose,TRUE,TRUE,TRUE,3-library_overlap
+211,C12H22O11,Sucrose,Isomaltose,Trehalose,TRUE,TRUE,TRUE,3-library_overlap
+212,C12H22O11,Sucrose,Isomaltose,Lactulose,TRUE,TRUE,TRUE,3-library_overlap
+213,C12H22O11,D-(+)-Trehalose,Isomaltose,alpha-D-Sophorose,TRUE,TRUE,TRUE,3-library_overlap
+214,C12H22O11,D-(+)-Trehalose,Isomaltose,alpha-D-Sophorose,TRUE,TRUE,TRUE,3-library_overlap
+215,C12H22O11,D-(+)-Trehalose,Isomaltose,Isomaltose,TRUE,TRUE,TRUE,3-library_overlap
+216,C12H22O11,D-(+)-Trehalose,Isomaltose,Alpha-Lactose,TRUE,TRUE,TRUE,3-library_overlap
+217,C12H22O11,D-(+)-Trehalose,Isomaltose,Isomaltose,TRUE,TRUE,TRUE,3-library_overlap
+218,C12H22O11,D-(+)-Trehalose,Isomaltose,Sucrose,TRUE,TRUE,TRUE,3-library_overlap
+219,C12H22O11,D-(+)-Trehalose,Isomaltose,Melibiose,TRUE,TRUE,TRUE,3-library_overlap
+220,C12H22O11,D-(+)-Trehalose,Isomaltose,Lactulose,TRUE,TRUE,TRUE,3-library_overlap
+221,C12H22O11,D-(+)-Trehalose,Isomaltose,Melibiose,TRUE,TRUE,TRUE,3-library_overlap
+222,C12H22O11,D-(+)-Trehalose,Isomaltose,Trehalose,TRUE,TRUE,TRUE,3-library_overlap
+223,C12H22O11,D-(+)-Trehalose,Isomaltose,Sucrose,TRUE,TRUE,TRUE,3-library_overlap
+224,C12H22O11,D-(+)-Trehalose,Isomaltose,Alpha-Lactose,TRUE,TRUE,TRUE,3-library_overlap
+225,C12H22O11,D-(+)-Trehalose,Isomaltose,Trehalose,TRUE,TRUE,TRUE,3-library_overlap
+226,C12H22O11,D-(+)-Trehalose,Isomaltose,Lactulose,TRUE,TRUE,TRUE,3-library_overlap
+227,C12H22O11,Sucrose,Cellobiose,alpha-D-Sophorose,TRUE,TRUE,TRUE,3-library_overlap
+228,C12H22O11,Sucrose,Cellobiose,alpha-D-Sophorose,TRUE,TRUE,TRUE,3-library_overlap
+229,C12H22O11,Sucrose,Cellobiose,Isomaltose,TRUE,TRUE,TRUE,3-library_overlap
+230,C12H22O11,Sucrose,Cellobiose,Alpha-Lactose,TRUE,TRUE,TRUE,3-library_overlap
+231,C12H22O11,Sucrose,Cellobiose,Isomaltose,TRUE,TRUE,TRUE,3-library_overlap
+232,C12H22O11,Sucrose,Cellobiose,Sucrose,TRUE,TRUE,TRUE,3-library_overlap
+233,C12H22O11,Sucrose,Cellobiose,Melibiose,TRUE,TRUE,TRUE,3-library_overlap
+234,C12H22O11,Sucrose,Cellobiose,Lactulose,TRUE,TRUE,TRUE,3-library_overlap
+235,C12H22O11,Sucrose,Cellobiose,Melibiose,TRUE,TRUE,TRUE,3-library_overlap
+236,C12H22O11,Sucrose,Cellobiose,Trehalose,TRUE,TRUE,TRUE,3-library_overlap
+237,C12H22O11,Sucrose,Cellobiose,Sucrose,TRUE,TRUE,TRUE,3-library_overlap
+238,C12H22O11,Sucrose,Cellobiose,Alpha-Lactose,TRUE,TRUE,TRUE,3-library_overlap
+239,C12H22O11,Sucrose,Cellobiose,Trehalose,TRUE,TRUE,TRUE,3-library_overlap
+240,C12H22O11,Sucrose,Cellobiose,Lactulose,TRUE,TRUE,TRUE,3-library_overlap
+241,C12H22O11,Melibiose,Lactulose,alpha-D-Sophorose,TRUE,TRUE,TRUE,3-library_overlap
+242,C12H22O11,Melibiose,Lactulose,alpha-D-Sophorose,TRUE,TRUE,TRUE,3-library_overlap
+243,C12H22O11,Melibiose,Lactulose,Isomaltose,TRUE,TRUE,TRUE,3-library_overlap
+244,C12H22O11,Melibiose,Lactulose,Alpha-Lactose,TRUE,TRUE,TRUE,3-library_overlap
+245,C12H22O11,Melibiose,Lactulose,Isomaltose,TRUE,TRUE,TRUE,3-library_overlap
+246,C12H22O11,Melibiose,Lactulose,Sucrose,TRUE,TRUE,TRUE,3-library_overlap
+247,C12H22O11,Melibiose,Lactulose,Melibiose,TRUE,TRUE,TRUE,3-library_overlap
+248,C12H22O11,Melibiose,Lactulose,Lactulose,TRUE,TRUE,TRUE,3-library_overlap
+249,C12H22O11,Melibiose,Lactulose,Melibiose,TRUE,TRUE,TRUE,3-library_overlap
+250,C12H22O11,Melibiose,Lactulose,Trehalose,TRUE,TRUE,TRUE,3-library_overlap
+251,C12H22O11,Melibiose,Lactulose,Sucrose,TRUE,TRUE,TRUE,3-library_overlap
+252,C12H22O11,Melibiose,Lactulose,Alpha-Lactose,TRUE,TRUE,TRUE,3-library_overlap
+253,C12H22O11,Melibiose,Lactulose,Trehalose,TRUE,TRUE,TRUE,3-library_overlap
+254,C12H22O11,Melibiose,Lactulose,Lactulose,TRUE,TRUE,TRUE,3-library_overlap
+255,C12H22O11,D-(+)-Trehalose,Cellobiose,alpha-D-Sophorose,TRUE,TRUE,TRUE,3-library_overlap
+256,C12H22O11,D-(+)-Trehalose,Cellobiose,alpha-D-Sophorose,TRUE,TRUE,TRUE,3-library_overlap
+257,C12H22O11,D-(+)-Trehalose,Cellobiose,Isomaltose,TRUE,TRUE,TRUE,3-library_overlap
+258,C12H22O11,D-(+)-Trehalose,Cellobiose,Alpha-Lactose,TRUE,TRUE,TRUE,3-library_overlap
+259,C12H22O11,D-(+)-Trehalose,Cellobiose,Isomaltose,TRUE,TRUE,TRUE,3-library_overlap
+260,C12H22O11,D-(+)-Trehalose,Cellobiose,Sucrose,TRUE,TRUE,TRUE,3-library_overlap
+261,C12H22O11,D-(+)-Trehalose,Cellobiose,Melibiose,TRUE,TRUE,TRUE,3-library_overlap
+262,C12H22O11,D-(+)-Trehalose,Cellobiose,Lactulose,TRUE,TRUE,TRUE,3-library_overlap
+263,C12H22O11,D-(+)-Trehalose,Cellobiose,Melibiose,TRUE,TRUE,TRUE,3-library_overlap
+264,C12H22O11,D-(+)-Trehalose,Cellobiose,Trehalose,TRUE,TRUE,TRUE,3-library_overlap
+265,C12H22O11,D-(+)-Trehalose,Cellobiose,Sucrose,TRUE,TRUE,TRUE,3-library_overlap
+266,C12H22O11,D-(+)-Trehalose,Cellobiose,Alpha-Lactose,TRUE,TRUE,TRUE,3-library_overlap
+267,C12H22O11,D-(+)-Trehalose,Cellobiose,Trehalose,TRUE,TRUE,TRUE,3-library_overlap
+268,C12H22O11,D-(+)-Trehalose,Cellobiose,Lactulose,TRUE,TRUE,TRUE,3-library_overlap
+269,C12H22O11,Melibiose,Cellobiose,alpha-D-Sophorose,TRUE,TRUE,TRUE,3-library_overlap
+270,C12H22O11,Melibiose,Cellobiose,alpha-D-Sophorose,TRUE,TRUE,TRUE,3-library_overlap
+271,C12H22O11,Melibiose,Cellobiose,Isomaltose,TRUE,TRUE,TRUE,3-library_overlap
+272,C12H22O11,Melibiose,Cellobiose,Alpha-Lactose,TRUE,TRUE,TRUE,3-library_overlap
+273,C12H22O11,Melibiose,Cellobiose,Isomaltose,TRUE,TRUE,TRUE,3-library_overlap
+274,C12H22O11,Melibiose,Cellobiose,Sucrose,TRUE,TRUE,TRUE,3-library_overlap
+275,C12H22O11,Melibiose,Cellobiose,Melibiose,TRUE,TRUE,TRUE,3-library_overlap
+276,C12H22O11,Melibiose,Cellobiose,Lactulose,TRUE,TRUE,TRUE,3-library_overlap
+277,C12H22O11,Melibiose,Cellobiose,Melibiose,TRUE,TRUE,TRUE,3-library_overlap
+278,C12H22O11,Melibiose,Cellobiose,Trehalose,TRUE,TRUE,TRUE,3-library_overlap
+279,C12H22O11,Melibiose,Cellobiose,Sucrose,TRUE,TRUE,TRUE,3-library_overlap
+280,C12H22O11,Melibiose,Cellobiose,Alpha-Lactose,TRUE,TRUE,TRUE,3-library_overlap
+281,C12H22O11,Melibiose,Cellobiose,Trehalose,TRUE,TRUE,TRUE,3-library_overlap
+282,C12H22O11,Melibiose,Cellobiose,Lactulose,TRUE,TRUE,TRUE,3-library_overlap
+283,C12H22O11,Sucrose,Lactulose,alpha-D-Sophorose,TRUE,TRUE,TRUE,3-library_overlap
+284,C12H22O11,Sucrose,Lactulose,alpha-D-Sophorose,TRUE,TRUE,TRUE,3-library_overlap
+285,C12H22O11,Sucrose,Lactulose,Isomaltose,TRUE,TRUE,TRUE,3-library_overlap
+286,C12H22O11,Sucrose,Lactulose,Alpha-Lactose,TRUE,TRUE,TRUE,3-library_overlap
+287,C12H22O11,Sucrose,Lactulose,Isomaltose,TRUE,TRUE,TRUE,3-library_overlap
+288,C12H22O11,Sucrose,Lactulose,Sucrose,TRUE,TRUE,TRUE,3-library_overlap
+289,C12H22O11,Sucrose,Lactulose,Melibiose,TRUE,TRUE,TRUE,3-library_overlap
+290,C12H22O11,Sucrose,Lactulose,Lactulose,TRUE,TRUE,TRUE,3-library_overlap
+291,C12H22O11,Sucrose,Lactulose,Melibiose,TRUE,TRUE,TRUE,3-library_overlap
+292,C12H22O11,Sucrose,Lactulose,Trehalose,TRUE,TRUE,TRUE,3-library_overlap
+293,C12H22O11,Sucrose,Lactulose,Sucrose,TRUE,TRUE,TRUE,3-library_overlap
+294,C12H22O11,Sucrose,Lactulose,Alpha-Lactose,TRUE,TRUE,TRUE,3-library_overlap
+295,C12H22O11,Sucrose,Lactulose,Trehalose,TRUE,TRUE,TRUE,3-library_overlap
+296,C12H22O11,Sucrose,Lactulose,Lactulose,TRUE,TRUE,TRUE,3-library_overlap
+297,C12H22O11,Palatinose,Lactulose,alpha-D-Sophorose,TRUE,TRUE,TRUE,3-library_overlap
+298,C12H22O11,Palatinose,Lactulose,alpha-D-Sophorose,TRUE,TRUE,TRUE,3-library_overlap
+299,C12H22O11,Palatinose,Lactulose,Isomaltose,TRUE,TRUE,TRUE,3-library_overlap
+300,C12H22O11,Palatinose,Lactulose,Alpha-Lactose,TRUE,TRUE,TRUE,3-library_overlap
+301,C12H22O11,Palatinose,Lactulose,Isomaltose,TRUE,TRUE,TRUE,3-library_overlap
+302,C12H22O11,Palatinose,Lactulose,Sucrose,TRUE,TRUE,TRUE,3-library_overlap
+303,C12H22O11,Palatinose,Lactulose,Melibiose,TRUE,TRUE,TRUE,3-library_overlap
+304,C12H22O11,Palatinose,Lactulose,Lactulose,TRUE,TRUE,TRUE,3-library_overlap
+305,C12H22O11,Palatinose,Lactulose,Melibiose,TRUE,TRUE,TRUE,3-library_overlap
+306,C12H22O11,Palatinose,Lactulose,Trehalose,TRUE,TRUE,TRUE,3-library_overlap
+307,C12H22O11,Palatinose,Lactulose,Sucrose,TRUE,TRUE,TRUE,3-library_overlap
+308,C12H22O11,Palatinose,Lactulose,Alpha-Lactose,TRUE,TRUE,TRUE,3-library_overlap
+309,C12H22O11,Palatinose,Lactulose,Trehalose,TRUE,TRUE,TRUE,3-library_overlap
+310,C12H22O11,Palatinose,Lactulose,Lactulose,TRUE,TRUE,TRUE,3-library_overlap
+311,C12H22O11,Palatinose,Isomaltose,alpha-D-Sophorose,TRUE,TRUE,TRUE,3-library_overlap
+312,C12H22O11,Palatinose,Isomaltose,alpha-D-Sophorose,TRUE,TRUE,TRUE,3-library_overlap
+313,C12H22O11,Palatinose,Isomaltose,Isomaltose,TRUE,TRUE,TRUE,3-library_overlap
+314,C12H22O11,Palatinose,Isomaltose,Alpha-Lactose,TRUE,TRUE,TRUE,3-library_overlap
+315,C12H22O11,Palatinose,Isomaltose,Isomaltose,TRUE,TRUE,TRUE,3-library_overlap
+316,C12H22O11,Palatinose,Isomaltose,Sucrose,TRUE,TRUE,TRUE,3-library_overlap
+317,C12H22O11,Palatinose,Isomaltose,Melibiose,TRUE,TRUE,TRUE,3-library_overlap
+318,C12H22O11,Palatinose,Isomaltose,Lactulose,TRUE,TRUE,TRUE,3-library_overlap
+319,C12H22O11,Palatinose,Isomaltose,Melibiose,TRUE,TRUE,TRUE,3-library_overlap
+320,C12H22O11,Palatinose,Isomaltose,Trehalose,TRUE,TRUE,TRUE,3-library_overlap
+321,C12H22O11,Palatinose,Isomaltose,Sucrose,TRUE,TRUE,TRUE,3-library_overlap
+322,C12H22O11,Palatinose,Isomaltose,Alpha-Lactose,TRUE,TRUE,TRUE,3-library_overlap
+323,C12H22O11,Palatinose,Isomaltose,Trehalose,TRUE,TRUE,TRUE,3-library_overlap
+324,C12H22O11,Palatinose,Isomaltose,Lactulose,TRUE,TRUE,TRUE,3-library_overlap
+325,C12H22O11,Palatinose,Cellobiose,alpha-D-Sophorose,TRUE,TRUE,TRUE,3-library_overlap
+326,C12H22O11,Palatinose,Cellobiose,alpha-D-Sophorose,TRUE,TRUE,TRUE,3-library_overlap
+327,C12H22O11,Palatinose,Cellobiose,Isomaltose,TRUE,TRUE,TRUE,3-library_overlap
+328,C12H22O11,Palatinose,Cellobiose,Alpha-Lactose,TRUE,TRUE,TRUE,3-library_overlap
+329,C12H22O11,Palatinose,Cellobiose,Isomaltose,TRUE,TRUE,TRUE,3-library_overlap
+330,C12H22O11,Palatinose,Cellobiose,Sucrose,TRUE,TRUE,TRUE,3-library_overlap
+331,C12H22O11,Palatinose,Cellobiose,Melibiose,TRUE,TRUE,TRUE,3-library_overlap
+332,C12H22O11,Palatinose,Cellobiose,Lactulose,TRUE,TRUE,TRUE,3-library_overlap
+333,C12H22O11,Palatinose,Cellobiose,Melibiose,TRUE,TRUE,TRUE,3-library_overlap
+334,C12H22O11,Palatinose,Cellobiose,Trehalose,TRUE,TRUE,TRUE,3-library_overlap
+335,C12H22O11,Palatinose,Cellobiose,Sucrose,TRUE,TRUE,TRUE,3-library_overlap
+336,C12H22O11,Palatinose,Cellobiose,Alpha-Lactose,TRUE,TRUE,TRUE,3-library_overlap
+337,C12H22O11,Palatinose,Cellobiose,Trehalose,TRUE,TRUE,TRUE,3-library_overlap
+338,C12H22O11,Palatinose,Cellobiose,Lactulose,TRUE,TRUE,TRUE,3-library_overlap
+339,C12H22O11,D-(+)-Trehalose,Lactulose,alpha-D-Sophorose,TRUE,TRUE,TRUE,3-library_overlap
+340,C12H22O11,D-(+)-Trehalose,Lactulose,alpha-D-Sophorose,TRUE,TRUE,TRUE,3-library_overlap
+341,C12H22O11,D-(+)-Trehalose,Lactulose,Isomaltose,TRUE,TRUE,TRUE,3-library_overlap
+342,C12H22O11,D-(+)-Trehalose,Lactulose,Alpha-Lactose,TRUE,TRUE,TRUE,3-library_overlap
+343,C12H22O11,D-(+)-Trehalose,Lactulose,Isomaltose,TRUE,TRUE,TRUE,3-library_overlap
+344,C12H22O11,D-(+)-Trehalose,Lactulose,Sucrose,TRUE,TRUE,TRUE,3-library_overlap
+345,C12H22O11,D-(+)-Trehalose,Lactulose,Melibiose,TRUE,TRUE,TRUE,3-library_overlap
+346,C12H22O11,D-(+)-Trehalose,Lactulose,Lactulose,TRUE,TRUE,TRUE,3-library_overlap
+347,C12H22O11,D-(+)-Trehalose,Lactulose,Melibiose,TRUE,TRUE,TRUE,3-library_overlap
+348,C12H22O11,D-(+)-Trehalose,Lactulose,Trehalose,TRUE,TRUE,TRUE,3-library_overlap
+349,C12H22O11,D-(+)-Trehalose,Lactulose,Sucrose,TRUE,TRUE,TRUE,3-library_overlap
+350,C12H22O11,D-(+)-Trehalose,Lactulose,Alpha-Lactose,TRUE,TRUE,TRUE,3-library_overlap
+351,C12H22O11,D-(+)-Trehalose,Lactulose,Trehalose,TRUE,TRUE,TRUE,3-library_overlap
+352,C12H22O11,D-(+)-Trehalose,Lactulose,Lactulose,TRUE,TRUE,TRUE,3-library_overlap
+357,C12H28N4O,N1-Acetylspermine,NA,N1-Acetylspermine,TRUE,FALSE,TRUE,2-library_overlap
+358,C12H28N4O,N1-Acetylspermine,NA,N1-Acetylspermine,TRUE,FALSE,TRUE,2-library_overlap
+375,C13H16N2O2,Melatonin,N-acetylcytisine,NA,TRUE,TRUE,FALSE,2-library_overlap
+376,C13H16N2O2,Melatonin,Melatonin,NA,TRUE,TRUE,FALSE,2-library_overlap
+430,C15H10O4,NA,"2',6-Dihydroxyflavone",Daidzein,FALSE,TRUE,TRUE,2-library_overlap
+431,C15H10O4,NA,"2',6-Dihydroxyflavone",Daidzein,FALSE,TRUE,TRUE,2-library_overlap
+432,C15H10O4,NA,"7,3'-Dihydroxyflavone",Daidzein,FALSE,TRUE,TRUE,2-library_overlap
+433,C15H10O4,NA,"7,3'-Dihydroxyflavone",Daidzein,FALSE,TRUE,TRUE,2-library_overlap
+434,C15H10O4,NA,4' 7-dihydroxyisoflavone,Daidzein,FALSE,TRUE,TRUE,2-library_overlap
+435,C15H10O4,NA,4' 7-dihydroxyisoflavone,Daidzein,FALSE,TRUE,TRUE,2-library_overlap
+436,C15H10O4,NA,Chrysophanic acid,Daidzein,FALSE,TRUE,TRUE,2-library_overlap
+437,C15H10O4,NA,Chrysophanic acid,Daidzein,FALSE,TRUE,TRUE,2-library_overlap
+438,C15H10O4,NA,"3,3'-Dihydroxyflavone",Daidzein,FALSE,TRUE,TRUE,2-library_overlap
+439,C15H10O4,NA,"3,3'-Dihydroxyflavone",Daidzein,FALSE,TRUE,TRUE,2-library_overlap
+440,C15H10O4,NA,Daidzein,Daidzein,FALSE,TRUE,TRUE,2-library_overlap
+441,C15H10O4,NA,Daidzein,Daidzein,FALSE,TRUE,TRUE,2-library_overlap
+442,C15H10O4,NA,Chrysin,Daidzein,FALSE,TRUE,TRUE,2-library_overlap
+443,C15H10O4,NA,Chrysin,Daidzein,FALSE,TRUE,TRUE,2-library_overlap
+444,C15H10O4,NA,"5,3'-Dihydroxyflavone",Daidzein,FALSE,TRUE,TRUE,2-library_overlap
+445,C15H10O4,NA,"5,3'-Dihydroxyflavone",Daidzein,FALSE,TRUE,TRUE,2-library_overlap
+446,C15H10O5,NA,Emodin,Genistein,FALSE,TRUE,TRUE,2-library_overlap
+447,C15H10O5,NA,Emodin,Genistein,FALSE,TRUE,TRUE,2-library_overlap
+448,C15H10O5,NA,Genistein,Genistein,FALSE,TRUE,TRUE,2-library_overlap
+449,C15H10O5,NA,Genistein,Genistein,FALSE,TRUE,TRUE,2-library_overlap
+450,C15H10O5,NA,Apigenin,Genistein,FALSE,TRUE,TRUE,2-library_overlap
+451,C15H10O5,NA,Apigenin,Genistein,FALSE,TRUE,TRUE,2-library_overlap
+452,C15H10O5,NA,4' 5 7-trihydroxyisoflavone,Genistein,FALSE,TRUE,TRUE,2-library_overlap
+453,C15H10O5,NA,4' 5 7-trihydroxyisoflavone,Genistein,FALSE,TRUE,TRUE,2-library_overlap
+454,C15H10O5,NA,"3,7,4'-Trihydroxyflavone",Genistein,FALSE,TRUE,TRUE,2-library_overlap
+455,C15H10O5,NA,"3,7,4'-Trihydroxyflavone",Genistein,FALSE,TRUE,TRUE,2-library_overlap
+456,C15H10O5,NA,4' 5 7-trihydroxyflavone,Genistein,FALSE,TRUE,TRUE,2-library_overlap
+457,C15H10O5,NA,4' 5 7-trihydroxyflavone,Genistein,FALSE,TRUE,TRUE,2-library_overlap
+458,C15H10O6,Kaempferol,3 4' 5 7-tetrahydroxyflavone,Kaempferol,TRUE,TRUE,TRUE,3-library_overlap
+459,C15H10O6,Kaempferol,3 4' 5 7-tetrahydroxyflavone,Kaempferol,TRUE,TRUE,TRUE,3-library_overlap
+460,C15H10O6,Kaempferol,Luteolin,Kaempferol,TRUE,TRUE,TRUE,3-library_overlap
+461,C15H10O6,Kaempferol,Luteolin,Kaempferol,TRUE,TRUE,TRUE,3-library_overlap
+462,C15H10O6,Kaempferol,Fisetin,Kaempferol,TRUE,TRUE,TRUE,3-library_overlap
+463,C15H10O6,Kaempferol,Fisetin,Kaempferol,TRUE,TRUE,TRUE,3-library_overlap
+464,C15H10O6,Kaempferol,Kaempferol,Kaempferol,TRUE,TRUE,TRUE,3-library_overlap
+465,C15H10O6,Kaempferol,Kaempferol,Kaempferol,TRUE,TRUE,TRUE,3-library_overlap
+466,C15H10O6,Kaempferol,3' 4' 5 7-tetrahydroxyflavone,Kaempferol,TRUE,TRUE,TRUE,3-library_overlap
+467,C15H10O6,Kaempferol,3' 4' 5 7-tetrahydroxyflavone,Kaempferol,TRUE,TRUE,TRUE,3-library_overlap
+468,C15H10O7,NA,3 3' 4' 5 7-pentahydroxyflavone,Quercetin,FALSE,TRUE,TRUE,2-library_overlap
+469,C15H10O7,NA,3 3' 4' 5 7-pentahydroxyflavone,Quercetin,FALSE,TRUE,TRUE,2-library_overlap
+470,C15H10O7,NA,Quercetin,Quercetin,FALSE,TRUE,TRUE,2-library_overlap
+471,C15H10O7,NA,Quercetin,Quercetin,FALSE,TRUE,TRUE,2-library_overlap
+474,C15H11I4NO4,Thyroxine,NA,Thyroxine,TRUE,FALSE,TRUE,2-library_overlap
+475,C15H11I4NO4,Thyroxine,NA,Thyroxine,TRUE,FALSE,TRUE,2-library_overlap
+480,C15H12I3NO4,"3,3',5'-Triiodothyronine",NA,Liothyronine,TRUE,FALSE,TRUE,2-library_overlap
+481,C15H12I3NO4,"3,3',5'-Triiodothyronine",NA,Liothyronine,TRUE,FALSE,TRUE,2-library_overlap
+488,C15H12O5,NA,4' 5 7-trihydroxyflavanone,Naringenin,FALSE,TRUE,TRUE,2-library_overlap
+489,C15H12O5,NA,4' 5 7-trihydroxyflavanone,Naringenin,FALSE,TRUE,TRUE,2-library_overlap
+490,C15H12O5,NA,4' 5 7-trihydroxyflavanone,Naringenin,FALSE,TRUE,TRUE,2-library_overlap
+491,C15H12O5,NA,4' 5 7-trihydroxyflavanone,Naringenin,FALSE,TRUE,TRUE,2-library_overlap
+492,C15H12O5,NA,Naringenin,Naringenin,FALSE,TRUE,TRUE,2-library_overlap
+493,C15H12O5,NA,Naringenin,Naringenin,FALSE,TRUE,TRUE,2-library_overlap
+498,C15H14O5,NA,Phloretin,Phloretin,FALSE,TRUE,TRUE,2-library_overlap
+499,C15H14O5,NA,Phloretin,Phloretin,FALSE,TRUE,TRUE,2-library_overlap
+500,C15H14O6,NA,(-)-3 3' 4' 5 7-Pentahydroxyflavan,Catechin,FALSE,TRUE,TRUE,2-library_overlap
+501,C15H14O6,NA,(-)-3 3' 4' 5 7-Pentahydroxyflavan,Epicatechin,FALSE,TRUE,TRUE,2-library_overlap
+502,C15H14O6,NA,(-)-3 3' 4' 5 7-Pentahydroxyflavan,Catechin,FALSE,TRUE,TRUE,2-library_overlap
+503,C15H14O6,NA,(-)-3 3' 4' 5 7-Pentahydroxyflavan,Epicatechin,FALSE,TRUE,TRUE,2-library_overlap
+504,C15H14O6,NA,(+)-3 3' 4' 5 7-Pentahydroxyflavan,Catechin,FALSE,TRUE,TRUE,2-library_overlap
+505,C15H14O6,NA,(+)-3 3' 4' 5 7-Pentahydroxyflavan,Epicatechin,FALSE,TRUE,TRUE,2-library_overlap
+506,C15H14O6,NA,(+)-3 3' 4' 5 7-Pentahydroxyflavan,Catechin,FALSE,TRUE,TRUE,2-library_overlap
+507,C15H14O6,NA,(+)-3 3' 4' 5 7-Pentahydroxyflavan,Epicatechin,FALSE,TRUE,TRUE,2-library_overlap
+508,C15H14O6,NA,(+/-)-Catechin,Catechin,FALSE,TRUE,TRUE,2-library_overlap
+509,C15H14O6,NA,(+/-)-Catechin,Epicatechin,FALSE,TRUE,TRUE,2-library_overlap
+510,C15H14O6,NA,(+/-)-Catechin,Catechin,FALSE,TRUE,TRUE,2-library_overlap
+511,C15H14O6,NA,(+/-)-Catechin,Epicatechin,FALSE,TRUE,TRUE,2-library_overlap
+559,C16H12O5,Biochanin A,Acacetin,NA,TRUE,TRUE,FALSE,2-library_overlap
+560,C16H12O5,Biochanin A,Acacetin,NA,TRUE,TRUE,FALSE,2-library_overlap
+561,C16H12O5,Biochanin A,Glycitein,NA,TRUE,TRUE,FALSE,2-library_overlap
+562,C16H12O5,Biochanin A,Biochanin A,NA,TRUE,TRUE,FALSE,2-library_overlap
+591,C16H21NO2,PQS,NA,Propranolol,TRUE,FALSE,TRUE,2-library_overlap
+592,C16H21NO2,PQS,NA,Propranolol,TRUE,FALSE,TRUE,2-library_overlap
+593,C16H21NO2,C7-QNO,NA,Propranolol,TRUE,FALSE,TRUE,2-library_overlap
+594,C16H21NO2,C7-QNO,NA,Propranolol,TRUE,FALSE,TRUE,2-library_overlap
+636,C17H20N4O6,Riboflavin,Riboflavin,NA,TRUE,TRUE,FALSE,2-library_overlap
+709,C18H37NO2,Palmitoylethanolamide,NA,Palmitoylethanolamide,TRUE,FALSE,TRUE,2-library_overlap
+710,C18H37NO2,Palmitoylethanolamide,NA,Palmitoylethanolamide,TRUE,FALSE,TRUE,2-library_overlap
+711,C18H37NO2,Palmitoylethanolamide,NA,D-erythro-sphingosine,TRUE,FALSE,TRUE,2-library_overlap
+712,C18H37NO2,Palmitoylethanolamide,NA,D-erythro-sphingosine,TRUE,FALSE,TRUE,2-library_overlap
+715,C18H39NO2,Sphinganine,NA,L-threo-dihydrosphingosine (d18:0),TRUE,FALSE,TRUE,2-library_overlap
+716,C18H39NO2,Sphinganine,NA,L-threo-dihydrosphingosine (d18:0),TRUE,FALSE,TRUE,2-library_overlap
+722,C19H19N7O6,Folic acid,Folic acid,NA,TRUE,TRUE,FALSE,2-library_overlap
+758,C19H37NO4,Lauroylcarnitine,NA,C12 Carnitine,TRUE,FALSE,TRUE,2-library_overlap
+759,C19H37NO4,Lauroylcarnitine,NA,N-16:0 L-Serine,TRUE,FALSE,TRUE,2-library_overlap
+760,C19H37NO4,Lauroylcarnitine,NA,N-16:0 L-Serine,TRUE,FALSE,TRUE,2-library_overlap
+761,C19H37NO4,Lauroylcarnitine,NA,C12 Carnitine,TRUE,FALSE,TRUE,2-library_overlap
+818,C20H30O5,NA,Andrographolide,17-trans Prostaglandin E3,FALSE,TRUE,TRUE,2-library_overlap
+819,C20H30O5,NA,Andrographolide,17-trans Prostaglandin E3,FALSE,TRUE,TRUE,2-library_overlap
+820,C20H30O5,NA,Andrographolide,15-keto Prostaglandin E2,FALSE,TRUE,TRUE,2-library_overlap
+821,C20H30O5,NA,Andrographolide,15-keto Prostaglandin E2,FALSE,TRUE,TRUE,2-library_overlap
+822,C20H30O5,NA,Andrographolide,Prostaglandin E3,FALSE,TRUE,TRUE,2-library_overlap
+823,C20H30O5,NA,Andrographolide,Prostaglandin E3,FALSE,TRUE,TRUE,2-library_overlap
+932,C20H36O5,NA,Lagochiline,"13,14-dihydro-15(R)-Prostaglandin E1",FALSE,TRUE,TRUE,2-library_overlap
+933,C20H36O5,NA,Lagochiline,"13,14-dihydro Prostaglandin E1",FALSE,TRUE,TRUE,2-library_overlap
+934,C20H36O5,NA,Lagochiline,Prostaglandin F1-beta,FALSE,TRUE,TRUE,2-library_overlap
+935,C20H36O5,NA,Lagochiline,PGF1?,FALSE,TRUE,TRUE,2-library_overlap
+936,C20H36O5,NA,Lagochiline,PGF1<df>,FALSE,TRUE,TRUE,2-library_overlap
+937,C20H36O5,NA,Lagochiline,"13,14-dihydro-15(R)-Prostaglandin E1",FALSE,TRUE,TRUE,2-library_overlap
+938,C20H36O5,NA,Lagochiline,"13,14-dihydro-15-keto Prostaglandin F1-alpha",FALSE,TRUE,TRUE,2-library_overlap
+939,C20H36O5,NA,Lagochiline,8-iso Prostaglandin F1-alpha,FALSE,TRUE,TRUE,2-library_overlap
+940,C20H36O5,NA,Lagochiline,PGF1?,FALSE,TRUE,TRUE,2-library_overlap
+941,C20H36O5,NA,Lagochiline,Prostaglandin F1-beta,FALSE,TRUE,TRUE,2-library_overlap
+942,C20H36O5,NA,Lagochiline,8-iso Prostaglandin F1-alpha,FALSE,TRUE,TRUE,2-library_overlap
+943,C20H36O5,NA,Lagochiline,"13,14-dihydro Prostaglandin E1",FALSE,TRUE,TRUE,2-library_overlap
+944,C20H36O5,NA,Lagochiline,8-iso Prostaglandin F1-beta,FALSE,TRUE,TRUE,2-library_overlap
+945,C20H36O5,NA,Lagochiline,8-iso Prostaglandin F1-beta,FALSE,TRUE,TRUE,2-library_overlap
+946,C20H36O5,NA,Lagochiline,"13,14-dihydro-15-keto Prostaglandin F1-alpha",FALSE,TRUE,TRUE,2-library_overlap
+947,C20H36O5,NA,Lagochiline,PGF1<df>,FALSE,TRUE,TRUE,2-library_overlap
+1015,C21H24O10,Phlorizin,Phloretin-2'-O-glucoside,NA,TRUE,TRUE,FALSE,2-library_overlap
+1016,C21H24O10,Phlorizin,Phloridzin,NA,TRUE,TRUE,FALSE,2-library_overlap
+1017,C21H24O10,Phloridzin,Phloretin-2'-O-glucoside,NA,TRUE,TRUE,FALSE,2-library_overlap
+1018,C21H24O10,Phloridzin,Phloridzin,NA,TRUE,TRUE,FALSE,2-library_overlap
+1039,C21H30O5,Cortisol,"(8S,9S,10R,11S,13S,14S,17R)-11,17-dihydroxy-17-(2-hydroxyacetyl)-10,13-dimethyl-2,6,7,8,9,11,12,14,15,16-decahydro-1H-cyclopenta[a]phenanthren-3-one",NA,TRUE,TRUE,FALSE,2-library_overlap
+1083,C21H40O4,1-Oleoyl-rac-glycerol,NA,2-oleoyl glycerol,TRUE,FALSE,TRUE,2-library_overlap
+1084,C21H40O4,1-Oleoyl-rac-glycerol,NA,2-oleoyl glycerol,TRUE,FALSE,TRUE,2-library_overlap
+1146,C22H34O5,NA,"1,9-dideoxyforskolin",8-iso-16-cyclohexyl-tetranor Prostaglandin E2,FALSE,TRUE,TRUE,2-library_overlap
+1147,C22H34O5,NA,"1,9-dideoxyforskolin",8-iso-16-cyclohexyl-tetranor Prostaglandin E2,FALSE,TRUE,TRUE,2-library_overlap
+1241,C23H32O4,Deoxycorticosterone acetate,11-alpha-Acetoxyprogesterone,NA,TRUE,TRUE,FALSE,2-library_overlap
+1252,C23H32O6,Cortisol 21-acetate,NA,17-phenoxy trinor Prostaglandin F2-alpha,TRUE,FALSE,TRUE,2-library_overlap
+1253,C23H32O6,Cortisol 21-acetate,NA,17-phenoxy trinor Prostaglandin F2-alpha,TRUE,FALSE,TRUE,2-library_overlap
+1256,C23H34O5,NA,Digoxigenin,Treprostinil,FALSE,TRUE,TRUE,2-library_overlap
+1257,C23H34O5,NA,Digoxigenin,5-trans Latanoprost (free acid),FALSE,TRUE,TRUE,2-library_overlap
+1258,C23H34O5,NA,Digoxigenin,5-trans Latanoprost (free acid),FALSE,TRUE,TRUE,2-library_overlap
+1259,C23H34O5,NA,Digoxigenin,Latanoprost (free acid),FALSE,TRUE,TRUE,2-library_overlap
+1260,C23H34O5,NA,Digoxigenin,Treprostinil,FALSE,TRUE,TRUE,2-library_overlap
+1261,C23H34O5,NA,Digoxigenin,Latanoprost (free acid),FALSE,TRUE,TRUE,2-library_overlap
+1339,C24H40O3,NA,Lithocholic acid,15(R)-Pinane Thromboxane A2,FALSE,TRUE,TRUE,2-library_overlap
+1340,C24H40O3,NA,Lithocholic acid,15(R)-Pinane Thromboxane A2,FALSE,TRUE,TRUE,2-library_overlap
+1341,C24H40O4,Chenodeoxycholate,Chenodeoxycholic acid,NA,TRUE,TRUE,FALSE,2-library_overlap
+1342,C24H40O4,Deoxycholate,Chenodeoxycholic acid,NA,TRUE,TRUE,FALSE,2-library_overlap
+1343,C24H40O5,Cholate,Cholic acid,(R)-Butaprost,TRUE,TRUE,TRUE,3-library_overlap
+1344,C24H40O5,Cholate,Cholic acid,(R)-Butaprost,TRUE,TRUE,TRUE,3-library_overlap
+1447,C27H30O16,Rutin,Rutine,Rutin,TRUE,TRUE,TRUE,3-library_overlap
+1448,C27H30O16,Rutin,Rutine,Rutin,TRUE,TRUE,TRUE,3-library_overlap
+1449,C27H30O16,Rutin,Quercetin-3-O-rutinoside,Rutin,TRUE,TRUE,TRUE,3-library_overlap
+1450,C27H30O16,Rutin,Quercetin-3-O-rutinoside,Rutin,TRUE,TRUE,TRUE,3-library_overlap
+1451,C27H30O16,Rutin,"5-hydroxy-2-[4-hydroxy-3-[(2S,3R,4S,5R,6R)-3,4,5-trihydroxy-6-(hydroxymethyl)oxan-2-yl]oxy-phenyl]-7-[(2S,3R,4S,5R,6R)-3,4,5-trihydroxy-6-(hydroxymethyl)oxan-2-yl]oxy-chromen-4-one",Rutin,TRUE,TRUE,TRUE,3-library_overlap
+1452,C27H30O16,Rutin,"5-hydroxy-2-[4-hydroxy-3-[(2S,3R,4S,5R,6R)-3,4,5-trihydroxy-6-(hydroxymethyl)oxan-2-yl]oxy-phenyl]-7-[(2S,3R,4S,5R,6R)-3,4,5-trihydroxy-6-(hydroxymethyl)oxan-2-yl]oxy-chromen-4-one",Rutin,TRUE,TRUE,TRUE,3-library_overlap
+1479,C27H46O2,25-Hydroxycholesterol,NA,15-ketocholestane,TRUE,FALSE,TRUE,2-library_overlap
+1480,C27H46O2,25-Hydroxycholesterol,NA,7?-hydroxycholesterol,TRUE,FALSE,TRUE,2-library_overlap
+1481,C27H46O2,25-Hydroxycholesterol,NA,15?-hydroxycholestene,TRUE,FALSE,TRUE,2-library_overlap
+1482,C27H46O2,25-Hydroxycholesterol,NA,15?-hydroxycholestene,TRUE,FALSE,TRUE,2-library_overlap
+1483,C27H46O2,25-Hydroxycholesterol,NA,7?-hydroxycholesterol,TRUE,FALSE,TRUE,2-library_overlap
+1484,C27H46O2,25-Hydroxycholesterol,NA,15-ketocholestane,TRUE,FALSE,TRUE,2-library_overlap
+1499,C28H34O15,NA,Hesperidin,Hesperidin,FALSE,TRUE,TRUE,2-library_overlap
+1500,C28H34O15,NA,Hesperidin,Hesperidin,FALSE,TRUE,TRUE,2-library_overlap
+1501,C28H34O15,NA,Hesperidin,Hesperidin,FALSE,TRUE,TRUE,2-library_overlap
+1502,C28H34O15,NA,Hesperidin,Hesperidin,FALSE,TRUE,TRUE,2-library_overlap
+1503,C28H34O15,NA,Hesperetin-7-O-neohesperidoside,Hesperidin,FALSE,TRUE,TRUE,2-library_overlap
+1504,C28H34O15,NA,Hesperetin-7-O-neohesperidoside,Hesperidin,FALSE,TRUE,TRUE,2-library_overlap
+1542,C2H7NO2S,Hypotaurine,NA,Hypotaurine,TRUE,FALSE,TRUE,2-library_overlap
+1543,C2H7NO2S,Hypotaurine,NA,Hypotaurine,TRUE,FALSE,TRUE,2-library_overlap
+1544,C2H7NO3S,Taurine,NA,Taurine,TRUE,FALSE,TRUE,2-library_overlap
+1545,C2H7NO3S,Taurine,NA,Taurine,TRUE,FALSE,TRUE,2-library_overlap
+1594,C33H34N4O6,Biliverdin,NA,Biliverdin hydrochloride,TRUE,FALSE,TRUE,2-library_overlap
+1595,C33H34N4O6,Biliverdin,NA,Biliverdin hydrochloride,TRUE,FALSE,TRUE,2-library_overlap
+1596,C33H34N4O6,Biliverdin,NA,Biliverdin hydrochloride,TRUE,FALSE,TRUE,2-library_overlap
+1597,C33H34N4O6,Biliverdin,NA,Biliverdin hydrochloride,TRUE,FALSE,TRUE,2-library_overlap
+1651,C37H67NO13,Erythromycin,Erythromycin,NA,TRUE,TRUE,FALSE,2-library_overlap
+1676,C3H7N3O2,Guanidino-acetate,NA,Guanidoacetic acid,TRUE,FALSE,TRUE,2-library_overlap
+1677,C3H7N3O2,Guanidino-acetate,NA,Guanidoacetic acid,TRUE,FALSE,TRUE,2-library_overlap
+1682,C3H7NO2S,L-Cysteine,NA,L-Cysteine,TRUE,FALSE,TRUE,2-library_overlap
+1683,C3H7NO2S,L-Cysteine,NA,L-Cysteine,TRUE,FALSE,TRUE,2-library_overlap
+1684,C3H7NO3,L-Serine,NA,L-Serine,TRUE,FALSE,TRUE,2-library_overlap
+1685,C3H7NO3,L-Serine,NA,L-Serine,TRUE,FALSE,TRUE,2-library_overlap
+1687,C3H7NO5S,L-Cysteic acid,L-Cysteic acid,NA,TRUE,TRUE,FALSE,2-library_overlap
+1689,C3H8N2O2,"L-2,3-Diaminopropionic acid",NA,"2,3-Diaminopropionic acid",TRUE,FALSE,TRUE,2-library_overlap
+1690,C3H8N2O2,"L-2,3-Diaminopropionic acid",NA,"2,3-Diaminopropionic acid",TRUE,FALSE,TRUE,2-library_overlap
+1694,C3H9NO,NA,Trimethylamine oxide,Trimethylamine N-oxide,FALSE,TRUE,TRUE,2-library_overlap
+1695,C3H9NO,NA,Trimethylamine oxide,Trimethylamine N-oxide,FALSE,TRUE,TRUE,2-library_overlap
+1741,C43H58N4O12,Rifampicin,Rifampicin,NA,TRUE,TRUE,FALSE,2-library_overlap
+1808,C4H10O4,Erythritol,NA,Erythritol,TRUE,FALSE,TRUE,2-library_overlap
+1809,C4H10O4,Erythritol,NA,D-Threitol,TRUE,FALSE,TRUE,2-library_overlap
+1810,C4H10O4,Erythritol,NA,D-Threitol,TRUE,FALSE,TRUE,2-library_overlap
+1811,C4H10O4,Erythritol,NA,Erythritol,TRUE,FALSE,TRUE,2-library_overlap
+1814,C4H11NO2,Diethanolamine,NA,Diethanolamine,TRUE,FALSE,TRUE,2-library_overlap
+1815,C4H11NO2,Diethanolamine,NA,Diethanolamine,TRUE,FALSE,TRUE,2-library_overlap
+1823,C4H7N3O,Creatinine,Creatinine,NA,TRUE,TRUE,FALSE,2-library_overlap
+1825,C4H7NO3,N-Acetylglycine,NA,Acetylglycine,TRUE,FALSE,TRUE,2-library_overlap
+1826,C4H7NO3,N-Acetylglycine,NA,Acetylglycine,TRUE,FALSE,TRUE,2-library_overlap
+1827,C4H7NO4,D-Aspartate,Aspartic Acid,NA,TRUE,TRUE,FALSE,2-library_overlap
+1828,C4H7NO4,L-Aspartate,Aspartic Acid,NA,TRUE,TRUE,FALSE,2-library_overlap
+1829,C4H7NO4,Asparaginsaeure,Aspartic Acid,NA,TRUE,TRUE,FALSE,2-library_overlap
+1831,C4H8N2O3,3-Ureido-propionate,NA,Ureidopropionic acid,TRUE,FALSE,TRUE,2-library_overlap
+1832,C4H8N2O3,3-Ureido-propionate,NA,L-Asparagine,TRUE,FALSE,TRUE,2-library_overlap
+1833,C4H8N2O3,3-Ureido-propionate,NA,Ureidopropionic acid,TRUE,FALSE,TRUE,2-library_overlap
+1834,C4H8N2O3,3-Ureido-propionate,NA,L-Asparagine,TRUE,FALSE,TRUE,2-library_overlap
+1835,C4H8N2O3,L-Asparagine,NA,Ureidopropionic acid,TRUE,FALSE,TRUE,2-library_overlap
+1836,C4H8N2O3,L-Asparagine,NA,L-Asparagine,TRUE,FALSE,TRUE,2-library_overlap
+1837,C4H8N2O3,L-Asparagine,NA,Ureidopropionic acid,TRUE,FALSE,TRUE,2-library_overlap
+1838,C4H8N2O3,L-Asparagine,NA,L-Asparagine,TRUE,FALSE,TRUE,2-library_overlap
+1842,C4H9N3O2,Creatine,NA,Creatine,TRUE,FALSE,TRUE,2-library_overlap
+1843,C4H9N3O2,Creatine,NA,Creatine,TRUE,FALSE,TRUE,2-library_overlap
+1844,C4H9NO2,3-Amino-isobutanoate,NA,3-Aminoisobutanoic acid,TRUE,FALSE,TRUE,2-library_overlap
+1845,C4H9NO2,3-Amino-isobutanoate,NA,3-Aminoisobutanoic acid,TRUE,FALSE,TRUE,2-library_overlap
+1846,C4H9NO2,3-Amino-isobutanoate,NA,Gamma-Aminobutyric acid,TRUE,FALSE,TRUE,2-library_overlap
+1847,C4H9NO2,3-Amino-isobutanoate,NA,Dimethylglycine,TRUE,FALSE,TRUE,2-library_overlap
+1848,C4H9NO2,3-Amino-isobutanoate,NA,Dimethylglycine,TRUE,FALSE,TRUE,2-library_overlap
+1849,C4H9NO2,3-Amino-isobutanoate,NA,Gamma-Aminobutyric acid,TRUE,FALSE,TRUE,2-library_overlap
+1850,C4H9NO2,2-Amino-2-methylpropanoate,NA,3-Aminoisobutanoic acid,TRUE,FALSE,TRUE,2-library_overlap
+1851,C4H9NO2,2-Amino-2-methylpropanoate,NA,3-Aminoisobutanoic acid,TRUE,FALSE,TRUE,2-library_overlap
+1852,C4H9NO2,2-Amino-2-methylpropanoate,NA,Gamma-Aminobutyric acid,TRUE,FALSE,TRUE,2-library_overlap
+1853,C4H9NO2,2-Amino-2-methylpropanoate,NA,Dimethylglycine,TRUE,FALSE,TRUE,2-library_overlap
+1854,C4H9NO2,2-Amino-2-methylpropanoate,NA,Dimethylglycine,TRUE,FALSE,TRUE,2-library_overlap
+1855,C4H9NO2,2-Amino-2-methylpropanoate,NA,Gamma-Aminobutyric acid,TRUE,FALSE,TRUE,2-library_overlap
+1856,C4H9NO2,4-Aminobutanoate,NA,3-Aminoisobutanoic acid,TRUE,FALSE,TRUE,2-library_overlap
+1857,C4H9NO2,4-Aminobutanoate,NA,3-Aminoisobutanoic acid,TRUE,FALSE,TRUE,2-library_overlap
+1858,C4H9NO2,4-Aminobutanoate,NA,Gamma-Aminobutyric acid,TRUE,FALSE,TRUE,2-library_overlap
+1859,C4H9NO2,4-Aminobutanoate,NA,Dimethylglycine,TRUE,FALSE,TRUE,2-library_overlap
+1860,C4H9NO2,4-Aminobutanoate,NA,Dimethylglycine,TRUE,FALSE,TRUE,2-library_overlap
+1861,C4H9NO2,4-Aminobutanoate,NA,Gamma-Aminobutyric acid,TRUE,FALSE,TRUE,2-library_overlap
+1862,C4H9NO2S,Homocysteine,NA,Homocysteine,TRUE,FALSE,TRUE,2-library_overlap
+1863,C4H9NO2S,Homocysteine,NA,Homocysteine,TRUE,FALSE,TRUE,2-library_overlap
+1864,C4H9NO2S,Homocysteine,NA,Methylcysteine,TRUE,FALSE,TRUE,2-library_overlap
+1865,C4H9NO2S,Homocysteine,NA,Methylcysteine,TRUE,FALSE,TRUE,2-library_overlap
+1866,C4H9NO2S,DL-Homocystein,NA,Homocysteine,TRUE,FALSE,TRUE,2-library_overlap
+1867,C4H9NO2S,DL-Homocystein,NA,Homocysteine,TRUE,FALSE,TRUE,2-library_overlap
+1868,C4H9NO2S,DL-Homocystein,NA,Methylcysteine,TRUE,FALSE,TRUE,2-library_overlap
+1869,C4H9NO2S,DL-Homocystein,NA,Methylcysteine,TRUE,FALSE,TRUE,2-library_overlap
+1870,C4H9NO3,Threonin,NA,L-Threonine,TRUE,FALSE,TRUE,2-library_overlap
+1871,C4H9NO3,Threonin,NA,L-Allothreonine,TRUE,FALSE,TRUE,2-library_overlap
+1872,C4H9NO3,Threonin,NA,L-Threonine,TRUE,FALSE,TRUE,2-library_overlap
+1873,C4H9NO3,Threonin,NA,L-Allothreonine,TRUE,FALSE,TRUE,2-library_overlap
+1874,C4H9NO3,L-Threonine,NA,L-Threonine,TRUE,FALSE,TRUE,2-library_overlap
+1875,C4H9NO3,L-Threonine,NA,L-Allothreonine,TRUE,FALSE,TRUE,2-library_overlap
+1876,C4H9NO3,L-Threonine,NA,L-Threonine,TRUE,FALSE,TRUE,2-library_overlap
+1877,C4H9NO3,L-Threonine,NA,L-Allothreonine,TRUE,FALSE,TRUE,2-library_overlap
+1878,C4H9NO3,Homoserine,NA,L-Threonine,TRUE,FALSE,TRUE,2-library_overlap
+1879,C4H9NO3,Homoserine,NA,L-Allothreonine,TRUE,FALSE,TRUE,2-library_overlap
+1880,C4H9NO3,Homoserine,NA,L-Threonine,TRUE,FALSE,TRUE,2-library_overlap
+1881,C4H9NO3,Homoserine,NA,L-Allothreonine,TRUE,FALSE,TRUE,2-library_overlap
+1882,C4H9NO3,L-Allo-Threonine,NA,L-Threonine,TRUE,FALSE,TRUE,2-library_overlap
+1883,C4H9NO3,L-Allo-Threonine,NA,L-Allothreonine,TRUE,FALSE,TRUE,2-library_overlap
+1884,C4H9NO3,L-Allo-Threonine,NA,L-Threonine,TRUE,FALSE,TRUE,2-library_overlap
+1885,C4H9NO3,L-Allo-Threonine,NA,L-Allothreonine,TRUE,FALSE,TRUE,2-library_overlap
+1949,C5H10N2O3,L-Glutamine,NA,L-Glutamine,TRUE,FALSE,TRUE,2-library_overlap
+1950,C5H10N2O3,L-Glutamine,NA,L-Glutamine,TRUE,FALSE,TRUE,2-library_overlap
+1951,C5H10N2O3,L-Glutamine,NA,D-Glutamine,TRUE,FALSE,TRUE,2-library_overlap
+1952,C5H10N2O3,L-Glutamine,NA,D-Glutamine,TRUE,FALSE,TRUE,2-library_overlap
+1961,C5H11N3O2,4-Guanidinobutanoate,NA,4-Guanidinobutanoic acid,TRUE,FALSE,TRUE,2-library_overlap
+1962,C5H11N3O2,4-Guanidinobutanoate,NA,4-Guanidinobutanoic acid,TRUE,FALSE,TRUE,2-library_overlap
+1963,C5H11NO2,5-Aminopentanoate,Betaine,L-Valine,TRUE,TRUE,TRUE,3-library_overlap
+1964,C5H11NO2,5-Aminopentanoate,Betaine,L-Valine,TRUE,TRUE,TRUE,3-library_overlap
+1965,C5H11NO2,5-Aminopentanoate,Betaine,N-Methyl-a-aminoisobutyric acid,TRUE,TRUE,TRUE,3-library_overlap
+1966,C5H11NO2,5-Aminopentanoate,Betaine,5-Aminopentanoic acid,TRUE,TRUE,TRUE,3-library_overlap
+1967,C5H11NO2,5-Aminopentanoate,Betaine,Betaine,TRUE,TRUE,TRUE,3-library_overlap
+1968,C5H11NO2,5-Aminopentanoate,Betaine,N-Methyl-a-aminoisobutyric acid,TRUE,TRUE,TRUE,3-library_overlap
+1969,C5H11NO2,5-Aminopentanoate,Betaine,Betaine,TRUE,TRUE,TRUE,3-library_overlap
+1970,C5H11NO2,5-Aminopentanoate,Betaine,5-Aminopentanoic acid,TRUE,TRUE,TRUE,3-library_overlap
+1971,C5H11NO2,L-Norvaline,Betaine,L-Valine,TRUE,TRUE,TRUE,3-library_overlap
+1972,C5H11NO2,L-Norvaline,Betaine,L-Valine,TRUE,TRUE,TRUE,3-library_overlap
+1973,C5H11NO2,L-Norvaline,Betaine,N-Methyl-a-aminoisobutyric acid,TRUE,TRUE,TRUE,3-library_overlap
+1974,C5H11NO2,L-Norvaline,Betaine,5-Aminopentanoic acid,TRUE,TRUE,TRUE,3-library_overlap
+1975,C5H11NO2,L-Norvaline,Betaine,Betaine,TRUE,TRUE,TRUE,3-library_overlap
+1976,C5H11NO2,L-Norvaline,Betaine,N-Methyl-a-aminoisobutyric acid,TRUE,TRUE,TRUE,3-library_overlap
+1977,C5H11NO2,L-Norvaline,Betaine,Betaine,TRUE,TRUE,TRUE,3-library_overlap
+1978,C5H11NO2,L-Norvaline,Betaine,5-Aminopentanoic acid,TRUE,TRUE,TRUE,3-library_overlap
+1979,C5H11NO2,Betaine,Betaine,L-Valine,TRUE,TRUE,TRUE,3-library_overlap
+1980,C5H11NO2,Betaine,Betaine,L-Valine,TRUE,TRUE,TRUE,3-library_overlap
+1981,C5H11NO2,Betaine,Betaine,N-Methyl-a-aminoisobutyric acid,TRUE,TRUE,TRUE,3-library_overlap
+1982,C5H11NO2,Betaine,Betaine,5-Aminopentanoic acid,TRUE,TRUE,TRUE,3-library_overlap
+1983,C5H11NO2,Betaine,Betaine,Betaine,TRUE,TRUE,TRUE,3-library_overlap
+1984,C5H11NO2,Betaine,Betaine,N-Methyl-a-aminoisobutyric acid,TRUE,TRUE,TRUE,3-library_overlap
+1985,C5H11NO2,Betaine,Betaine,Betaine,TRUE,TRUE,TRUE,3-library_overlap
+1986,C5H11NO2,Betaine,Betaine,5-Aminopentanoic acid,TRUE,TRUE,TRUE,3-library_overlap
+1987,C5H11NO2,L-Valine,Betaine,L-Valine,TRUE,TRUE,TRUE,3-library_overlap
+1988,C5H11NO2,L-Valine,Betaine,L-Valine,TRUE,TRUE,TRUE,3-library_overlap
+1989,C5H11NO2,L-Valine,Betaine,N-Methyl-a-aminoisobutyric acid,TRUE,TRUE,TRUE,3-library_overlap
+1990,C5H11NO2,L-Valine,Betaine,5-Aminopentanoic acid,TRUE,TRUE,TRUE,3-library_overlap
+1991,C5H11NO2,L-Valine,Betaine,Betaine,TRUE,TRUE,TRUE,3-library_overlap
+1992,C5H11NO2,L-Valine,Betaine,N-Methyl-a-aminoisobutyric acid,TRUE,TRUE,TRUE,3-library_overlap
+1993,C5H11NO2,L-Valine,Betaine,Betaine,TRUE,TRUE,TRUE,3-library_overlap
+1994,C5H11NO2,L-Valine,Betaine,5-Aminopentanoic acid,TRUE,TRUE,TRUE,3-library_overlap
+1995,C5H11NO2S,L-Methionine,NA,L-Methionine,TRUE,FALSE,TRUE,2-library_overlap
+1996,C5H11NO2S,L-Methionine,NA,L-Methionine,TRUE,FALSE,TRUE,2-library_overlap
+1998,C5H11NO3S,NA,DL-Methionine sulfoxide,Methionine sulfoxide,FALSE,TRUE,TRUE,2-library_overlap
+1999,C5H11NO3S,NA,DL-Methionine sulfoxide,Methionine sulfoxide,FALSE,TRUE,TRUE,2-library_overlap
+2000,C5H12N2O2,D-Ornithine,L-Ornithine,Ornithine,TRUE,TRUE,TRUE,3-library_overlap
+2001,C5H12N2O2,D-Ornithine,L-Ornithine,Ornithine,TRUE,TRUE,TRUE,3-library_overlap
+2002,C5H12N2O2,L-Ornithine,L-Ornithine,Ornithine,TRUE,TRUE,TRUE,3-library_overlap
+2003,C5H12N2O2,L-Ornithine,L-Ornithine,Ornithine,TRUE,TRUE,TRUE,3-library_overlap
+2014,C5H14N4,Agmatine sulfate,NA,Agmatine,TRUE,FALSE,TRUE,2-library_overlap
+2015,C5H14N4,Agmatine sulfate,NA,Agmatine,TRUE,FALSE,TRUE,2-library_overlap
+2033,C5H6N2O2,4-Imidazole-acetic acid,NA,Imidazoleacetic acid,TRUE,FALSE,TRUE,2-library_overlap
+2034,C5H6N2O2,4-Imidazole-acetic acid,NA,Imidazoleacetic acid,TRUE,FALSE,TRUE,2-library_overlap
+2035,C5H6N2O2,Thymine,NA,Imidazoleacetic acid,TRUE,FALSE,TRUE,2-library_overlap
+2036,C5H6N2O2,Thymine,NA,Imidazoleacetic acid,TRUE,FALSE,TRUE,2-library_overlap
+2037,C5H6N2O4,(S)-Dihydro-orotate,NA,"4,5-Dihydroorotic acid",TRUE,FALSE,TRUE,2-library_overlap
+2038,C5H6N2O4,(S)-Dihydro-orotate,NA,L-Dihydroorotic acid,TRUE,FALSE,TRUE,2-library_overlap
+2039,C5H6N2O4,(S)-Dihydro-orotate,NA,L-Dihydroorotic acid,TRUE,FALSE,TRUE,2-library_overlap
+2040,C5H6N2O4,(S)-Dihydro-orotate,NA,"4,5-Dihydroorotic acid",TRUE,FALSE,TRUE,2-library_overlap
+2042,C5H7NO3,5-Oxo-L-Proline,NA,Pyroglutamic acid,TRUE,FALSE,TRUE,2-library_overlap
+2043,C5H7NO3,5-Oxo-L-Proline,NA,Pyroglutamic acid,TRUE,FALSE,TRUE,2-library_overlap
+2044,C5H7NO3,5-Oxo-D-Proline,NA,Pyroglutamic acid,TRUE,FALSE,TRUE,2-library_overlap
+2045,C5H7NO3,5-Oxo-D-Proline,NA,Pyroglutamic acid,TRUE,FALSE,TRUE,2-library_overlap
+2051,C5H9N3,Histamine,Histamine,Histamine,TRUE,TRUE,TRUE,3-library_overlap
+2052,C5H9N3,Histamine,Histamine,Histamine,TRUE,TRUE,TRUE,3-library_overlap
+2053,C5H9N3O4,N-Amidino-L-Aspartate,NA,Guanidinosuccinic acid,TRUE,FALSE,TRUE,2-library_overlap
+2054,C5H9N3O4,N-Amidino-L-Aspartate,NA,Guanidinosuccinic acid,TRUE,FALSE,TRUE,2-library_overlap
+2055,C5H9NO2,L-Proline,NA,L-Proline,TRUE,FALSE,TRUE,2-library_overlap
+2056,C5H9NO2,L-Proline,NA,L-Proline,TRUE,FALSE,TRUE,2-library_overlap
+2057,C5H9NO3,5-Aminolevulinic acid,NA,N-Acetyl-L-alanine,TRUE,FALSE,TRUE,2-library_overlap
+2058,C5H9NO3,5-Aminolevulinic acid,NA,5-Aminolevulinic acid,TRUE,FALSE,TRUE,2-library_overlap
+2059,C5H9NO3,5-Aminolevulinic acid,NA,5-Aminolevulinic acid,TRUE,FALSE,TRUE,2-library_overlap
+2060,C5H9NO3,5-Aminolevulinic acid,NA,Hydroxyproline,TRUE,FALSE,TRUE,2-library_overlap
+2061,C5H9NO3,5-Aminolevulinic acid,NA,Hydroxyproline,TRUE,FALSE,TRUE,2-library_overlap
+2062,C5H9NO3,5-Aminolevulinic acid,NA,N-Acetyl-L-alanine,TRUE,FALSE,TRUE,2-library_overlap
+2063,C5H9NO3,Cis-4-hydroxy-D-Proline,NA,N-Acetyl-L-alanine,TRUE,FALSE,TRUE,2-library_overlap
+2064,C5H9NO3,Cis-4-hydroxy-D-Proline,NA,5-Aminolevulinic acid,TRUE,FALSE,TRUE,2-library_overlap
+2065,C5H9NO3,Cis-4-hydroxy-D-Proline,NA,5-Aminolevulinic acid,TRUE,FALSE,TRUE,2-library_overlap
+2066,C5H9NO3,Cis-4-hydroxy-D-Proline,NA,Hydroxyproline,TRUE,FALSE,TRUE,2-library_overlap
+2067,C5H9NO3,Cis-4-hydroxy-D-Proline,NA,Hydroxyproline,TRUE,FALSE,TRUE,2-library_overlap
+2068,C5H9NO3,Cis-4-hydroxy-D-Proline,NA,N-Acetyl-L-alanine,TRUE,FALSE,TRUE,2-library_overlap
+2069,C5H9NO3,Trans-4-hydroxyproline,NA,N-Acetyl-L-alanine,TRUE,FALSE,TRUE,2-library_overlap
+2070,C5H9NO3,Trans-4-hydroxyproline,NA,5-Aminolevulinic acid,TRUE,FALSE,TRUE,2-library_overlap
+2071,C5H9NO3,Trans-4-hydroxyproline,NA,5-Aminolevulinic acid,TRUE,FALSE,TRUE,2-library_overlap
+2072,C5H9NO3,Trans-4-hydroxyproline,NA,Hydroxyproline,TRUE,FALSE,TRUE,2-library_overlap
+2073,C5H9NO3,Trans-4-hydroxyproline,NA,Hydroxyproline,TRUE,FALSE,TRUE,2-library_overlap
+2074,C5H9NO3,Trans-4-hydroxyproline,NA,N-Acetyl-L-alanine,TRUE,FALSE,TRUE,2-library_overlap
+2075,C5H9NO3,N-Acetyl-L-Alanine,NA,N-Acetyl-L-alanine,TRUE,FALSE,TRUE,2-library_overlap
+2076,C5H9NO3,N-Acetyl-L-Alanine,NA,5-Aminolevulinic acid,TRUE,FALSE,TRUE,2-library_overlap
+2077,C5H9NO3,N-Acetyl-L-Alanine,NA,5-Aminolevulinic acid,TRUE,FALSE,TRUE,2-library_overlap
+2078,C5H9NO3,N-Acetyl-L-Alanine,NA,Hydroxyproline,TRUE,FALSE,TRUE,2-library_overlap
+2079,C5H9NO3,N-Acetyl-L-Alanine,NA,Hydroxyproline,TRUE,FALSE,TRUE,2-library_overlap
+2080,C5H9NO3,N-Acetyl-L-Alanine,NA,N-Acetyl-L-alanine,TRUE,FALSE,TRUE,2-library_overlap
+2081,C5H9NO3,4-Hydroxy-L-Proline,NA,N-Acetyl-L-alanine,TRUE,FALSE,TRUE,2-library_overlap
+2082,C5H9NO3,4-Hydroxy-L-Proline,NA,5-Aminolevulinic acid,TRUE,FALSE,TRUE,2-library_overlap
+2083,C5H9NO3,4-Hydroxy-L-Proline,NA,5-Aminolevulinic acid,TRUE,FALSE,TRUE,2-library_overlap
+2084,C5H9NO3,4-Hydroxy-L-Proline,NA,Hydroxyproline,TRUE,FALSE,TRUE,2-library_overlap
+2085,C5H9NO3,4-Hydroxy-L-Proline,NA,Hydroxyproline,TRUE,FALSE,TRUE,2-library_overlap
+2086,C5H9NO3,4-Hydroxy-L-Proline,NA,N-Acetyl-L-alanine,TRUE,FALSE,TRUE,2-library_overlap
+2087,C5H9NO3S,N-Acetyl-L-Cysteine,NA,Acetylcysteine,TRUE,FALSE,TRUE,2-library_overlap
+2088,C5H9NO3S,N-Acetyl-L-Cysteine,NA,Acetylcysteine,TRUE,FALSE,TRUE,2-library_overlap
+2089,C5H9NO4,O-Acetyl-L-Serine,Glutamic acid,L-Glutamic acid,TRUE,TRUE,TRUE,3-library_overlap
+2090,C5H9NO4,O-Acetyl-L-Serine,Glutamic acid,L-Glutamic acid,TRUE,TRUE,TRUE,3-library_overlap
+2091,C5H9NO4,O-Acetyl-L-Serine,Glutamic acid,N-Methyl-D-aspartic acid,TRUE,TRUE,TRUE,3-library_overlap
+2092,C5H9NO4,O-Acetyl-L-Serine,Glutamic acid,N-Methyl-D-aspartic acid,TRUE,TRUE,TRUE,3-library_overlap
+2093,C5H9NO4,N-Acetyl-DL-Serine,Glutamic acid,L-Glutamic acid,TRUE,TRUE,TRUE,3-library_overlap
+2094,C5H9NO4,N-Acetyl-DL-Serine,Glutamic acid,L-Glutamic acid,TRUE,TRUE,TRUE,3-library_overlap
+2095,C5H9NO4,N-Acetyl-DL-Serine,Glutamic acid,N-Methyl-D-aspartic acid,TRUE,TRUE,TRUE,3-library_overlap
+2096,C5H9NO4,N-Acetyl-DL-Serine,Glutamic acid,N-Methyl-D-aspartic acid,TRUE,TRUE,TRUE,3-library_overlap
+2097,C5H9NO4,N-Methyl-D-Aspartic acid,Glutamic acid,L-Glutamic acid,TRUE,TRUE,TRUE,3-library_overlap
+2098,C5H9NO4,N-Methyl-D-Aspartic acid,Glutamic acid,L-Glutamic acid,TRUE,TRUE,TRUE,3-library_overlap
+2099,C5H9NO4,N-Methyl-D-Aspartic acid,Glutamic acid,N-Methyl-D-aspartic acid,TRUE,TRUE,TRUE,3-library_overlap
+2100,C5H9NO4,N-Methyl-D-Aspartic acid,Glutamic acid,N-Methyl-D-aspartic acid,TRUE,TRUE,TRUE,3-library_overlap
+2101,C5H9NO4,L-Glutamic acid,Glutamic acid,L-Glutamic acid,TRUE,TRUE,TRUE,3-library_overlap
+2102,C5H9NO4,L-Glutamic acid,Glutamic acid,L-Glutamic acid,TRUE,TRUE,TRUE,3-library_overlap
+2103,C5H9NO4,L-Glutamic acid,Glutamic acid,N-Methyl-D-aspartic acid,TRUE,TRUE,TRUE,3-library_overlap
+2104,C5H9NO4,L-Glutamic acid,Glutamic acid,N-Methyl-D-aspartic acid,TRUE,TRUE,TRUE,3-library_overlap
+2105,C5H9NO4S,S-Carboxymethyl-L-Cysteine,Carbocysteine,NA,TRUE,TRUE,FALSE,2-library_overlap
+2110,C6H10O4,Mono-methyl-Glutarate,NA,Adipic acid,TRUE,FALSE,TRUE,2-library_overlap
+2111,C6H10O4,Mono-methyl-Glutarate,NA,Adipic acid,TRUE,FALSE,TRUE,2-library_overlap
+2112,C6H10O4,Adipic acid,NA,Adipic acid,TRUE,FALSE,TRUE,2-library_overlap
+2113,C6H10O4,Adipic acid,NA,Adipic acid,TRUE,FALSE,TRUE,2-library_overlap
+2114,C6H10O4,2-MethylGlutaric acid,NA,Adipic acid,TRUE,FALSE,TRUE,2-library_overlap
+2115,C6H10O4,2-MethylGlutaric acid,NA,Adipic acid,TRUE,FALSE,TRUE,2-library_overlap
+2116,C6H10O5,3-Hydroxy-3-methylglutarate,NA,Glucosan,TRUE,FALSE,TRUE,2-library_overlap
+2117,C6H10O5,3-Hydroxy-3-methylglutarate,NA,Glucosan,TRUE,FALSE,TRUE,2-library_overlap
+2120,C6H10O7,NA,Glucuronic acid,D-Glucuronic acid,FALSE,TRUE,TRUE,2-library_overlap
+2121,C6H10O7,NA,Glucuronic acid,D-Galacturonic acid,FALSE,TRUE,TRUE,2-library_overlap
+2122,C6H10O7,NA,Glucuronic acid,D-Galacturonic acid,FALSE,TRUE,TRUE,2-library_overlap
+2123,C6H10O7,NA,Glucuronic acid,D-Glucuronic acid,FALSE,TRUE,TRUE,2-library_overlap
+2126,C6H11N3,3-Methylhistamine,1-Methylhistamine,3-Methylhistamine,TRUE,TRUE,TRUE,3-library_overlap
+2127,C6H11N3,3-Methylhistamine,1-Methylhistamine,1-Methylhistamine,TRUE,TRUE,TRUE,3-library_overlap
+2128,C6H11N3,3-Methylhistamine,1-Methylhistamine,3-Methylhistamine,TRUE,TRUE,TRUE,3-library_overlap
+2129,C6H11N3,3-Methylhistamine,1-Methylhistamine,1-Methylhistamine,TRUE,TRUE,TRUE,3-library_overlap
+2130,C6H11N3O,L-Histidinol,Histidinol,L-Histidinol,TRUE,TRUE,TRUE,3-library_overlap
+2131,C6H11N3O,L-Histidinol,Histidinol,L-Histidinol,TRUE,TRUE,TRUE,3-library_overlap
+2132,C6H11NO2,Pipecolate,NA,Pipecolic acid,TRUE,FALSE,TRUE,2-library_overlap
+2133,C6H11NO2,Pipecolate,NA,Pipecolic acid,TRUE,FALSE,TRUE,2-library_overlap
+2134,C6H11NO2,L-Pipecolic acid,NA,Pipecolic acid,TRUE,FALSE,TRUE,2-library_overlap
+2135,C6H11NO2,L-Pipecolic acid,NA,Pipecolic acid,TRUE,FALSE,TRUE,2-library_overlap
+2137,C6H11NO3S,Formyl-L-Methionyl Peptide,NA,N-Formyl-L-methionine,TRUE,FALSE,TRUE,2-library_overlap
+2138,C6H11NO3S,Formyl-L-Methionyl Peptide,NA,N-Formyl-L-methionine,TRUE,FALSE,TRUE,2-library_overlap
+2139,C6H11NO4,N-Methyl-L-Glutamate,NA,Aminoadipic acid,TRUE,FALSE,TRUE,2-library_overlap
+2140,C6H11NO4,N-Methyl-L-Glutamate,NA,Aminoadipic acid,TRUE,FALSE,TRUE,2-library_overlap
+2141,C6H11NO4,Alpha-amino-adipate,NA,Aminoadipic acid,TRUE,FALSE,TRUE,2-library_overlap
+2142,C6H11NO4,Alpha-amino-adipate,NA,Aminoadipic acid,TRUE,FALSE,TRUE,2-library_overlap
+2145,C6H12N2O4S2,L-Cystin,NA,L-Cystine,TRUE,FALSE,TRUE,2-library_overlap
+2146,C6H12N2O4S2,L-Cystin,NA,L-Cystine,TRUE,FALSE,TRUE,2-library_overlap
+2155,C6H12O6,D-Tagatose,Fructose (Generic Ketohexose),D-Fructose,TRUE,TRUE,TRUE,3-library_overlap
+2156,C6H12O6,D-Tagatose,Fructose (Generic Ketohexose),L-Glucose,TRUE,TRUE,TRUE,3-library_overlap
+2157,C6H12O6,D-Tagatose,Fructose (Generic Ketohexose),Allose,TRUE,TRUE,TRUE,3-library_overlap
+2158,C6H12O6,D-Tagatose,Fructose (Generic Ketohexose),D-Galactose,TRUE,TRUE,TRUE,3-library_overlap
+2159,C6H12O6,D-Tagatose,Fructose (Generic Ketohexose),D-Galactose,TRUE,TRUE,TRUE,3-library_overlap
+2160,C6H12O6,D-Tagatose,Fructose (Generic Ketohexose),D-Tagatose,TRUE,TRUE,TRUE,3-library_overlap
+2161,C6H12O6,D-Tagatose,Fructose (Generic Ketohexose),Allose,TRUE,TRUE,TRUE,3-library_overlap
+2162,C6H12O6,D-Tagatose,Fructose (Generic Ketohexose),Scyllitol,TRUE,TRUE,TRUE,3-library_overlap
+2163,C6H12O6,D-Tagatose,Fructose (Generic Ketohexose),D-Fructose,TRUE,TRUE,TRUE,3-library_overlap
+2164,C6H12O6,D-Tagatose,Fructose (Generic Ketohexose),D-Glucose,TRUE,TRUE,TRUE,3-library_overlap
+2165,C6H12O6,D-Tagatose,Fructose (Generic Ketohexose),L-Sorbose,TRUE,TRUE,TRUE,3-library_overlap
+2166,C6H12O6,D-Tagatose,Fructose (Generic Ketohexose),D-Tagatose,TRUE,TRUE,TRUE,3-library_overlap
+2167,C6H12O6,D-Tagatose,Fructose (Generic Ketohexose),alpha-D-Talose,TRUE,TRUE,TRUE,3-library_overlap
+2168,C6H12O6,D-Tagatose,Fructose (Generic Ketohexose),Scyllitol,TRUE,TRUE,TRUE,3-library_overlap
+2169,C6H12O6,D-Tagatose,Fructose (Generic Ketohexose),D-Glucose,TRUE,TRUE,TRUE,3-library_overlap
+2170,C6H12O6,D-Tagatose,Fructose (Generic Ketohexose),L-Sorbose,TRUE,TRUE,TRUE,3-library_overlap
+2171,C6H12O6,D-Tagatose,Fructose (Generic Ketohexose),alpha-D-Talose,TRUE,TRUE,TRUE,3-library_overlap
+2172,C6H12O6,D-Tagatose,Fructose (Generic Ketohexose),L-Glucose,TRUE,TRUE,TRUE,3-library_overlap
+2174,C6H13N3O3,Citrullline,Citrulline,Citrulline,TRUE,TRUE,TRUE,3-library_overlap
+2175,C6H13N3O3,Citrullline,Citrulline,Citrulline,TRUE,TRUE,TRUE,3-library_overlap
+2177,C6H13NO2,Norleucine,DL-Leucine,Beta-Leucine,TRUE,TRUE,TRUE,3-library_overlap
+2178,C6H13NO2,Norleucine,DL-Leucine,L-Norleucine,TRUE,TRUE,TRUE,3-library_overlap
+2179,C6H13NO2,Norleucine,DL-Leucine,L-Leucine,TRUE,TRUE,TRUE,3-library_overlap
+2180,C6H13NO2,Norleucine,DL-Leucine,L-Alloisoleucine,TRUE,TRUE,TRUE,3-library_overlap
+2181,C6H13NO2,Norleucine,DL-Leucine,L-Alloisoleucine,TRUE,TRUE,TRUE,3-library_overlap
+2182,C6H13NO2,Norleucine,DL-Leucine,L-Norleucine,TRUE,TRUE,TRUE,3-library_overlap
+2183,C6H13NO2,Norleucine,DL-Leucine,L-Leucine,TRUE,TRUE,TRUE,3-library_overlap
+2184,C6H13NO2,Norleucine,DL-Leucine,Beta-Leucine,TRUE,TRUE,TRUE,3-library_overlap
+2185,C6H13NO2,Norleucine,DL-Leucine,Aminocaproic acid,TRUE,TRUE,TRUE,3-library_overlap
+2186,C6H13NO2,Norleucine,DL-Leucine,Aminocaproic acid,TRUE,TRUE,TRUE,3-library_overlap
+2187,C6H13NO2,Leucine,DL-Leucine,Beta-Leucine,TRUE,TRUE,TRUE,3-library_overlap
+2188,C6H13NO2,Leucine,DL-Leucine,L-Norleucine,TRUE,TRUE,TRUE,3-library_overlap
+2189,C6H13NO2,Leucine,DL-Leucine,L-Leucine,TRUE,TRUE,TRUE,3-library_overlap
+2190,C6H13NO2,Leucine,DL-Leucine,L-Alloisoleucine,TRUE,TRUE,TRUE,3-library_overlap
+2191,C6H13NO2,Leucine,DL-Leucine,L-Alloisoleucine,TRUE,TRUE,TRUE,3-library_overlap
+2192,C6H13NO2,Leucine,DL-Leucine,L-Norleucine,TRUE,TRUE,TRUE,3-library_overlap
+2193,C6H13NO2,Leucine,DL-Leucine,L-Leucine,TRUE,TRUE,TRUE,3-library_overlap
+2194,C6H13NO2,Leucine,DL-Leucine,Beta-Leucine,TRUE,TRUE,TRUE,3-library_overlap
+2195,C6H13NO2,Leucine,DL-Leucine,Aminocaproic acid,TRUE,TRUE,TRUE,3-library_overlap
+2196,C6H13NO2,Leucine,DL-Leucine,Aminocaproic acid,TRUE,TRUE,TRUE,3-library_overlap
+2197,C6H13NO2,L-Isoleucine,DL-Leucine,Beta-Leucine,TRUE,TRUE,TRUE,3-library_overlap
+2198,C6H13NO2,L-Isoleucine,DL-Leucine,L-Norleucine,TRUE,TRUE,TRUE,3-library_overlap
+2199,C6H13NO2,L-Isoleucine,DL-Leucine,L-Leucine,TRUE,TRUE,TRUE,3-library_overlap
+2200,C6H13NO2,L-Isoleucine,DL-Leucine,L-Alloisoleucine,TRUE,TRUE,TRUE,3-library_overlap
+2201,C6H13NO2,L-Isoleucine,DL-Leucine,L-Alloisoleucine,TRUE,TRUE,TRUE,3-library_overlap
+2202,C6H13NO2,L-Isoleucine,DL-Leucine,L-Norleucine,TRUE,TRUE,TRUE,3-library_overlap
+2203,C6H13NO2,L-Isoleucine,DL-Leucine,L-Leucine,TRUE,TRUE,TRUE,3-library_overlap
+2204,C6H13NO2,L-Isoleucine,DL-Leucine,Beta-Leucine,TRUE,TRUE,TRUE,3-library_overlap
+2205,C6H13NO2,L-Isoleucine,DL-Leucine,Aminocaproic acid,TRUE,TRUE,TRUE,3-library_overlap
+2206,C6H13NO2,L-Isoleucine,DL-Leucine,Aminocaproic acid,TRUE,TRUE,TRUE,3-library_overlap
+2211,C6H13NO8S,D-Glucosamine-6-sulfate,NA,Glucosamine 6-sulfate,TRUE,FALSE,TRUE,2-library_overlap
+2212,C6H13NO8S,D-Glucosamine-6-sulfate,NA,Glucosamine 6-sulfate,TRUE,FALSE,TRUE,2-library_overlap
+2219,C6H14N2O2,L-Lysine,NA,D-Lysine,TRUE,FALSE,TRUE,2-library_overlap
+2220,C6H14N2O2,L-Lysine,NA,L-Lysine,TRUE,FALSE,TRUE,2-library_overlap
+2221,C6H14N2O2,L-Lysine,NA,L-Lysine,TRUE,FALSE,TRUE,2-library_overlap
+2222,C6H14N2O2,L-Lysine,NA,D-Lysine,TRUE,FALSE,TRUE,2-library_overlap
+2223,C6H14N2O3,DL-5-hydroxy-Lysine,NA,5-Hydroxylysine,TRUE,FALSE,TRUE,2-library_overlap
+2224,C6H14N2O3,DL-5-hydroxy-Lysine,NA,5-Hydroxylysine,TRUE,FALSE,TRUE,2-library_overlap
+2225,C6H14N4O2,L-Arginine,Arginine,D-Arginine,TRUE,TRUE,TRUE,3-library_overlap
+2226,C6H14N4O2,L-Arginine,Arginine,L-Arginine,TRUE,TRUE,TRUE,3-library_overlap
+2227,C6H14N4O2,L-Arginine,Arginine,L-Arginine,TRUE,TRUE,TRUE,3-library_overlap
+2228,C6H14N4O2,L-Arginine,Arginine,D-Arginine,TRUE,TRUE,TRUE,3-library_overlap
+2229,C6H14N4O2,L-Arginine,L-Arginine,D-Arginine,TRUE,TRUE,TRUE,3-library_overlap
+2230,C6H14N4O2,L-Arginine,L-Arginine,L-Arginine,TRUE,TRUE,TRUE,3-library_overlap
+2231,C6H14N4O2,L-Arginine,L-Arginine,L-Arginine,TRUE,TRUE,TRUE,3-library_overlap
+2232,C6H14N4O2,L-Arginine,L-Arginine,D-Arginine,TRUE,TRUE,TRUE,3-library_overlap
+2233,C6H14NO8P,D-Glucosamine 6-phosphate,NA,Glucosamine 6-phosphate,TRUE,FALSE,TRUE,2-library_overlap
+2234,C6H14NO8P,D-Glucosamine 6-phosphate,NA,Glucosamine 6-phosphate,TRUE,FALSE,TRUE,2-library_overlap
+2235,C6H14O6,D-Sorbitol,NA,Mannitol,TRUE,FALSE,TRUE,2-library_overlap
+2236,C6H14O6,D-Sorbitol,NA,Galactitol,TRUE,FALSE,TRUE,2-library_overlap
+2237,C6H14O6,D-Sorbitol,NA,Sorbitol,TRUE,FALSE,TRUE,2-library_overlap
+2238,C6H14O6,D-Sorbitol,NA,Sorbitol,TRUE,FALSE,TRUE,2-library_overlap
+2239,C6H14O6,D-Sorbitol,NA,Mannitol,TRUE,FALSE,TRUE,2-library_overlap
+2240,C6H14O6,D-Sorbitol,NA,Galactitol,TRUE,FALSE,TRUE,2-library_overlap
+2241,C6H14O6,Galactitol,NA,Mannitol,TRUE,FALSE,TRUE,2-library_overlap
+2242,C6H14O6,Galactitol,NA,Galactitol,TRUE,FALSE,TRUE,2-library_overlap
+2243,C6H14O6,Galactitol,NA,Sorbitol,TRUE,FALSE,TRUE,2-library_overlap
+2244,C6H14O6,Galactitol,NA,Sorbitol,TRUE,FALSE,TRUE,2-library_overlap
+2245,C6H14O6,Galactitol,NA,Mannitol,TRUE,FALSE,TRUE,2-library_overlap
+2246,C6H14O6,Galactitol,NA,Galactitol,TRUE,FALSE,TRUE,2-library_overlap
+2250,C6H5NO2,Nicotinate,NA,Picolinic acid,TRUE,FALSE,TRUE,2-library_overlap
+2251,C6H5NO2,Nicotinate,NA,Picolinic acid,TRUE,FALSE,TRUE,2-library_overlap
+2252,C6H5NO2,Picolinic acid,NA,Picolinic acid,TRUE,FALSE,TRUE,2-library_overlap
+2253,C6H5NO2,Picolinic acid,NA,Picolinic acid,TRUE,FALSE,TRUE,2-library_overlap
+2255,C6H6N2O,Nicotinamide,NA,Niacinamide,TRUE,FALSE,TRUE,2-library_overlap
+2256,C6H6N2O,Nicotinamide,NA,Niacinamide,TRUE,FALSE,TRUE,2-library_overlap
+2257,C6H6N2O2,Urocanate,Urocanic acid,Urocanic acid,TRUE,TRUE,TRUE,3-library_overlap
+2258,C6H6N2O2,Urocanate,Urocanic acid,Urocanic acid,TRUE,TRUE,TRUE,3-library_overlap
+2267,C6H6O6,Dehydroascorbate,NA,Dehydroascorbic acid,TRUE,FALSE,TRUE,2-library_overlap
+2268,C6H6O6,Dehydroascorbate,NA,Dehydroascorbic acid,TRUE,FALSE,TRUE,2-library_overlap
+2276,C6H8O6,Ascorbate,NA,"D-Glucurono-6,3-lactone",TRUE,FALSE,TRUE,2-library_overlap
+2277,C6H8O6,Ascorbate,NA,"D-Glucurono-6,3-lactone",TRUE,FALSE,TRUE,2-library_overlap
+2278,C6H9N3O2,L-Histidine,Histidine,L-Histidine,TRUE,TRUE,TRUE,3-library_overlap
+2279,C6H9N3O2,L-Histidine,Histidine,L-Histidine,TRUE,TRUE,TRUE,3-library_overlap
+2280,C6H9NO5,N-Acetyl-L-Aspartic acid,NA,N-Acetyl-L-aspartic acid,TRUE,FALSE,TRUE,2-library_overlap
+2281,C6H9NO5,N-Acetyl-L-Aspartic acid,NA,N-Acetyl-L-aspartic acid,TRUE,FALSE,TRUE,2-library_overlap
+2282,C7H11N3O2,N(Pi)-methyl-L-Histidine,NA,1-Methylhistidine,TRUE,FALSE,TRUE,2-library_overlap
+2283,C7H11N3O2,N(Pi)-methyl-L-Histidine,NA,1-Methylhistidine,TRUE,FALSE,TRUE,2-library_overlap
+2284,C7H11N3O2,N(Pi)-methyl-L-Histidine,NA,3-Methylhistidine,TRUE,FALSE,TRUE,2-library_overlap
+2285,C7H11N3O2,N(Pi)-methyl-L-Histidine,NA,3-Methylhistidine,TRUE,FALSE,TRUE,2-library_overlap
+2286,C7H11NO5,N-Acetyl-DL-Glutamic acid,NA,N-Acetylglutamic acid,TRUE,FALSE,TRUE,2-library_overlap
+2287,C7H11NO5,N-Acetyl-DL-Glutamic acid,NA,N-Acetylglutamic acid,TRUE,FALSE,TRUE,2-library_overlap
+2296,C7H14N2O4,LL-2;6-Diaminoheptane-dioate,NA,Diaminopimelic acid,TRUE,FALSE,TRUE,2-library_overlap
+2297,C7H14N2O4,LL-2;6-Diaminoheptane-dioate,NA,Diaminopimelic acid,TRUE,FALSE,TRUE,2-library_overlap
+2298,C7H14N2O4S,L-Cystathionine,NA,Allocystathionine,TRUE,FALSE,TRUE,2-library_overlap
+2299,C7H14N2O4S,L-Cystathionine,NA,L-Cystathionine,TRUE,FALSE,TRUE,2-library_overlap
+2300,C7H14N2O4S,L-Cystathionine,NA,Allocystathionine,TRUE,FALSE,TRUE,2-library_overlap
+2301,C7H14N2O4S,L-Cystathionine,NA,L-Cystathionine,TRUE,FALSE,TRUE,2-library_overlap
+2309,C7H15NO3,L-Carnitine,L-Carnitine,L-Carnitine,TRUE,TRUE,TRUE,3-library_overlap
+2310,C7H15NO3,L-Carnitine,L-Carnitine,L-Carnitine,TRUE,TRUE,TRUE,3-library_overlap
+2329,C7H7NO2,Salicylamide,Trigonelline,2-Aminobenzoic acid (Anthranilic acid),TRUE,TRUE,TRUE,3-library_overlap
+2330,C7H7NO2,Salicylamide,Trigonelline,m-Aminobenzoic acid,TRUE,TRUE,TRUE,3-library_overlap
+2331,C7H7NO2,Salicylamide,Trigonelline,m-Aminobenzoic acid,TRUE,TRUE,TRUE,3-library_overlap
+2332,C7H7NO2,Salicylamide,Trigonelline,p-Aminobenzoic acid,TRUE,TRUE,TRUE,3-library_overlap
+2333,C7H7NO2,Salicylamide,Trigonelline,p-Aminobenzoic acid,TRUE,TRUE,TRUE,3-library_overlap
+2334,C7H7NO2,Salicylamide,Trigonelline,2-Aminobenzoic acid (Anthranilic acid),TRUE,TRUE,TRUE,3-library_overlap
+2335,C7H7NO2,Salicylamide,Trigonelline,3-Pyridylacetic acid,TRUE,TRUE,TRUE,3-library_overlap
+2336,C7H7NO2,Salicylamide,Trigonelline,3-Pyridylacetic acid,TRUE,TRUE,TRUE,3-library_overlap
+2337,C7H7NO2,Salicylamide,Trigonelline,2-Aminobenzoic acid,TRUE,TRUE,TRUE,3-library_overlap
+2338,C7H7NO2,Salicylamide,Trigonelline,2-Aminobenzoic acid,TRUE,TRUE,TRUE,3-library_overlap
+2339,C7H7NO2,Anthranilate,Trigonelline,2-Aminobenzoic acid (Anthranilic acid),TRUE,TRUE,TRUE,3-library_overlap
+2340,C7H7NO2,Anthranilate,Trigonelline,m-Aminobenzoic acid,TRUE,TRUE,TRUE,3-library_overlap
+2341,C7H7NO2,Anthranilate,Trigonelline,m-Aminobenzoic acid,TRUE,TRUE,TRUE,3-library_overlap
+2342,C7H7NO2,Anthranilate,Trigonelline,p-Aminobenzoic acid,TRUE,TRUE,TRUE,3-library_overlap
+2343,C7H7NO2,Anthranilate,Trigonelline,p-Aminobenzoic acid,TRUE,TRUE,TRUE,3-library_overlap
+2344,C7H7NO2,Anthranilate,Trigonelline,2-Aminobenzoic acid (Anthranilic acid),TRUE,TRUE,TRUE,3-library_overlap
+2345,C7H7NO2,Anthranilate,Trigonelline,3-Pyridylacetic acid,TRUE,TRUE,TRUE,3-library_overlap
+2346,C7H7NO2,Anthranilate,Trigonelline,3-Pyridylacetic acid,TRUE,TRUE,TRUE,3-library_overlap
+2347,C7H7NO2,Anthranilate,Trigonelline,2-Aminobenzoic acid,TRUE,TRUE,TRUE,3-library_overlap
+2348,C7H7NO2,Anthranilate,Trigonelline,2-Aminobenzoic acid,TRUE,TRUE,TRUE,3-library_overlap
+2349,C7H7NO2,4-Aminobenzoate,Trigonelline,2-Aminobenzoic acid (Anthranilic acid),TRUE,TRUE,TRUE,3-library_overlap
+2350,C7H7NO2,4-Aminobenzoate,Trigonelline,m-Aminobenzoic acid,TRUE,TRUE,TRUE,3-library_overlap
+2351,C7H7NO2,4-Aminobenzoate,Trigonelline,m-Aminobenzoic acid,TRUE,TRUE,TRUE,3-library_overlap
+2352,C7H7NO2,4-Aminobenzoate,Trigonelline,p-Aminobenzoic acid,TRUE,TRUE,TRUE,3-library_overlap
+2353,C7H7NO2,4-Aminobenzoate,Trigonelline,p-Aminobenzoic acid,TRUE,TRUE,TRUE,3-library_overlap
+2354,C7H7NO2,4-Aminobenzoate,Trigonelline,2-Aminobenzoic acid (Anthranilic acid),TRUE,TRUE,TRUE,3-library_overlap
+2355,C7H7NO2,4-Aminobenzoate,Trigonelline,3-Pyridylacetic acid,TRUE,TRUE,TRUE,3-library_overlap
+2356,C7H7NO2,4-Aminobenzoate,Trigonelline,3-Pyridylacetic acid,TRUE,TRUE,TRUE,3-library_overlap
+2357,C7H7NO2,4-Aminobenzoate,Trigonelline,2-Aminobenzoic acid,TRUE,TRUE,TRUE,3-library_overlap
+2358,C7H7NO2,4-Aminobenzoate,Trigonelline,2-Aminobenzoic acid,TRUE,TRUE,TRUE,3-library_overlap
+2359,C7H7NO2,Trigonelline,Trigonelline,2-Aminobenzoic acid (Anthranilic acid),TRUE,TRUE,TRUE,3-library_overlap
+2360,C7H7NO2,Trigonelline,Trigonelline,m-Aminobenzoic acid,TRUE,TRUE,TRUE,3-library_overlap
+2361,C7H7NO2,Trigonelline,Trigonelline,m-Aminobenzoic acid,TRUE,TRUE,TRUE,3-library_overlap
+2362,C7H7NO2,Trigonelline,Trigonelline,p-Aminobenzoic acid,TRUE,TRUE,TRUE,3-library_overlap
+2363,C7H7NO2,Trigonelline,Trigonelline,p-Aminobenzoic acid,TRUE,TRUE,TRUE,3-library_overlap
+2364,C7H7NO2,Trigonelline,Trigonelline,2-Aminobenzoic acid (Anthranilic acid),TRUE,TRUE,TRUE,3-library_overlap
+2365,C7H7NO2,Trigonelline,Trigonelline,3-Pyridylacetic acid,TRUE,TRUE,TRUE,3-library_overlap
+2366,C7H7NO2,Trigonelline,Trigonelline,3-Pyridylacetic acid,TRUE,TRUE,TRUE,3-library_overlap
+2367,C7H7NO2,Trigonelline,Trigonelline,2-Aminobenzoic acid,TRUE,TRUE,TRUE,3-library_overlap
+2368,C7H7NO2,Trigonelline,Trigonelline,2-Aminobenzoic acid,TRUE,TRUE,TRUE,3-library_overlap
+2376,C7H8N4O2,Theophylline,Theobromine,NA,TRUE,TRUE,FALSE,2-library_overlap
+2377,C7H8N4O2,Paraxanthine,Theobromine,NA,TRUE,TRUE,FALSE,2-library_overlap
+2378,C7H8N4O2,Theobromine,Theobromine,NA,TRUE,TRUE,FALSE,2-library_overlap
+2380,C7H8O2,Guaiacol,Orcinol,Guaiacol,TRUE,TRUE,TRUE,3-library_overlap
+2381,C7H8O2,Guaiacol,Orcinol,4-Methylcatechol,TRUE,TRUE,TRUE,3-library_overlap
+2382,C7H8O2,Guaiacol,Orcinol,4-Methylcatechol,TRUE,TRUE,TRUE,3-library_overlap
+2383,C7H8O2,Guaiacol,Orcinol,Guaiacol,TRUE,TRUE,TRUE,3-library_overlap
+2387,C8H10N4O2,Caffeine,Caffeine,NA,TRUE,TRUE,FALSE,2-library_overlap
+2392,C8H11NO,Tyramine,NA,Tyramine,TRUE,FALSE,TRUE,2-library_overlap
+2393,C8H11NO,Tyramine,NA,2-Hydroxyphenethylamine,TRUE,FALSE,TRUE,2-library_overlap
+2394,C8H11NO,Tyramine,NA,Tyramine,TRUE,FALSE,TRUE,2-library_overlap
+2395,C8H11NO,Tyramine,NA,2-Hydroxyphenethylamine,TRUE,FALSE,TRUE,2-library_overlap
+2396,C8H11NO,Phenylethanolamine,NA,Tyramine,TRUE,FALSE,TRUE,2-library_overlap
+2397,C8H11NO,Phenylethanolamine,NA,2-Hydroxyphenethylamine,TRUE,FALSE,TRUE,2-library_overlap
+2398,C8H11NO,Phenylethanolamine,NA,Tyramine,TRUE,FALSE,TRUE,2-library_overlap
+2399,C8H11NO,Phenylethanolamine,NA,2-Hydroxyphenethylamine,TRUE,FALSE,TRUE,2-library_overlap
+2400,C8H11NO2,Dopamine,DL-Norphenylephrine,Dopamine,TRUE,TRUE,TRUE,3-library_overlap
+2401,C8H11NO2,Dopamine,DL-Norphenylephrine,Dopamine,TRUE,TRUE,TRUE,3-library_overlap
+2402,C8H11NO2,Octopamine,DL-Norphenylephrine,Dopamine,TRUE,TRUE,TRUE,3-library_overlap
+2403,C8H11NO2,Octopamine,DL-Norphenylephrine,Dopamine,TRUE,TRUE,TRUE,3-library_overlap
+2404,C8H11NO3,Noradrenaline,NA,6-Hydroxydopamine,TRUE,FALSE,TRUE,2-library_overlap
+2405,C8H11NO3,Noradrenaline,NA,6-Hydroxydopamine,TRUE,FALSE,TRUE,2-library_overlap
+2406,C8H11NO3,Pyridoxine,NA,6-Hydroxydopamine,TRUE,FALSE,TRUE,2-library_overlap
+2407,C8H11NO3,Pyridoxine,NA,6-Hydroxydopamine,TRUE,FALSE,TRUE,2-library_overlap
+2420,C8H15NO6,N-Acetyl-D-Glucosamine,NA,N-Acetyl-D-glucosamine,TRUE,FALSE,TRUE,2-library_overlap
+2421,C8H15NO6,N-Acetyl-D-Glucosamine,NA,N-Acetyl-D-glucosamine,TRUE,FALSE,TRUE,2-library_overlap
+2422,C8H15NO6,N-Acetyl-D-Glucosamine,NA,N-Acetylmannosamine,TRUE,FALSE,TRUE,2-library_overlap
+2423,C8H15NO6,N-Acetyl-D-Glucosamine,NA,N-Acetylgalactosamine,TRUE,FALSE,TRUE,2-library_overlap
+2424,C8H15NO6,N-Acetyl-D-Glucosamine,NA,N-Acetylmannosamine,TRUE,FALSE,TRUE,2-library_overlap
+2425,C8H15NO6,N-Acetyl-D-Glucosamine,NA,N-Acetylgalactosamine,TRUE,FALSE,TRUE,2-library_overlap
+2426,C8H15NO6,N-Acetyl-D-Mannosamine,NA,N-Acetyl-D-glucosamine,TRUE,FALSE,TRUE,2-library_overlap
+2427,C8H15NO6,N-Acetyl-D-Mannosamine,NA,N-Acetyl-D-glucosamine,TRUE,FALSE,TRUE,2-library_overlap
+2428,C8H15NO6,N-Acetyl-D-Mannosamine,NA,N-Acetylmannosamine,TRUE,FALSE,TRUE,2-library_overlap
+2429,C8H15NO6,N-Acetyl-D-Mannosamine,NA,N-Acetylgalactosamine,TRUE,FALSE,TRUE,2-library_overlap
+2430,C8H15NO6,N-Acetyl-D-Mannosamine,NA,N-Acetylmannosamine,TRUE,FALSE,TRUE,2-library_overlap
+2431,C8H15NO6,N-Acetyl-D-Mannosamine,NA,N-Acetylgalactosamine,TRUE,FALSE,TRUE,2-library_overlap
+2432,C8H15NO6,N-Acetyl-D-Galactosamine,NA,N-Acetyl-D-glucosamine,TRUE,FALSE,TRUE,2-library_overlap
+2433,C8H15NO6,N-Acetyl-D-Galactosamine,NA,N-Acetyl-D-glucosamine,TRUE,FALSE,TRUE,2-library_overlap
+2434,C8H15NO6,N-Acetyl-D-Galactosamine,NA,N-Acetylmannosamine,TRUE,FALSE,TRUE,2-library_overlap
+2435,C8H15NO6,N-Acetyl-D-Galactosamine,NA,N-Acetylgalactosamine,TRUE,FALSE,TRUE,2-library_overlap
+2436,C8H15NO6,N-Acetyl-D-Galactosamine,NA,N-Acetylmannosamine,TRUE,FALSE,TRUE,2-library_overlap
+2437,C8H15NO6,N-Acetyl-D-Galactosamine,NA,N-Acetylgalactosamine,TRUE,FALSE,TRUE,2-library_overlap
+2439,C8H16N2O3,N-Alpha-acetyl-L-Lysine,NA,Glycyl-L-leucine,TRUE,FALSE,TRUE,2-library_overlap
+2440,C8H16N2O3,N-Alpha-acetyl-L-Lysine,NA,N6-Acetyl-L-lysine,TRUE,FALSE,TRUE,2-library_overlap
+2441,C8H16N2O3,N-Alpha-acetyl-L-Lysine,NA,N6-Acetyl-L-lysine,TRUE,FALSE,TRUE,2-library_overlap
+2442,C8H16N2O3,N-Alpha-acetyl-L-Lysine,NA,N-Alpha-acetyllysine,TRUE,FALSE,TRUE,2-library_overlap
+2443,C8H16N2O3,N-Alpha-acetyl-L-Lysine,NA,N-Alpha-acetyllysine,TRUE,FALSE,TRUE,2-library_overlap
+2444,C8H16N2O3,N-Alpha-acetyl-L-Lysine,NA,Glycyl-L-leucine,TRUE,FALSE,TRUE,2-library_overlap
+2445,C8H16N2O4S2,Homocystine,NA,DL-Homocystine,TRUE,FALSE,TRUE,2-library_overlap
+2446,C8H16N2O4S2,Homocystine,NA,DL-Homocystine,TRUE,FALSE,TRUE,2-library_overlap
+2447,C8H16N2O4S2,Homocystine,NA,L-Homocystine,TRUE,FALSE,TRUE,2-library_overlap
+2448,C8H16N2O4S2,Homocystine,NA,L-Homocystine,TRUE,FALSE,TRUE,2-library_overlap
+2454,C8H20NO6P,SN-glycero-3-phosphocholine,NA,Glycerophosphocholine,TRUE,FALSE,TRUE,2-library_overlap
+2455,C8H20NO6P,SN-glycero-3-phosphocholine,NA,Glycerophosphocholine,TRUE,FALSE,TRUE,2-library_overlap
+2462,C8H8O3,2-Methoxybenzoic acid,Vanillin,NA,TRUE,TRUE,FALSE,2-library_overlap
+2463,C8H8O3,4-Hydroxyphenylacetate,Vanillin,NA,TRUE,TRUE,FALSE,2-library_overlap
+2464,C8H8O3,2';4'-Dihydroxy-acetophenone,Vanillin,NA,TRUE,TRUE,FALSE,2-library_overlap
+2465,C8H8O3,2-Methoxybenzoic Acid,Vanillin,NA,TRUE,TRUE,FALSE,2-library_overlap
+2466,C8H8O3,Resorcinol monoacetate,Vanillin,NA,TRUE,TRUE,FALSE,2-library_overlap
+2467,C8H8O3,2-Hydroxyphenylacetic acid,Vanillin,NA,TRUE,TRUE,FALSE,2-library_overlap
+2469,C8H9NO2,L-(+)-Alpha-Phenylglycine,NA,2-Phenylglycine,TRUE,FALSE,TRUE,2-library_overlap
+2470,C8H9NO2,L-(+)-Alpha-Phenylglycine,NA,2-Phenylglycine,TRUE,FALSE,TRUE,2-library_overlap
+2471,C8H9NO2,L-(+)-Alpha-phenylglycine,NA,2-Phenylglycine,TRUE,FALSE,TRUE,2-library_overlap
+2472,C8H9NO2,L-(+)-Alpha-phenylglycine,NA,2-Phenylglycine,TRUE,FALSE,TRUE,2-library_overlap
+2473,C8H9NO3,4-Hydroxy-L-phenylglycine,Pyridoxal,NA,TRUE,TRUE,FALSE,2-library_overlap
+2474,C8H9NO3,Pyridoxal,Pyridoxal,NA,TRUE,TRUE,FALSE,2-library_overlap
+2485,C9H10N2O5,3-Nitro-L-Tyrosine,"O2,2'-Cyclouridine",NA,TRUE,TRUE,FALSE,2-library_overlap
+2486,C9H10O4,Methyl Vanillate,NA,"3,4-Dihydroxyhydrocinnamic acid",TRUE,FALSE,TRUE,2-library_overlap
+2487,C9H10O4,Methyl Vanillate,NA,"3,4-Dihydroxyhydrocinnamic acid",TRUE,FALSE,TRUE,2-library_overlap
+2488,C9H10O4,Methyl Vanillate,NA,Homovanillic acid,TRUE,FALSE,TRUE,2-library_overlap
+2489,C9H10O4,Methyl Vanillate,NA,Homovanillic acid,TRUE,FALSE,TRUE,2-library_overlap
+2494,C9H11NO2,L-Phenylalanine,NA,L-Phenylalanine,TRUE,FALSE,TRUE,2-library_overlap
+2495,C9H11NO2,L-Phenylalanine,NA,L-Phenylalanine,TRUE,FALSE,TRUE,2-library_overlap
+2496,C9H11NO3,L-Tyrosine,Tyrosine,o-Tyrosine,TRUE,TRUE,TRUE,3-library_overlap
+2497,C9H11NO3,L-Tyrosine,Tyrosine,o-Tyrosine,TRUE,TRUE,TRUE,3-library_overlap
+2498,C9H11NO3,L-Tyrosine,Tyrosine,L-Tyrosine,TRUE,TRUE,TRUE,3-library_overlap
+2499,C9H11NO3,L-Tyrosine,Tyrosine,L-Tyrosine,TRUE,TRUE,TRUE,3-library_overlap
+2500,C9H11NO4,"3,4-Dihydroxy-L-phenylalanine","3,4-Dihydroxy-L-phenylalanine",DL-Dopa,TRUE,TRUE,TRUE,3-library_overlap
+2501,C9H11NO4,"3,4-Dihydroxy-L-phenylalanine","3,4-Dihydroxy-L-phenylalanine",DL-Dopa,TRUE,TRUE,TRUE,3-library_overlap
+2502,C9H11NO4,"3,4-Dihydroxy-L-phenylalanine","3,4-Dihydroxy-L-phenylalanine",L-Dopa,TRUE,TRUE,TRUE,3-library_overlap
+2503,C9H11NO4,"3,4-Dihydroxy-L-phenylalanine","3,4-Dihydroxy-L-phenylalanine",L-Dopa,TRUE,TRUE,TRUE,3-library_overlap
+2505,C9H12N2O6,Uridine,Uridine,NA,TRUE,TRUE,FALSE,2-library_overlap
+2511,C9H13N3O4,Deoxycytidine,2'-Deoxycytidine,NA,TRUE,TRUE,FALSE,2-library_overlap
+2512,C9H13N3O5,Cytidine,Cytidine,NA,TRUE,TRUE,FALSE,2-library_overlap
+2514,C9H13NO2,3-Methoxy-tyramine,NA,3-Methoxytyramine,TRUE,FALSE,TRUE,2-library_overlap
+2515,C9H13NO2,3-Methoxy-tyramine,NA,Phenylephrine,TRUE,FALSE,TRUE,2-library_overlap
+2516,C9H13NO2,3-Methoxy-tyramine,NA,3-Methoxytyramine,TRUE,FALSE,TRUE,2-library_overlap
+2517,C9H13NO2,3-Methoxy-tyramine,NA,Phenylephrine,TRUE,FALSE,TRUE,2-library_overlap
+2518,C9H13NO3,DL-normetanephrine,Epinephrine,Normetanephrine,TRUE,TRUE,TRUE,3-library_overlap
+2519,C9H13NO3,DL-normetanephrine,Epinephrine,Normetanephrine,TRUE,TRUE,TRUE,3-library_overlap
+2520,C9H13NO3,Epinephrine,Epinephrine,Normetanephrine,TRUE,TRUE,TRUE,3-library_overlap
+2521,C9H13NO3,Epinephrine,Epinephrine,Normetanephrine,TRUE,TRUE,TRUE,3-library_overlap
+2522,C9H14N3O7P,2'-Deoxycytidine 5'-monophosphate,2'-Deoxycytidine 5'-monophosphate,NA,TRUE,TRUE,FALSE,2-library_overlap
+2523,C9H14N3O8P,3'-CMP,Cytidine 5'-monophosphate,NA,TRUE,TRUE,FALSE,2-library_overlap
+2524,C9H14N3O8P,3'-CMP,"Cytidine-2',3'-monophosphoric acid",NA,TRUE,TRUE,FALSE,2-library_overlap
+2525,C9H14N3O8P,CMP,"Cytidine-2',3'-monophosphoric acid",NA,TRUE,TRUE,FALSE,2-library_overlap
+2526,C9H14N3O8P,CMP,Cytidine 5'-monophosphate,NA,TRUE,TRUE,FALSE,2-library_overlap
+2527,C9H14N4O3,Carnosine,L-Carnosine,Carnosine,TRUE,TRUE,TRUE,3-library_overlap
+2528,C9H14N4O3,Carnosine,L-Carnosine,Carnosine,TRUE,TRUE,TRUE,3-library_overlap
+2539,C9H17NO4,NA,Acetyl-L-carnitine,L-Acetylcarnitine,FALSE,TRUE,TRUE,2-library_overlap
+2540,C9H17NO4,NA,Acetyl-L-carnitine,L-Acetylcarnitine,FALSE,TRUE,TRUE,2-library_overlap
+2541,C9H17NO5,D-Pantothenic acid,NA,Pantothenic acid,TRUE,FALSE,TRUE,2-library_overlap
+2542,C9H17NO5,D-Pantothenic acid,NA,Pantothenic acid,TRUE,FALSE,TRUE,2-library_overlap
+2563,C9H9I2NO3,"3,5-Diiodo-L-Tyrosine",NA,"3,5-Diiodo-L-tyrosine",TRUE,FALSE,TRUE,2-library_overlap
+2564,C9H9I2NO3,"3,5-Diiodo-L-Tyrosine",NA,"3,5-Diiodo-L-tyrosine",TRUE,FALSE,TRUE,2-library_overlap
+2566,C9H9NO3,Hippurate,Hippuric acid,Hippuric acid,TRUE,TRUE,TRUE,3-library_overlap
+2567,C9H9NO3,Hippurate,Hippuric acid,Hippuric acid,TRUE,TRUE,TRUE,3-library_overlap

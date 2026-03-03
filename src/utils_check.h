@@ -1,19 +1,23 @@
 #ifndef UTILS_CHECK_H
 #define UTILS_CHECK_H
 
+#include <numeric>
+#include <algorithm>
+#include <vector>
+#include <string>
+
 #include <Rcpp.h>
 
 // Check if required column exists (or fallback)
 template <typename T>
-T get_column_with_fallback(Rcpp::DataFrame df, std::string primary, std::string fallback, std::string label) {
-  if (df.containsElementNamed(primary.c_str())) {
-    return df[primary];
-  } else if (df.containsElementNamed(fallback.c_str())) {
-    return df[fallback];
-  } else {
-    Rcpp::stop("Missing required column for '" + label + "': must contain '" + primary + "' or '" + fallback + "'");
-  }
+T get_column_with_fallback(Rcpp::DataFrame df, std::string primary,
+                           std::string fallback = "", std::string label = "") {
+  if (df.containsElementNamed(primary.c_str())) return df[primary];
+  if (!fallback.empty() && df.containsElementNamed(fallback.c_str())) return df[fallback];
+  if (label.empty()) label = primary + "/" + fallback;
+  Rcpp::stop("None of the expected fields found: '" + label + "'");
 }
+
 
 // Check if required column exists (no fallback)
 template <typename T>
@@ -49,8 +53,6 @@ inline Rcpp::DataFrame sort_dataframe_by_column(Rcpp::DataFrame df, Rcpp::Numeri
 
   for (int j = 0; j < df.size(); ++j) {
     Rcpp::RObject col = df[j];
-    Rcpp::Rcout << "DEBUG: Sorting column " << std::string(colnames[j])
-                << ", type = " << TYPEOF(col) << std::endl;
 
     switch (TYPEOF(col)) {
     case INTSXP: {

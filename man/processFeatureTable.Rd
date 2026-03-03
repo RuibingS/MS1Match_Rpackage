@@ -12,7 +12,7 @@ processFeatureTable(
 )
 }
 \arguments{
-\item{result}{LC-MS result list, typically result[\link{2}] is metadata and result[\link{3}] is intensity.}
+\item{result}{LC-MS result list, typically \code{result[[2]]} is metadata and \code{result[[3]]} s intensity.}
 
 \item{rt_range}{Optional numeric vector of length 2 for RT filtering (e.g. c(60,1200)).}
 

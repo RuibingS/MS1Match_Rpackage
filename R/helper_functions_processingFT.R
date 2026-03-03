@@ -3,7 +3,7 @@
 #' This function processes the feature metadata and intensity matrix from xcms.
 #' It renames, filters, and adds summary intensity for downstream annotation workflows.
 #'
-#' @param result LC-MS result list, typically result[[2]] is metadata and result[[3]] is intensity.
+#' @param result LC-MS result list, typically `result[[2]]` is metadata and `result[[3]]` s intensity.
 #' @param rt_range Optional numeric vector of length 2 for RT filtering (e.g. c(60,1200)).
 #' @param sort_by Optional column name to sort by.
 #' @param sample_cols Either a regex string (e.g. "mzxml") or a character vector of sample column names.

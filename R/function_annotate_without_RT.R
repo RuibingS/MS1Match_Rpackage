@@ -9,7 +9,6 @@ annotate_no_rt <- function(object) {
     adducts_df = object@adducts_df,
     neutral_loss_table = object@neutral_loss_table,
     polarity = object@polarity,
-    intensity = object@intensity,
     mz_threshold = object@mz_threshold,
     iso_threshold = object@iso_threshold,
     max_charge = object@max_charge,

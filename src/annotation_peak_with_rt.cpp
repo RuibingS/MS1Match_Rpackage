@@ -1,15 +1,19 @@
+// [[Rcpp::depends(Rcpp)]]
 #include <Rcpp.h>
 #include <cmath>
 #include <vector>
+#include <string>
+#include <unordered_set>
 #include <unordered_map>
+#include <regex>
+#include <limits>
 #include <sstream>
 #include <iomanip>
-#include "utils_check.h"
-#include "utils_sort.h"
-#include <regex>
-#include <sstream>
+#include <algorithm> // transform, min
 #include "utils_annotation.h"
-
+#include "utils_sort.h"
+#include "utils_check.h"
+#include "utils_isotope.h"
 
 using namespace Rcpp;
 
@@ -44,140 +48,206 @@ CharacterVector Check_Iso_Charge(CharacterVector name,
 double compute_adduct_mass(double M, std::string adduct_formula);
 
 
+std::string collapse_matches(const std::vector<std::string>& matches) {
+  if (matches.empty()) return "";
+  std::ostringstream oss;
+  oss << matches[0];
+  for (size_t i = 1; i < matches.size(); ++i) {
+    oss << "; " << matches[i];
+  }
+  return oss.str();
+}
+
+
 // [[Rcpp::export]]
-List annotate_with_rt_cpp(List compounds_list, Rcpp::DataFrame FT,
-                           Rcpp::DataFrame adducts_df,
-                           Rcpp::DataFrame neutral_loss_table,
-                           std::string polarity,
-                           NumericVector intensity,
-                           double mz_threshold = 0.005, double PI_rt_threshold = 5.0,
-                           double rt_threshold = 3.0,
-                           double iso_threshold = 1.003355, int max_charge = 3, int max_isotope = 4,
-                           bool run_PI_match = true, bool run_adduct_match = true, bool run_NL_match = true) {
+List annotate_with_rt_cpp(List compounds_list,
+                          DataFrame FT,
+                          DataFrame adducts_df,
+                          DataFrame neutral_loss_table,
+                          std::string polarity,
+
+                          double mz_threshold = 0.005,
+                          double ppm = 20,                // ppm for adduct matching
+                          double PI_rt_threshold = 5.0,
+                          double rt_threshold = 3.0,
+                          double iso_threshold = 1.003355,
+                          int max_charge = 3,
+                          int max_isotope = 4,
+                          bool run_PI_match = true,
+                          bool run_adduct_match = true,
+                          bool run_NL_match = true) {
 
   NumericVector FT_mz = get_column_with_fallback<NumericVector>(FT, "mzmed", "mz", "m/z");
   CharacterVector feature_name = get_required_column<CharacterVector>(FT, "feature_name");
   NumericVector FT_rt = get_column_with_fallback<NumericVector>(FT, "rtmed", "rt", "retention time");
+  NumericVector FT_intensity = get_intensity_from_FT(FT);
 
-
-
-
-
+  // ensure FT is sorted by m/z (stable)
   bool is_sorted = true;
-  for (int i = 1; i < FT_mz.size(); ++i) {
-    if (FT_mz[i] < FT_mz[i - 1]) {
-      is_sorted = false;
-      break;
-    }
-  }
+  for (int i = 1; i < FT_mz.size(); ++i) if (FT_mz[i] < FT_mz[i-1]) { is_sorted = false; break; }
   if (!is_sorted) {
     Rcpp::Rcout << "Sorting FT by m/z...\n";
     std::vector<int> idx = compute_sorted_index(FT_mz);
     FT_mz = reorder_vector(FT_mz, idx);
     FT_rt = reorder_vector(FT_rt, idx);
     feature_name = reorder_vector(feature_name, idx);
+    FT_intensity = reorder_vector(FT_intensity, idx);
   }
 
-  int n_features = FT.nrows();
-  int n_compounds = compounds_list.size();
+  const int n_features  = FT.nrows();
+  const int n_compounds = compounds_list.size();
   Rcpp::Rcout << "Features: " << n_features << ", Compounds: " << n_compounds << "\n";
 
-  std::vector<double> compound_mass(n_compounds);
-  std::vector<double> compound_rt(n_compounds);
+  std::transform(polarity.begin(), polarity.end(), polarity.begin(), ::tolower);
+  if (polarity == "positive" || polarity == "+" || polarity == "pos") polarity = "pos";
+  else if (polarity == "negative" || polarity == "-" || polarity == "neg") polarity = "neg";
+
+  std::vector<double> compound_mass(n_compounds, std::numeric_limits<double>::quiet_NaN());
+  std::vector<double> compound_rt (n_compounds, 0.0);
   std::vector<std::string> compound_name(n_compounds);
+
   for (int i = 0; i < n_compounds; ++i) {
     List compound = compounds_list[i];
-    if (!compound.containsElementNamed("ExactMass") || !compound.containsElementNamed("RetTime")) continue;
-    compound_mass[i] = compound["ExactMass"];
-    compound_rt[i] = std::atof(as<std::string>(compound["RetTime"]).c_str());
-    compound_name[i] = as<std::string>(compound["Name"]);
+    if (compound.containsElementNamed("ExactMass")) {
+      try { compound_mass[i] = Rcpp::as<double>(compound["ExactMass"]); } catch (...) {}
+    }
+    if (compound.containsElementNamed("RetTime")) {
+      try { compound_rt[i] = std::atof(Rcpp::as<std::string>(compound["RetTime"]).c_str()); } catch (...) {}
+    }
+    if (compound.containsElementNamed("Name")) {
+      try { compound_name[i] = Rcpp::as<std::string>(compound["Name"]); } catch (...) {}
+    }
   }
 
-  CharacterVector adduct_ions = adducts_df["Ion.name"];
-  CharacterVector adduct_polarities = adducts_df["Ion.polarity"];
-  CharacterVector adduct_formulas = adducts_df["Ion.mass"];
+  // adduct table columns
+  CharacterVector adduct_ions      = adducts_df["Ion.name"];
+  CharacterVector adduct_polarity  = adducts_df["Ion.polarity"];
+  CharacterVector adduct_formulas  = adducts_df["Ion.mass"];
+  CharacterVector adduct_charge    = adducts_df.containsElementNamed("Charge")
+    ? (CharacterVector)adducts_df["Charge"]
+  : CharacterVector(adduct_ions.size(), NA_STRING);
 
+  // Check duplicate adduct table
+  struct KeyHash {
+    std::size_t operator()(const std::string& s) const noexcept {
+      return std::hash<std::string>{}(s);
+    }
+  };
+  std::unordered_set<std::string, KeyHash> adduct_seen;
+  std::vector<std::string> filtered_ions;
+  std::vector<std::string> filtered_formulas;
+
+  for (int i = 0; i < adduct_ions.size(); ++i) {
+    std::string pol = Rcpp::as<std::string>(adduct_polarity[i]);
+    std::transform(pol.begin(), pol.end(), pol.begin(), ::tolower);
+    if (pol == "positive" || pol == "+" || pol == "pos") pol = "pos";
+    else if (pol == "negative" || pol == "-" || pol == "neg") pol = "neg";
+
+    if (pol != polarity) continue;
+
+    std::string ion  = Rcpp::as<std::string>(adduct_ions[i]);
+    std::string mass = Rcpp::as<std::string>(adduct_formulas[i]);
+    std::string chg  = adduct_charge[i] == NA_STRING ? "" : Rcpp::as<std::string>(adduct_charge[i]);
+
+    std::string key = ion + "||" + mass + "||" + chg + "||" + pol;
+    if (adduct_seen.insert(key).second) {
+      filtered_ions.push_back(ion);
+      filtered_formulas.push_back(mass);
+    }
+  }
+
+  // neutral loss
   NumericVector nl_mz_difference = neutral_loss_table["Accurate.Mass"];
   CharacterVector nl_name = neutral_loss_table["Formula"];
-  CharacterVector pos_polarity = neutral_loss_table["Pos"];
-  CharacterVector neg_polarity = neutral_loss_table["Neg"];
+  CharacterVector pos_pol = neutral_loss_table["Pos"];
+  CharacterVector neg_pol = neutral_loss_table["Neg"];
 
   std::vector<std::string> PI_annotations(n_features);
   std::vector<std::string> adduct_annotations(n_features);
   std::vector<std::string> NL_annotations(n_features);
 
+  // ----------------- PI match -----------------
   if (run_PI_match) {
     Rcpp::Rcout << "Starting PI match...\n";
+    int skipped_no_mass = 0, skipped_no_rt = 0, skipped_rt_tol = 0, skipped_mz_tol = 0, matched_count = 0;
+
     for (int f = 0; f < n_features; ++f) {
       double mz = FT_mz[f];
       double rt = FT_rt[f];
 
       for (int i = 0; i < n_compounds; ++i) {
         double M = compound_mass[i];
-        double crt = compound_rt[i];
-        if (std::abs(rt - crt) > PI_rt_threshold) continue;
+        if (std::isnan(M)) { skipped_no_mass++; continue; }
+        if (compound_rt[i] == 0.0) { skipped_no_rt++; continue; }
 
-        if (polarity == "pos") {
-          if (std::abs(mz - (M + 1.007276)) <= mz_threshold) {
-            PI_annotations[f] = compound_name[i] + " [M+H]+";
-            break;
-          }
-        } else if (polarity == "neg") {
-          if (std::abs(mz - (M - 1.007276)) <= mz_threshold) {
-            PI_annotations[f] = compound_name[i] + " [M-H]-";
-            break;
-          }
-        }
+        double theo_mz = (polarity == "pos") ? (M + 1.007276) : (M - 1.007276);
+        double rt_diff = std::fabs(rt - compound_rt[i]);
+        if (rt_diff > PI_rt_threshold) { skipped_rt_tol++; continue; }
+
+        double mz_diff = std::fabs(mz - theo_mz);
+        if (mz_diff > mz_threshold) { skipped_mz_tol++; continue; }
+
+        // M to 5 decimal places:
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(5) << M;
+        std::string M_str = oss.str();
+
+        PI_annotations[f] = compound_name[i] + ((polarity == "pos") ? " [M+H]+ " : " [M-H]- ") + M_str;
+        matched_count++;
+        break;
       }
     }
+    Rcpp::Rcout << "PI match done.\n";
   }
+
+  // ----------------- Adduct match (with de-dup) -----------------
+  std::vector<std::vector<std::string>> all_adduct_matches(n_features);
+
   if (run_adduct_match) {
     Rcpp::Rcout << "Starting adduct match...\n";
 
-    //  Filtered adduct table by ion polarity
-    std::vector<std::string> filtered_formulas;
-    std::vector<std::string> filtered_ions;
-    for (int i = 0; i < adduct_formulas.size(); ++i) {
-      if (adduct_polarities[i] == polarity) {
-        filtered_formulas.push_back(Rcpp::as<std::string>(adduct_formulas[i]));
-        filtered_ions.push_back(Rcpp::as<std::string>(adduct_ions[i]));
-      }
-    }
-
-    // For each feature
     for (int f = 0; f < n_features; ++f) {
       double mz_feature = FT_mz[f];
-      std::vector<std::string> matches;
 
-      // For each compound
+      std::unordered_set<std::string, KeyHash> seen;
+      std::vector<std::string> matches;
+      matches.reserve(16);
+
       for (int c = 0; c < n_compounds; ++c) {
         double M = compound_mass[c];
-        std::string cname = compound_name[c];
+        if (std::isnan(M)) continue;
 
-        // Calculate theoretical adduct m/z values for each M
-        std::vector<double> mz_adducts = parse_adduct_vector(M, filtered_formulas);
+        // Compute adduct m/z vector from formulas
+        const std::vector<std::string>& forms = filtered_formulas;
+        std::vector<double> mz_adducts = parse_adduct_vector(M, forms);
 
-        for (size_t k = 0; k < mz_adducts.size(); ++k) {
+        size_t L = std::min(mz_adducts.size(), filtered_ions.size());
+        for (size_t k = 0; k < L; ++k) {
           double mz_adduct = mz_adducts[k];
-          double diff = std::abs(mz_feature - mz_adduct);
-          double mz_tol = mz_threshold;
+          double diff = std::fabs(mz_feature - mz_adduct);
+          double mz_tol = std::max(mz_threshold, mz_adduct * ppm * 1e-6);
 
           if (diff <= mz_tol) {
-            std::string annotation = filtered_ions[k] + " " + std::to_string(M); // cname + " " + filtered_ions[k] + " " + std::to_string(M);
-            matches.push_back(annotation);
+            std::ostringstream oss;
+            oss << filtered_ions[k] << " " << std::fixed << std::setprecision(6) << M;
+            std::string annotation = oss.str();
+
+            if (seen.insert(annotation).second) {
+              matches.push_back(annotation);
+            }
           }
         }
       }
 
-      // Concatenate  all adduct matches into a string
-      adduct_annotations[f] = join_annotations(matches);
+      // Save matches for this feature
+      all_adduct_matches[f] = matches;
     }
 
     Rcpp::Rcout << "Adduct annotation completed.\n";
   }
 
 
-
+  // ----------------- Neutral loss match -----------------
   if (run_NL_match) {
     Rcpp::Rcout << "Starting neutral loss match...\n";
     for (int f1 = 0; f1 < n_features; ++f1) {
@@ -189,37 +259,39 @@ List annotate_with_rt_cpp(List compounds_list, Rcpp::DataFrame FT,
         if (f1 == f2) continue;
         double mz2 = FT_mz[f2];
         double rt2 = FT_rt[f2];
-        if (std::abs(rt1 - rt2) > rt_threshold || mz2 <= mz1) continue;
+        if (std::fabs(rt1 - rt2) > rt_threshold || mz2 <= mz1) continue;
 
         double diff = mz2 - mz1;
         for (int m = 0; m < nl_mz_difference.size(); ++m) {
-          bool match = ((polarity == "pos" && as<std::string>(pos_polarity[m]) == "+") ||
-                        (polarity == "neg" && as<std::string>(neg_polarity[m]) == "+"));
-          if (match && std::abs(diff - nl_mz_difference[m]) <= mz_threshold) {
-            nl_matches.push_back("-" + as<std::string>(nl_name[m]) + " (" + as<std::string>(feature_name[f2]) + ")");
+          bool match_ok = ((polarity == "pos" && as<std::string>(pos_pol[m]) == "+") ||
+                           (polarity == "neg" && as<std::string>(neg_pol[m]) == "+"));
+          if (match_ok && std::fabs(diff - nl_mz_difference[m]) <= mz_threshold) {
+            nl_matches.push_back("<- " + as<std::string>(nl_name[m]) + " (" + as<std::string>(feature_name[f2]) + ")");
           }
         }
       }
       NL_annotations[f1] = join_annotations(nl_matches);
     }
   }
-  Rcpp::Rcout << "Starting isotope anotation...\n";
-  CharacterVector isotope_labels = Check_Iso_Charge(feature_name, FT_mz, FT_rt, intensity, iso_threshold, max_charge, max_isotope);
-  Rcpp::Rcout << "Isotope anotation completed\n";
 
+  // ----------------- Isotope / charge annotations -----------------
+  Rcpp::Rcout << "Starting isotope annotation...\n";
+  CharacterVector isotope_labels = Check_Iso_Charge(feature_name, FT_mz, FT_rt, FT_intensity,
+                                                    iso_threshold, max_charge, max_isotope);
+  Rcpp::Rcout << "Isotope annotation completed.\n";
+
+  // ----------------- output -----------------
   List output_list(n_features);
   for (int i = 0; i < n_features; ++i) {
     output_list[i] = List::create(
-      Named("feature_name") = CharacterVector::create(feature_name[i]),
-      Named("mz") = FT_mz[i],
-      Named("rt") = FT_rt[i],
-      Named("PI_match") = CharacterVector::create(PI_annotations[i]),
-      Named("adduct_match") = CharacterVector::create(adduct_annotations[i]),
-      Named("NL_match") = NL_annotations[i],
-      Named("iso_annotation") = CharacterVector::create(isotope_labels[i])
+      Named("feature_name")   =  CharacterVector::create(feature_name[i]),
+      Named("mz")             = FT_mz[i],
+      Named("rt")             = FT_rt[i],
+      Named("PI_match")       = PI_annotations[i],
+      Named("adduct_match")   = collapse_matches(all_adduct_matches[i]),
+      Named("NL_match")       = NL_annotations[i],
+      Named("iso_annotation") =  CharacterVector::create(isotope_labels[i])
     );
-
-
   }
 
   Rcpp::Rcout << "Annotation completed.\n";
@@ -236,7 +308,6 @@ List annotate_with_rt_cpp(List compounds_list, Rcpp::DataFrame FT,
 
 // Isotope annotation
 
-// [[Rcpp::export]]
 Rcpp::CharacterVector Check_Iso_Charge(Rcpp::CharacterVector name,
                                        Rcpp::NumericVector mz,
                                        Rcpp::NumericVector rt,
@@ -318,7 +389,6 @@ Rcpp::CharacterVector Check_Iso_Charge(Rcpp::CharacterVector name,
 
 
 
-// [[Rcpp::export]]
 Rcpp::List PImatch_fun(Rcpp::DataFrame FT,
                        Rcpp::DataFrame Comp_data,
                        Rcpp::CharacterVector PIon,

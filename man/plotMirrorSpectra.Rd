@@ -2,12 +2,9 @@
 % Please edit documentation in R/plotMirrorSpectra_function.R
 \name{plotMirrorSpectra}
 \alias{plotMirrorSpectra}
-\alias{plotMirrorSpectra,DirectLibMatch-method}
 \title{Plot mirror plots for a list of spectral matches}
 \usage{
 plotMirrorSpectra(object, matches, output_dir = NULL, ppm = 10)
-
-\S4method{plotMirrorSpectra}{DirectLibMatch}(object, matches, output_dir = NULL, ppm = 10)
 }
 \arguments{
 \item{object}{A \code{DirectLibMatch} object containing the compound library}

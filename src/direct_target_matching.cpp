@@ -23,7 +23,6 @@ Rcpp::List PImatch_target_rcpp(Rcpp::DataFrame FT,
 
   NumericVector FT_mz = get_column_with_fallback<NumericVector>(FT, "mzmed", "mz", "m/z");
   CharacterVector feature_name = get_required_column<CharacterVector>(FT, "feature_name");
-  NumericVector FT_rt = get_column_with_fallback<NumericVector>(FT, "rtmed", "rt", "retention time");
 
   Rcpp::CharacterVector Comp_name = Comp_data["Name"];
   Rcpp::NumericVector Comp_M = get_column_with_fallback<Rcpp::NumericVector>(
@@ -58,13 +57,18 @@ Rcpp::List PImatch_target_rcpp(Rcpp::DataFrame FT,
     for (size_t  j = 0; j < nrow_Comp; j++) {
       double mz_diff = std::fabs(FT_mz[i] - comp_mz[j]);
       double ppm_tol = comp_mz[j] * ppm * 1e-6;
+      double exact_mass =Comp_M[j];
 
       if (mz_diff <= ppm_tol || mz_diff <= diff_mz_thr) {
         feaNames.push_back(feature_name[i]);
         fea_mz.push_back(FT_mz[i]);
         CompNames.push_back(Comp_name[j]);
-        PInames.push_back(PIon_name);
-        M_vec.push_back(Comp_M[j]);
+
+        std::string pi_m_str = std::string(PIon_name) + " " + std::to_string(exact_mass);
+        PInames.push_back(pi_m_str);
+
+        //PInames.push_back(PIon_name);
+        //M_vec.push_back(exact_mass);
       }
     }
 
@@ -72,8 +76,7 @@ Rcpp::List PImatch_target_rcpp(Rcpp::DataFrame FT,
       _["Feature_name"] = feaNames,
       _["Feature_mz"] = fea_mz,
       _["Comp_name"] = CompNames,
-      _["PI_name"] = PInames,
-      _["M"] = M_vec
+      _["PI_name"] = PInames
     );
   }
 

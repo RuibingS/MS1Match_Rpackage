@@ -1,6 +1,8 @@
-#’ Run library direct matching (generic)
-#’
-#’ @param object A DirectLibMatch object
-#’ @return A list of matched features
-#’ @export
-setGeneric("libAnnotate", function(object) standardGeneric("libAnnotate"))
+#' Annotate features using library matching and cosine similarity
+#'
+#' @param object A \code{DirectLibMatch} object
+#' @param compute_cosine Logical. Compute cosine similarity scores? Default: TRUE
+#' @param ppm Parts-per-million tolerance for cosine scoring
+#' @return Updated \code{DirectLibMatch} object
+#' @export
+setGeneric("libAnnotate", function(object, compute_cosine = TRUE, ppm = 10) standardGeneric("libAnnotate"))
