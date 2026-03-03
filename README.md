@@ -11,23 +11,18 @@
 4. Targeted annotation based on a user-defined compound list
 
 ```r
-# Install required Bioconductor packages first
-if (!requireNamespace("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
+## Installation
 
-BiocManager::install(c("xcms", "MSnbase", "Spectra"))
+if (!requireNamespace("remotes", quietly = TRUE))
+    install.packages("remotes")
 
-# Install devtools if not already
-install.packages("devtools")
-
-# Install MS1Match from GitHub
-devtools::install_github("RuibingS/MS1Match_Rpackage")
+remotes::install_github("RuibingS/MS1Match_Rpackage")
 
 ```
 ## 📘 Vignette
 
 A full reproducible tutorial using the demo StM14 data set is available:
 
-👉 [MS1Match Tutorial](vignettes/MS1Match_tutorial.html)
+👉 [MS1Match Tutorial](MS1Match_StM14_tutorial.html)
 
 
