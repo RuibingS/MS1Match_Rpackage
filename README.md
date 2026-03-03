@@ -23,6 +23,6 @@ remotes::install_github("RuibingS/MS1Match_Rpackage")
 
 A full reproducible tutorial using the demo StM14 data set is available:
 
-👉 [MS1Match Tutorial](MS1Match_StM14_tutorial.html)
+👉 [MS1Match Tutorial]([MS1Match_StM14_tutorial.html](https://RuibingS.github.io/MS1Match_Rpackage/MS1Match_StM14_tutorial.html))
 
 
