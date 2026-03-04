@@ -10,6 +10,52 @@
 
 4. Targeted annotation based on a user-defined compound list
 
+# Installation
+
+## Requirements
+
+- **R**: `>= 4.4` (recommended: use the same version used for development)
+- **Rcpp**: required (the package contains compiled C++ code)
+- **Build tools** (required to compile Rcpp source code):
+
+  - **Windows**: Install **Rtools** matching your R version  
+    - R 4.4.x → **Rtools44**
+  
+  - **macOS**: Install Apple Command Line Tools  
+    ```bash
+    xcode-select --install
+    ```
+
+  - **Linux (Ubuntu/Debian)**:
+    ```bash
+    sudo apt update
+    sudo apt install build-essential r-base-dev
+    ```
+
+Install Rcpp (if not already installed):
+
+```r
+install.packages("Rcpp")
+```
+### Bioconductor dependencies
+
+This package depends on the following Bioconductor packages:
+- `xcms`
+- `MSnbase`
+- `Spectra`
+- `MetaboCoreUtils`
+```r
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+
+BiocManager::install(
+  c("xcms", "MSnbase", "Spectra", "MetaboCoreUtils"),
+  ask = FALSE,
+  update = TRUE
+)
+
+```
+
 ```r
 ## Installation
 
