@@ -14,7 +14,7 @@
 
 ## Requirements
 
-- **R**: `>= 4.4` (recommended: use the same version used for development)
+- **R**: `>= 4.5` (recommended; matches current Bioconductor release)
 - **Rcpp**: required (the package contains compiled C++ code)
 - **Build tools** (required to compile Rcpp source code):
 
