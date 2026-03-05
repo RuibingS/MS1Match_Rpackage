@@ -105,7 +105,7 @@ library(MS1Match)
 If you want to access files from your host system:
 
 ```bash
-docker run -it --rm -v $(pwd):/workspace MS1Match
+docker run -it --rm -v $(pwd):/workspace ms1match
 ```
 
 This mounts your current directory inside the container at `/workspace`.
