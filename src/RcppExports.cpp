@@ -41,6 +41,22 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// EIC_cor_mat_pairs
+DataFrame EIC_cor_mat_pairs(List feature_EIC_combined_result, DataFrame feature_pairs, double rt_EIC_thr, std::string method, bool parallel, int n_threads);
+RcppExport SEXP _MS1Match_EIC_cor_mat_pairs(SEXP feature_EIC_combined_resultSEXP, SEXP feature_pairsSEXP, SEXP rt_EIC_thrSEXP, SEXP methodSEXP, SEXP parallelSEXP, SEXP n_threadsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type feature_EIC_combined_result(feature_EIC_combined_resultSEXP);
+    Rcpp::traits::input_parameter< DataFrame >::type feature_pairs(feature_pairsSEXP);
+    Rcpp::traits::input_parameter< double >::type rt_EIC_thr(rt_EIC_thrSEXP);
+    Rcpp::traits::input_parameter< std::string >::type method(methodSEXP);
+    Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
+    Rcpp::traits::input_parameter< int >::type n_threads(n_threadsSEXP);
+    rcpp_result_gen = Rcpp::wrap(EIC_cor_mat_pairs(feature_EIC_combined_result, feature_pairs, rt_EIC_thr, method, parallel, n_threads));
+    return rcpp_result_gen;
+END_RCPP
+}
 // annotate_peaks_fia
 List annotate_peaks_fia(List compounds_list, DataFrame FT, DataFrame adducts_df, DataFrame neutral_loss_table, std::string polarity, NumericVector intensity, double threshold, double iso_threshold, int max_charge, int max_isotope);
 RcppExport SEXP _MS1Match_annotate_peaks_fia(SEXP compounds_listSEXP, SEXP FTSEXP, SEXP adducts_dfSEXP, SEXP neutral_loss_tableSEXP, SEXP polaritySEXP, SEXP intensitySEXP, SEXP thresholdSEXP, SEXP iso_thresholdSEXP, SEXP max_chargeSEXP, SEXP max_isotopeSEXP) {
@@ -473,22 +489,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// EIC_cor_mat_pairs
-DataFrame EIC_cor_mat_pairs(List feature_EIC_combined_result, DataFrame feature_pairs, double rt_EIC_thr, std::string method, bool parallel, int n_threads);
-RcppExport SEXP _MS1Match_EIC_cor_mat_pairs(SEXP feature_EIC_combined_resultSEXP, SEXP feature_pairsSEXP, SEXP rt_EIC_thrSEXP, SEXP methodSEXP, SEXP parallelSEXP, SEXP n_threadsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type feature_EIC_combined_result(feature_EIC_combined_resultSEXP);
-    Rcpp::traits::input_parameter< DataFrame >::type feature_pairs(feature_pairsSEXP);
-    Rcpp::traits::input_parameter< double >::type rt_EIC_thr(rt_EIC_thrSEXP);
-    Rcpp::traits::input_parameter< std::string >::type method(methodSEXP);
-    Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
-    Rcpp::traits::input_parameter< int >::type n_threads(n_threadsSEXP);
-    rcpp_result_gen = Rcpp::wrap(EIC_cor_mat_pairs(feature_EIC_combined_result, feature_pairs, rt_EIC_thr, method, parallel, n_threads));
-    return rcpp_result_gen;
-END_RCPP
-}
 // EIC_cor_pairs_by_sample
 SEXP EIC_cor_pairs_by_sample(List feature_EIC_process, DataFrame feature_pairs, double rt_EIC_thr, std::string method, bool parallel, int n_threads);
 RcppExport SEXP _MS1Match_EIC_cor_pairs_by_sample(SEXP feature_EIC_processSEXP, SEXP feature_pairsSEXP, SEXP rt_EIC_thrSEXP, SEXP methodSEXP, SEXP parallelSEXP, SEXP n_threadsSEXP) {
@@ -765,6 +765,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_MS1Match_annotate_from_adduct_table", (DL_FUNC) &_MS1Match_annotate_from_adduct_table, 6},
     {"_MS1Match_DI_dirct_match_fun", (DL_FUNC) &_MS1Match_DI_dirct_match_fun, 4},
+    {"_MS1Match_EIC_cor_mat_pairs", (DL_FUNC) &_MS1Match_EIC_cor_mat_pairs, 6},
     {"_MS1Match_annotate_peaks_fia", (DL_FUNC) &_MS1Match_annotate_peaks_fia, 10},
     {"_MS1Match_PImatch_fia_fun", (DL_FUNC) &_MS1Match_PImatch_fia_fun, 5},
     {"_MS1Match_findNL_fia_fun", (DL_FUNC) &_MS1Match_findNL_fia_fun, 4},
@@ -793,7 +794,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_MS1Match_closest_rt_fun", (DL_FUNC) &_MS1Match_closest_rt_fun, 5},
     {"_MS1Match_get_max_fun_cpp", (DL_FUNC) &_MS1Match_get_max_fun_cpp, 1},
     {"_MS1Match_feature_EIC_process_fun_cpp", (DL_FUNC) &_MS1Match_feature_EIC_process_fun_cpp, 3},
-    {"_MS1Match_EIC_cor_mat_pairs", (DL_FUNC) &_MS1Match_EIC_cor_mat_pairs, 6},
     {"_MS1Match_EIC_cor_pairs_by_sample", (DL_FUNC) &_MS1Match_EIC_cor_pairs_by_sample, 6},
     {"_MS1Match_parse_and_eval_adduct", (DL_FUNC) &_MS1Match_parse_and_eval_adduct, 2},
     {"_MS1Match_gaussian_kernel_dist", (DL_FUNC) &_MS1Match_gaussian_kernel_dist, 3},

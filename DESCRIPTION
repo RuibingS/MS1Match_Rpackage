@@ -1,8 +1,8 @@
 Package: MS1Match
-Title: Mass Spectrometry MS1 Peak Matching
+Title: MS1 Library-guided Comprehensive Annotation of Redundant MS1 Features in LC-MS Untargeted Metabolomics
 Version: 0.0.0.9000
-Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
-Description: Provides functions for direct MS1 peak matching for LC-MS and FIA-MS workflows.
+Authors@R: person("Ruibing", "Shi", email = "ruibingshi@gmail.com", role = c("aut", "cre"))
+Description: Provides functions for direct MS1 peak matching and feature annotation for LC-MS untargeted metabolomics datasets.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE, roclets = c("namespace", "rd"))
@@ -20,7 +20,12 @@ Imports:
     MetaboCoreUtils,
     enviPat,
     stringr,
-    stats
+    stats,
+    progressr,
+    purrr,
+    BiocParallel,
+    IRanges,
+    S4Vectors
 LinkingTo: Rcpp, RcppArmadillo, BH
 Suggests:
     knitr,

@@ -9,6 +9,10 @@ DI_dirct_match_fun <- function(FT, compounds_list, diff_mz_thr, ppm) {
     .Call(`_MS1Match_DI_dirct_match_fun`, FT, compounds_list, diff_mz_thr, ppm)
 }
 
+EIC_cor_mat_pairs <- function(feature_EIC_combined_result, feature_pairs, rt_EIC_thr = 1.0, method = "pearson", parallel = TRUE, n_threads = 0L) {
+    .Call(`_MS1Match_EIC_cor_mat_pairs`, feature_EIC_combined_result, feature_pairs, rt_EIC_thr, method, parallel, n_threads)
+}
+
 annotate_peaks_fia <- function(compounds_list, FT, adducts_df, neutral_loss_table, polarity, intensity, threshold = 0.005, iso_threshold = 1.003355, max_charge = 3L, max_isotope = 4L) {
     .Call(`_MS1Match_annotate_peaks_fia`, compounds_list, FT, adducts_df, neutral_loss_table, polarity, intensity, threshold, iso_threshold, max_charge, max_isotope)
 }
@@ -119,10 +123,6 @@ get_max_fun_cpp <- function(chromPeaks) {
 
 feature_EIC_process_fun_cpp <- function(input_list, nrows, ncols) {
     .Call(`_MS1Match_feature_EIC_process_fun_cpp`, input_list, nrows, ncols)
-}
-
-EIC_cor_mat_pairs <- function(feature_EIC_combined_result, feature_pairs, rt_EIC_thr = 1.0, method = "pearson", parallel = TRUE, n_threads = 0L) {
-    .Call(`_MS1Match_EIC_cor_mat_pairs`, feature_EIC_combined_result, feature_pairs, rt_EIC_thr, method, parallel, n_threads)
 }
 
 EIC_cor_pairs_by_sample <- function(feature_EIC_process, feature_pairs, rt_EIC_thr = 0.2, method = "pearson", parallel = TRUE, n_threads = 0L) {
