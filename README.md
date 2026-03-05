@@ -65,6 +65,52 @@ if (!requireNamespace("remotes", quietly = TRUE))
 remotes::install_github("RuibingS/MS1Match_Rpackage")
 
 ```
+
+## Using Docker
+
+A Dockerfile is provided to allow users to run the package in a reproducible environment without installing all system dependencies manually.
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/RuibingS/MS1Match_Rpackage.git
+cd MS1Match_Rpackage
+```
+
+### 2. Build the Docker image
+
+```bash
+docker build -t MS1Match .
+```
+
+### 3. Run an interactive R session
+
+```bash
+docker run -it --rm MS1Match
+```
+
+Options explained:
+
+- `-it` opens an interactive terminal so you can use the R console
+- `--rm` automatically removes the container after exiting R (`q()`), keeping your system clean
+
+Once inside the container you can load and use the package:
+
+```r
+library(MS1Match)
+```
+
+### Optional: Mount a local folder
+
+If you want to access files from your host system:
+
+```bash
+docker run -it --rm -v $(pwd):/workspace MS1Match
+```
+
+This mounts your current directory inside the container at `/workspace`.
+
+
 ## 📘 Vignette
 
 A full reproducible tutorial using the demo StM14 data set is available:
