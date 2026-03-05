@@ -80,13 +80,13 @@ cd MS1Match_Rpackage
 ### 2. Build the Docker image
 
 ```bash
-docker build -t MS1Match .
+docker build -t ms1match .
 ```
 
 ### 3. Run an interactive R session
 
 ```bash
-docker run -it --rm MS1Match
+docker run -it --rm ms1match
 ```
 
 Options explained:
