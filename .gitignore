@@ -21,3 +21,5 @@ src/*.dll
 Thumbs.db
 
 Archive/
+/doc/
+/Meta/

@@ -48,17 +48,18 @@ result_StM16 <- readRDS(system.file("extdata", "result_StM16.rds", package = "MS
 Users can run `runXCMS()` to process their own `mzXML` or `mzML` files by specifying appropriate parameters from `xcms`.
 
 ```{r runXCMS-mzXML, eval = FALSE}
-runXCMS_result <- runXCMS(files_dir,
-                    peakwidth,
-                    ppm,
-                    snthresh,
-                    mzdiff,
-                    prefilter,
-                    noise,
-                    bw,
-                    sample_name,
-                    sample_group,
-                    minFraction)
+# Example (not run)
+# runXCMS_result <- runXCMS(files_dir,
+#                     peakwidth,
+#                     ppm,
+#                     snthresh,
+#                     mzdiff,
+#                     prefilter,
+#                     noise,
+#                     bw,
+#                     sample_name,
+#                     sample_group,
+#                     minFraction)
 
 ```
 
