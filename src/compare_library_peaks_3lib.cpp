@@ -16,9 +16,9 @@ List compare_library_peaks_3lib(List in_house_list,
                                 DataFrame overlaps_df,
                                 double mz_tol = 0.005) {
 
-  CharacterVector names_inhouse = overlaps_df["Name_Inhouse"];
-  CharacterVector names_mona    = overlaps_df["Name_MoNA"];
-  CharacterVector names_csu     = overlaps_df["Name_CSU_PMF"];
+  CharacterVector names_inhouse = overlaps_df["Name_CBIO"];
+  CharacterVector names_mona    = overlaps_df["Name_MassBank"];
+  CharacterVector names_csu     = overlaps_df["Name_CSU"];
   int n = names_inhouse.size();
 
   // output containers

@@ -1,0 +1,412 @@
+---
+title: "RAMClustR Grouping Evaluation: SuperPool"
+subtitle: "Compound-centric benchmark against the MS1Match tier-stratified reference feature set"
+author: "Ruibing Shi"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    theme: flatly
+    highlight: tango
+    df_print: paged
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  echo       = TRUE,
+  message    = FALSE,
+  warning    = FALSE,
+  fig.width  = 9,
+  fig.height = 5.5,
+  dpi        = 300
+)
+```
+
+# Overview
+
+This document evaluates RAMClustR's compound clustering against the
+compound-centric, tier-stratified reference feature set from MS1Match on SuperPool. All
+reference-relative counts come from `evaluate_grouping()`. This is the same
+function, with the same definitions, used for CAMERA
+(`SuperPool_CAMERA_evaluation.Rmd`) and in vignette 3.
+
+For each compound, the Tier 1a `[M+H]+` feature is the **anchor**; the cluster
+RAMClustR assigns to it is the compound's expected cluster. Every reference compound
+has an anchor by construction.
+
+| Status | Meaning |
+|---|---|
+| *Reference features (first status that applies):* | |
+| Ref-unassigned (no-anchor) | RAMClustR did not cluster the compound's anchor; none of its features can be evaluated |
+| Ref-unassigned | The anchor is clustered, this feature is not |
+| Ref-confirmed | Same cluster as its compound's anchor |
+| Ref-conflicting | Different cluster than its compound's anchor |
+| *Features outside the reference feature set:* | |
+| Ref-unmatched, co-grouped | In a cluster with a compound anchor (possible over-grouping) |
+| Ref-unmatched, unrelated | In a cluster without an anchor, or in no cluster |
+
+Unlike CAMERA, RAMClustR does not cluster every feature. The two
+Ref-unassigned statuses therefore matter here. The benchmark also reports
+**coverage**: the share of reference features RAMClustR clustered at all.
+
+## Load packages
+
+```{r packages}
+library(MS1Match)
+library(RAMClustR)
+library(xcms)
+library(dplyr)
+library(knitr)
+library(kableExtra)
+```
+
+## Load data
+
+`anno_result` must have been built on the feature table passed as
+`feature_table` below. In vignette 2b, this is the xcms feature table
+filtered to the 60–1200 s RT window.
+
+```{r load-data}
+data_dir <- system.file("extdata", "RDS_files", "SuperPool", package = "MS1Match")
+
+out <- readRDS(file.path(data_dir, "SuperPool_MS1MS2_result.rds"))
+
+# The feature table MS1Match was run on (vignette 2b)
+pool_FT_sub <- out$ft %>% filter(rtmed >= 60 & rtmed <= 1200)
+
+anno_result <- readRDS(file.path(data_dir, "anno_result_SuperPool.rds"))
+```
+
+---
+
+# Step 1 — RAMClustR clustering
+
+RAMClustR runs on the same xcms object as MS1Match, so both share feature
+ids. The cached result is loaded if it exists; otherwise the clustering is
+run and saved.
+
+```{r ramclustr-run, results = "hide"}
+rc_cache_path <- file.path(data_dir, "RC_superpool.rds")
+
+if (file.exists(rc_cache_path)) {
+  RC <- readRDS(rc_cache_path)
+} else {
+  x_exp_converted <- as(out$result$x_exp, "XCMSnExp")
+  experiment      <- defineExperiment(force.skip = TRUE)
+
+  RC <- ramclustR(
+    xcmsObj = x_exp_converted,
+    ExpDes  = experiment,
+    st      = 5,
+    sr      = 0.7,
+    maxt    = 10,
+    mzdec   = 4
+  )
+  saveRDS(RC, "RC_superpool.rds")
+}
+```
+
+---
+
+# Step 2 — Grouping table
+
+`ramclustr_to_grouping()` gives one row per feature. Its `group` column is
+the RAMClustR compound label (`C001`, ...). Features RAMClustR did not
+cluster (`featclus = 0`) get `group = NA`.
+
+```{r grouping-table}
+grouping_rc <- ramclustr_to_grouping(RC)
+
+cat("Features:            ", nrow(grouping_rc), "\n")
+cat("Clustered features:  ", sum(!is.na(grouping_rc$group)), "\n")
+cat("RAMClustR clusters:  ", n_distinct(grouping_rc$group, na.rm = TRUE), "\n")
+```
+
+---
+
+# Step 3 — Same feature table?
+
+```{r feature-match}
+check_feature_match(anno_result, grouping_rc, pool_FT_sub)
+```
+
+RAMClustR ran on the full feature table, MS1Match on the RT-truncated one.
+The features outside 60–1200 s are therefore reported as "only in grouping
+table" and excluded.
+
+---
+
+# Step 4 — Evaluate
+
+```{r evaluate}
+eval_rc <- evaluate_grouping(
+  anno_result, grouping_rc,
+  tool_name     = "RAMClustR",
+  feature_table = pool_FT_sub,
+  rt_window     = c(60, 1200)     # same window as for CAMERA
+)
+eval_rc
+```
+
+---
+
+# Step 5 — Tier benchmark
+
+```{r benchmark-check}
+bm <- eval_rc$benchmark
+
+# every reference row falls into exactly one status
+stopifnot(with(bm, n_confirmed + n_conflicting + n_unassigned +
+                   n_no_anchor + n_not_evaluable == n_ref))
+```
+
+```{r benchmark-table}
+.n_pct <- function(n, pct) sprintf("%d (%.1f %%)", as.integer(n), pct)
+
+bm_display <- bm %>%
+  transmute(
+    Tier,
+    `Ref set`                    = n_ref,
+    `Coverage`                   = sprintf("%.1f %%", pct_grouped),
+    `Ref-unassigned (no-anchor)` = .n_pct(n_no_anchor,   pct_no_anchor),
+    `Ref-unassigned`             = .n_pct(n_unassigned,  pct_unassigned),
+    `Ref-confirmed`              = .n_pct(n_confirmed,   pct_confirmed),
+    `Ref-conflicting`            = .n_pct(n_conflicting, pct_conflicting)
+  )
+
+k <- bm_display %>%
+  kable(caption = paste("RAMClustR tier-stratified benchmark against the",
+                        "compound-centric reference feature set (SuperPool, MS1Match)."),
+        align = c("l", rep("r", ncol(bm_display) - 1))) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                full_width = FALSE, position = "left", font_size = 13) %>%
+  row_spec(nrow(bm_display), bold = TRUE)
+
+exp_rows <- which(grepl("_exp$", bm_display$Tier))
+if (length(exp_rows) > 0L) k <- row_spec(k, exp_rows, italic = TRUE)
+
+k %>%
+  footnote(general = c(
+    "Ref set = reference feature x compound rows in that tier (best tier per feature x compound).",
+    "Coverage = reference features RAMClustR clustered at all / Ref set.",
+    "Each reference feature gets the first status that applies, in the column order; % of Ref set.",
+    "Ref-unassigned (no-anchor) = the compound's Tier 1a [M+H]+ anchor was not clustered.",
+    "Ref-unassigned = the anchor is clustered, this feature is not.",
+    "Ref-confirmed / Ref-conflicting = in the same / a different cluster than the anchor.",
+    "Total row: feature-weighted sums across tiers. Italic rows: Phase 2 expansion tiers.",
+    "Annotation coverage and accuracy not applicable: RAMClustR groups features but does not annotate adducts."
+  )) %>%
+  scroll_box(width = "100%")
+```
+
+---
+
+# Step 6 — Status over all features
+
+This step includes the features outside the reference feature set, within the same
+60–1200 s window as for CAMERA.
+
+```{r status-counts}
+status_def <- data.frame(
+  ref_status = c("Ref-unassigned (no-anchor)", "Ref-unassigned",
+                 "Ref-confirmed", "Ref-conflicting", "Not evaluable",
+                 "Ref-unmatched, co-grouped", "Ref-unmatched, unrelated"),
+  definition = c(
+    "Reference entry; the compound's anchor is not clustered",
+    "Reference entry; anchor clustered, this feature not",
+    "Same cluster as its compound's anchor",
+    "Different cluster than its compound's anchor",
+    "Technical check, should be 0: no anchor in the shared feature table",
+    "No reference entry; cluster contains a compound anchor (possible over-grouping)",
+    "No reference entry; cluster without an anchor, or no cluster"),
+  stringsAsFactors = FALSE)
+
+eval_rc$status_counts %>%
+  left_join(status_def, by = "ref_status") %>%
+  kable(caption   = "Reference-relative status of all RAMClustR features (SuperPool)",
+        col.names = c("Status", "n", "% of all rows", "Definition")) %>%
+  kable_styling(bootstrap_options = c("striped", "condensed")) %>%
+  footnote(general = paste(
+    "Rows = reference feature x compound assignments plus RAMClustR features",
+    "outside the reference feature set (RT 60-1200 s)."))
+```
+
+---
+
+# Step 7 — Per-compound view and spot checks
+
+## RAMClustR clusters per reference compound
+
+```{r clusters-per-compound}
+ref_rows <- eval_rc$full_table %>% filter(!is.na(Compound_name))
+
+clusters_per_compound <- ref_rows %>%
+  group_by(Compound_name) %>%
+  summarise(
+    n_features      = n(),
+    n_clusters      = n_distinct(group, na.rm = TRUE),
+    n_unclustered   = sum(is.na(group)),
+    n_ref_confirmed = sum(ref_status == "Ref-confirmed"),
+    anchor_cluster  = first(anchor_group),
+    clusters        = paste(sort(unique(na.omit(group))), collapse = ", "),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(n_features))
+
+clusters_per_compound
+```
+
+## Spot checks
+
+```{r spot-checks}
+spot_compound <- "L-Methionine"
+spot_cluster  <- "C013"
+
+# all reference features of one compound
+ref_rows %>%
+  filter(Compound_name %in% spot_compound) %>%
+  left_join(grouping_rc %>% select(feature_name, mz, rt), by = "feature_name") %>%
+  select(feature_name, mz, rt, tier, group, anchor_feature, anchor_group, ref_status) %>%
+  arrange(mz)
+
+# all features of one RAMClustR cluster, with their status
+grouping_rc %>%
+  filter(group %in% spot_cluster) %>%
+  left_join(eval_rc$full_table %>%
+              select(feature_name, Compound_name, tier, ref_status),
+            by = "feature_name") %>%
+  arrange(mz)
+```
+
+---
+
+# Step 8 — Export
+
+The export tables add RAMClustR-specific columns on top of
+`eval_rc$full_table`:
+
+- the MS1Match evidence;
+- the number of compound anchors in the anchor cluster (purity);
+- the share of the anchor cluster that is the compound's own Ref-confirmed
+  features.
+
+The statuses themselves are not recomputed.
+
+```{r export-tables}
+.combine_str <- function(...) {
+  m <- do.call(cbind, lapply(list(...), as.character))
+  m[!is.na(m) & m == ""] <- NA_character_
+  apply(m, 1, function(v) {
+    v <- v[!is.na(v)]
+    if (length(v) > 0L) paste(v, collapse = "; ") else NA_character_
+  })
+}
+
+ft <- eval_rc$full_table
+
+# MS1Match evidence per reference row
+evidence_cols <- c("grp_anno_match", "exp_anno_match", "NL_match",
+                   "ms2_parent_feature", "iso_annotation")
+evidence <- anno_result$export_feature_compound_summary %>%
+  select(feature_name, Compound_name, any_of(evidence_cols)) %>%
+  distinct(feature_name, Compound_name, .keep_all = TRUE)
+for (col in setdiff(evidence_cols, names(evidence)))
+  evidence[[col]] <- NA_character_
+
+# anchor-cluster properties
+anchor_purity <- eval_rc$anchors %>%
+  filter(!is.na(anchor_group)) %>%
+  count(anchor_group, name = "anchor_cluster_n_compounds")
+
+cluster_size <- grouping_rc %>%
+  filter(!is.na(group)) %>%
+  count(group, name = "cluster_n_features")
+
+own_confirmed <- ft %>%
+  filter(ref_status == "Ref-confirmed") %>%
+  count(Compound_name, name = "n_own_confirmed")
+
+mz_rt <- grouping_rc %>% select(feature_name, mz, rt)
+
+# reference rows: one per feature x compound
+compound_instance_table_rc <- ft %>%
+  filter(!is.na(Compound_name)) %>%
+  left_join(mz_rt,         by = "feature_name") %>%
+  left_join(evidence,      by = c("feature_name", "Compound_name")) %>%
+  left_join(anchor_purity, by = "anchor_group") %>%
+  left_join(cluster_size,  by = c("anchor_group" = "group")) %>%
+  left_join(own_confirmed, by = "Compound_name") %>%
+  mutate(
+    .ms2_anno = if_else(
+      grepl("^Tier1c", tier) & !is.na(ms2_parent_feature) & ms2_parent_feature != "",
+      paste0("MS2 fragment (", ms2_parent_feature, ")"), NA_character_),
+    MS1Match_anno = .combine_str(grp_anno_match, exp_anno_match, NL_match, .ms2_anno)
+  ) %>%
+  transmute(
+    compound_instance                         = Compound_name,
+    MS1Match_lib_group                        = Lib_group,
+    MS1Match_reference_tier                   = reference_tier,
+    feature_name, mz, rt,
+    MS1Match_anno,
+    MS1Match_iso                              = iso_annotation,
+    RAMClustR_cluster                         = group,
+    RAMClustR_anchor_feature                  = anchor_feature,
+    RAMClustR_Anchor_cluster                  = anchor_group,
+    RAMClustR_Anchor_cluster_purity           = anchor_cluster_n_compounds,
+    RAMClustR_Anchor_cluster_Refconfirmed_pct =
+      round(100 * n_own_confirmed / cluster_n_features, 1),
+    ref_status
+  )
+
+# plus all features outside the reference feature set
+outside_rc <- ft %>%
+  filter(is.na(Compound_name)) %>%
+  left_join(mz_rt, by = "feature_name") %>%
+  transmute(feature_name, mz, rt,
+            RAMClustR_cluster        = group,
+            RAMClustR_Anchor_cluster = anchor_group,
+            ref_status)
+
+full_feature_table_rc <- bind_rows(compound_instance_table_rc, outside_rc)
+
+stopifnot(nrow(full_feature_table_rc) == nrow(ft))
+```
+
+```{r save-export, eval = FALSE}
+output_dir <- paste0("RAMClustR_evaluation_output_SuperPool_", format(Sys.Date(), "%Y%m%d"))
+dir.create(output_dir, showWarnings = FALSE)
+
+.dash <- function(x) if_else(is.na(x), "-", as.character(x))
+dash_cols <- c("compound_instance", "MS1Match_lib_group", "RAMClustR_Anchor_cluster",
+               "RAMClustR_Anchor_cluster_purity",
+               "RAMClustR_Anchor_cluster_Refconfirmed_pct")
+
+write.csv(eval_rc$benchmark,
+          file.path(output_dir, "06_SuperPool_RAMClustR_benchmark_table.csv"), row.names = FALSE)
+
+write.csv(compound_instance_table_rc %>% mutate(across(any_of(dash_cols), .dash)),
+          file.path(output_dir, "07_SuperPool_RAMClustR_compound_instance_table.csv"), row.names = FALSE)
+
+write.csv(full_feature_table_rc %>% mutate(across(any_of(dash_cols), .dash)),
+          file.path(output_dir, "07b_SuperPool_RAMClustR_full_feature_table.csv"), row.names = FALSE)
+
+write.csv(eval_rc$status_counts,
+          file.path(output_dir, "09_SuperPool_RAMClustR_ref_status_counts.csv"), row.names = FALSE)
+
+saveRDS(list(eval_rc                    = eval_rc,
+             grouping_rc                = grouping_rc,
+             clusters_per_compound      = clusters_per_compound,
+             compound_instance_table_rc = compound_instance_table_rc,
+             full_feature_table_rc      = full_feature_table_rc),
+        file.path(output_dir, "RAMClustR_evaluation_SuperPool_all.rds"))
+```
+
+---
+
+# Session info
+
+```{r session-info}
+sessionInfo()
+```

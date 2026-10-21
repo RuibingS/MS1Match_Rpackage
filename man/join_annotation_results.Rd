@@ -8,33 +8,56 @@ join_annotation_results(
   FT,
   direct_lib_list,
   lib_anno_list = NULL,
-  target_match_list = NULL
+  target_match_list = NULL,
+  isf_result = NULL,
+  include_phase2 = TRUE,
+  verbose = TRUE
 )
 }
 \arguments{
-\item{FT}{Required data.frame. Feature table containing at least \code{feature_name}
-and mz/rt/intensity columns.}
+\item{FT}{Required data.frame. Feature table.}
 
-\item{direct_lib_list}{Required list. Output of direct library matching.}
+\item{direct_lib_list}{Required list.}
 
-\item{lib_anno_list}{Optional list. Output of annotation (e.g., \code{annotate()}),
-either a list of small lists or a data.frame.}
+\item{lib_anno_list}{Optional list/data.frame. Output of annotate().}
 
-\item{target_match_list}{Optional list/data.frame. Optional targetlist annotations.
+\item{target_match_list}{Optional list/data.frame. Target list annotations.}
 
-Join direct library matches + feature annotations (+ optional target PI matches) onto FT
-\itemize{
-\item FT is the base (one row per measured feature).
-\item direct_lib_list is match/peak-level evidence and can contain multiple rows per FT feature.
-\item lib_anno_list is feature-level annotation (PI/adduct/NL/iso) and is joined by FT feature id.
-\item To avoid .x/.y duplicates, we DROP overlapping columns from the right tables before joining.
-}}
+\item{isf_result}{Optional data.frame. Output of \code{annotateISF()} /
+\code{run_isf_annotation()}.  Adds Tier 1c / 1c_exp columns and
+resolves \code{reference_tier} by priority.}
+
+\item{include_phase2}{Logical. If \code{FALSE}, Phase 2 expansion rows
+(\code{Tier1a_exp}, \code{Tier1b_exp}, \code{Tier1d_exp}) from
+\code{lib_anno_list} are excluded from the output.  Default \code{TRUE}.}
+
+\item{verbose}{Logical. If \code{FALSE}, suppresses all progress messages.
+Default \code{TRUE}.}
 }
 \description{
-Combine direct library match results (MS1/MS2) with downstream annotation results
-(adduct/NL/isotope), using a match-level key:
-\code{feature_name + Lib_group + Compound_name}.
+Combine direct library match results (MS1/MS2) with downstream annotation
+results (adduct/isotope/MS2 fragment/NL) onto the feature table.
 
-This supports cases where the same feature appears in multiple library groups or
-is assigned to multiple compounds.
+Tier naming convention:
+\itemize{
+\item \strong{1a} — adduct match (Phase 1, within library group)
+\item \strong{1b} — isotope (Phase 1, within library group)
+\item \strong{1c} — MS2 fragment match (Phase 1: feature already in a
+Phase 1 library group)
+\item \strong{1d} — neutral loss (Phase 1, pairwise within group)
+\item \strong{1a_exp / 1b_exp / 1c_exp / 1d_exp} — Phase 2 expansions
+(feature NOT assigned in Phase 1; derived from a Phase 1 confirmed M)
+\item \strong{2} — unexplained (in group, no rule fires)
+}
+
+Tiers are mutually exclusive — one tier per feature, highest priority
+wins: \strong{1a > 1b > 1c > 1d > 2 > 1a_exp > 1b_exp > 1c_exp > 1d_exp}.
+\code{Tier2} (Unexplained) is a Phase 1 assignment and therefore
+outranks all Phase 2 expansions.
+
+The \code{annotation_phase} column takes exactly two values:
+\code{"Phase1"} (any Tier 1a/1b/1c/1d or Tier 2 assignment) and
+\code{"Phase2"} (any \code{_exp} tier).  Sub-labels such as
+\code{Phase1_MS2frag} or \code{Phase2_IsoExpansion} are not used;
+\code{reference_tier} already encodes the specific evidence type.
 }

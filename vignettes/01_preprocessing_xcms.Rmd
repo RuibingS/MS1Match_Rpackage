@@ -1,0 +1,298 @@
+---
+title: "1. Preprocessing raw files with xcms"
+author:
+  - name: "Ruibing Shi"
+   
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    theme: flatly
+    highlight: tango
+    df_print: paged
+    
+package: MS1Match
+vignette: >
+  %\VignetteIndexEntry{1. Preprocessing raw files with xcms}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo    = TRUE,
+  eval    = FALSE,
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+---
+
+## Overview
+
+This tutorial walks through the full XCMS-only pipeline from raw mzXML/mzML
+files to a processed feature table. This step is optional: start here only
+if you have raw files. Its feature table is the input for vignette 2a.
+
+The pipeline uses five step functions, or `runxcmsFT()` to run them all:
+
+```{r overview-table, echo=FALSE, eval=TRUE}
+df <- data.frame(
+  Step     = 0:5,
+  Function = c(
+    "runXCMSProcessing()",
+    "getChromPeaks()",
+    "linkCPtoFeatures()",
+    "buildFeatureTable()",
+    "processFeatureTable()",
+    "runxcmsFT()"
+  ),
+  Output = c(
+    "XcmsExperiment + sample metadata",
+    "Raw chromPeaks data.frame",
+    "chromPeaks + feature_id column",
+    "Feature defs + intensity matrix",
+    "Sorted, feature_name, intensity_median, intensity_mean",
+    "Steps 0-4 in one call"
+  ),
+  stringsAsFactors = FALSE
+)
+
+if (requireNamespace("kableExtra", quietly = TRUE)) {
+  kableExtra::kable(df, align = c("c", "l", "l")) |>
+    kableExtra::kable_styling(
+      bootstrap_options = c("striped", "hover", "condensed"),
+      full_width        = FALSE,
+      position          = "left"
+    ) |>
+    kableExtra::column_spec(1, bold = TRUE, width = "3em") |>
+    kableExtra::column_spec(2,width = "10em", monospace = TRUE, color = "black") |> #"#2166ac"
+    kableExtra::row_spec(6, bold = TRUE, background = "#f0f7ff")
+} else {
+  knitr::kable(df, align = c("c", "l", "l"))
+}
+```
+
+---
+
+## 1 Load packages
+
+```{r packages}
+library(MS1Match)
+library(xcms)
+
+library(MsExperiment)
+library(BiocParallel)
+library(S4Vectors)
+```
+
+---
+
+## 2 Set XCMS parameters
+
+Parameters are defined as standard xcms `Param` objects and passed into the
+pipeline. All three are optional -- if omitted, the pipeline falls back to
+built-in defaults tuned for Bruker maXis HD / UHPLC / positive ESI.
+
+### 2.1 Peak picking - CentWave
+
+```{r centwave-params}
+cwp <- CentWaveParam(
+  peakwidth          = c(5, 20),   
+  ppm                = 5,          
+  snthresh           = 10,         
+  mzdiff             = 0.001,      
+  prefilter          = c(3, 1000), 
+  noise              = 500,        
+  verboseBetaColumns = TRUE        # retains beta_cor / beta_snr in chromPeaks
+)
+```
+
+> **Note:** For detailed guidance on parameter selection, please refer to the
+> [xcms documentation](https://bioconductor.org/packages/release/bioc/html/xcms.html)
+> and the `?CentWaveParam` help page.
+
+
+### 2.2 Feature grouping - PeakDensity
+
+```{r peakdensity-params}
+pdp <- PeakDensityParam(
+  sampleGroups = c("3ul"),
+  bw           = 5,     
+  minFraction  = 0.5,   
+  binSize      = 0.01  
+)
+```
+
+### 2.3 RT alignment - Obiwarp
+
+```{r obiwarp-params}
+obi <- ObiwarpParam(binSize = 0.5)
+
+```
+
+---
+
+## 3 Run the full pipeline
+
+### 3.1 Pipeline function
+
+`runxcmsFT()` runs all five steps and returns a named list.
+
+```{r run-pipeline}
+xcms_out <- runxcmsFT(
+  files_dir    = system.file("extdata", "mix84_data", package = "MS1Match"), 
+  cwp          = cwp,
+  pdp          = pdp,
+  obi          = obi,
+  sample_name  = c("3ul"),
+  sample_group = c("3ul"),
+  BPPARAM      = SnowParam(workers = 4)   
+)
+```
+
+Retrieve xcms_outputs:
+
+```{r extract-xcms_outputs}
+xcms_output_result <- xcms_out$result     # list(x_exp, pd)
+xcms_output_cp     <- xcms_out$cp         # all detected chromPeaks
+xcms_output_cpft   <- xcms_out$cp_linked  # chromPeaks with feature_id
+xcms_output_ft     <- xcms_out$ft         # final processed feature table
+```
+
+
+
+
+
+
+
+### 3.2 Step-by-step approach
+
+Users can inspect or modify intermediate objects.
+
+```{r step-by-step, eval=FALSE}
+# Step 0 -- XCMS processing
+result <- runXCMSProcessing(
+  files_dir    = "yourdata/mzXML/",
+  cwp          = cwp,
+  pdp          = pdp,
+  obi          = obi,
+  sample_name  = c("WT_1", "WT_2", "WT_3", "KO_1", "KO_2", "KO_3"),
+  sample_group = c(rep("WT", 3), rep("KO", 3)),
+  BPPARAM      = SnowParam(workers = 4)
+)
+
+# Step 1 -- raw chromPeaks
+cp <- getChromPeaks(result$x_exp)
+
+# Step 2 -- chromPeaks linked to feature IDs
+cp_linked <- linkCPtoFeatures(result$x_exp)
+
+# Step 3 -- feature table (feature defs + intensity matrix)
+ft_raw <- buildFeatureTable(result$x_exp)
+
+# Step 4 -- post-process: sort by RT, add feature_name + intensity_median, intensity_mean
+xcms_output_ft <- processFeatureTable(ft_raw, result$x_exp)
+```
+
+---
+
+## 4 Inspect xcms_outputs
+
+### 4.1 chromPeaks (Step 1)
+
+One row per detected peak across all samples.
+
+```{r inspect-cp,eval=FALSE}
+dim(cp)
+head(cp)
+```
+
+Key columns: `mz`, `mzmin`, `mzmax`, `rt`, `rtmin`, `rtmax`, `into`
+(integrated area), `maxo` (apex intensity), `sample`, `sample_name`.
+
+### 4.2 chromPeaks linked to features (Step 2)
+
+Same as above with `feature_id` appended. `NA` means the peak was not
+grouped into any feature.
+
+```{r inspect-cp-linked, eval=FALSE}
+# How many peaks were assigned to a feature?
+table(is.na(cp_linked$feature_id))
+
+# Peaks for a specific feature
+cp_linked[cp_linked$feature_id == "FT0001" & !is.na(cp_linked$feature_id), ]
+```
+
+### 4.3 Feature table (Step 4)
+
+One row per feature. Columns: feature metadata, one intensity column per
+sample, and `intensity_median` and `intensity_mean`.
+
+```{r inspect-ft,eval=FALSE}
+dim(xcms_output_ft)
+head(xcms_output_ft[, 1:10])
+
+
+summary(xcms_output_ft$intensity_median)
+```
+
+---
+
+## 5 Export
+
+```{r export , eval=FALSE}
+exportFeatureTable(xcms_output_ft, "xcms_output_feature_table.csv")
+```
+
+---
+
+## 6 Parameter defaults reference
+
+If no parameters are passed, `runXCMSProcessing()` / `runxcmsFT()` use:
+
+```{r param-table, echo=FALSE,  eval=TRUE}
+params_df <- data.frame(
+  Parameter = c("peakwidth", "ppm", "snthresh", "mzdiff", "noise",
+                "bw", "minFraction", "binSize (pdp)", "BPPARAM"),
+  Default   = c("c(5, 20)", "5", "10", "0.001", "500",
+                "5", "0.5", "0.01", "SerialParam()"),
+  Notes     = c(
+    "UHPLC; use c(10, 30) for standard HPLC",
+    "maXis HD; use 10 for generic QTOF",
+    "Lower to 5 if standards are missed",
+    "High-res; use 0.01 for low-res",
+    "Set from diagnoseParams()",
+    "Increase to 10 for larger RT drift",
+    "Use 0.25 for exploratory runs",
+    "High-res; use 0.1 for low-res",
+    "Use SnowParam(workers = 4) to parallelise"
+  ),
+  stringsAsFactors = FALSE
+)
+
+if (requireNamespace("kableExtra", quietly = TRUE)) {
+  kableExtra::kable(params_df, align = c("l", "l", "l")) |>
+    kableExtra::kable_styling(
+      bootstrap_options = c("striped", "hover", "condensed"),
+      full_width        = FALSE,
+      position          = "left"
+    ) |>
+    kableExtra::column_spec(1, monospace = TRUE, bold = TRUE,  color = "#2166ac") |>
+    kableExtra::column_spec(2, monospace = TRUE)
+} else {
+  knitr::kable(params_df, align = c("l", "l", "l"))
+}
+```
+
+---
+
+## Session info
+
+```{r session-info, eval=TRUE}
+sessionInfo()
+```

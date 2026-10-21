@@ -4,7 +4,6 @@
 #' S4 generic for running peak annotation.
 #' Methods are provided for:
 #' \itemize{
-#'   \item [PeakAnnotation-class]: full feature-table × library search
 #'   \item [PeakAnnotationFromLibraryMatch-class]: annotation of precomputed library matches
 #' }
 #'
@@ -14,4 +13,4 @@
 #' @return Method-dependent annotation results.
 #'
 #' @export
-setGeneric("annotate", function(object, ...) standardGeneric("annotate"))
+setGeneric("annotateLibMatch", function(object, ...) standardGeneric("annotateLibMatch"))

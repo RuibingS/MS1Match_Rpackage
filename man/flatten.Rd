@@ -2,16 +2,21 @@
 % Please edit documentation in R/method_accessor_DirectTargetMatch.R
 \name{flatten}
 \alias{flatten}
-\title{Flatten matched PI result list into data.frame}
+\title{Flatten matched PI result list into a data.frame}
 \usage{
 flatten(object)
 }
 \arguments{
-\item{object}{List result from matchPI()}
+\item{object}{A \code{DirectTargetMatch} object, or a raw \code{list}
+as returned by \code{PImatch_target_rcpp()}}
 }
 \value{
-A data.frame
+A \code{data.frame} of all matched feature–compound pairs,
+or an empty \code{data.frame} if nothing matched
 }
 \description{
-Flatten matched PI result list into data.frame
+Filters out empty (unmatched) feature slots and row-binds the remainder
+into a single flat \code{data.frame}. The result includes the new columns
+added by the updated Rcpp function: \code{exactMass}, \code{Comp_mz},
+\code{Comp_rt}, \code{mz_diff}, and \code{ppm_error}.
 }

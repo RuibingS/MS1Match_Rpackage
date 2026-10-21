@@ -1,0 +1,746 @@
+---
+title: "2a. MS1Match workflow: StM14 (MS1 + MS2)"
+subtitle: "Library-guided feature grouping and annotation on the StM14 dataset"
+author: "Ruibing Shi"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    theme: flatly
+    highlight: tango
+    df_print: paged
+vignette: >
+  %\VignetteIndexEntry{2a. MS1Match workflow: StM14 (MS1 + MS2)}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, fig.width = 9, fig.height = 5.5, dpi = 300)
+```
+
+## Overview
+
+This tutorial walks through the full **MS1Match** workflow on the **StM14**
+dataset: 14 standard compounds spiked into a *Pseudomonas aeruginosa*
+metabolome extract, measured with MS1 and MS2. It covers:
+
+1. Peak picking with `xcms` (feature table + `MsExperiment` object); see
+   vignette *01_preprocessing_xcms*
+2. Building per-feature consensus MS2 spectra
+3. Importing the reference library and preparing adduct/neutral-loss tables
+4. Running the MS1Match pipeline: direct library match → Phase 1 and Phase 2 annotation →
+   ISF (in-source fragment) annotation → joined tier assignment
+5. Summarizing annotation tiers (table + plot)
+6. Exporting results (CSV, XLSX, figures)
+
+The `anno_result` built here is the input for vignette *3. Evaluate a
+feature-grouping tool against MS1Match*.
+
+Package objects that take a long time to (re)compute (peak picking, MS2 consensus
+building) are loaded from cached `.rds` files bundled with the package for time efficiency. 
+
+```{r packages}
+library(MS1Match)
+library(xcms)
+library(MsExperiment)
+library(BiocParallel)
+library(S4Vectors)
+library(Spectra)
+library(MsBackendMgf)
+library(dplyr)
+```
+
+## 1. Peak picking with xcms
+
+`runxcmsFT()` is a wrapper around the standard `xcms` workflow. It takes raw file paths plus the three
+standard `xcms` parameter objects (`CentWaveParam`, `PeakDensityParam`,
+`ObiwarpParam`) and returns a list with the aligned feature table (`ft`) and the
+underlying `MsExperiment` object (`x_exp`).
+
+```{r xcms-raw-processing, eval=FALSE}
+# Not run by default 
+# Requires access to the raw .mzML/.mzXML files.
+
+cwp <- CentWaveParam(
+  peakwidth          = c(5, 30),
+  ppm                = 5,
+  snthresh           = 10,
+  mzdiff             = 0.001,
+  prefilter          = c(3,1000),
+  noise              = 100,
+  verboseBetaColumns = TRUE
+)
+
+pdp <- PeakDensityParam(
+  sampleGroups = c(rep("10um", 3),rep("10um_MS2", 3),rep("4um", 3),rep("4um_MS2", 3),rep("8um", 3),rep("8um_MS2", 1)),  #
+  bw           = 5,
+  minFraction  = 0.5,   #
+  binSize      = 0.01
+)
+
+obi <- ObiwarpParam(binSize = 0.5)
+
+#  xcms example
+StM14_out <- runxcmsFT(
+  files_dir    = "C:/Users/StM14_MS1_MS2",
+  sample_name  = c("10um_1", "10um_2", "10um_3", "10um_MS2_1", "10um_MS2_2", "10um_MS2_3",
+                   "4um_1", "4um_2", "4um_3", "4um_MS2_1",
+                    "8um_1", "8um_2", "8um_3", "8um_MS2_1"),
+  sample_group = c(rep("10um", 3),rep("10um_MS2", 3),rep("4um", 3),rep("4um_MS2", 1),rep("8um", 3),rep("8um_MS2", 1)),
+  cwp          = cwp,
+  pdp          = pdp,
+  obi          = obi,
+  BPPARAM      = SnowParam(workers = 4)
+)
+
+
+# saveRDS(StM14_out,"StM14_out.rds")
+```
+
+For this tutorial we load a precomputed run so the document knits without access
+to the raw files. `processFeatureTable()` then applies a retention-time window
+(here 60–1200 s) to drop features outside the analytically useful range — void
+volume and column wash-out.
+
+```{r load-cached-feature-table}
+StM14_out <- readRDS(system.file("extdata", "RDS_files", "StM14", "StM14_out.rds", package = "MS1Match")) 
+
+StM14_FT <- StM14_out$ft
+StM14_x_exp <- StM14_out$result$x_exp
+
+StM14_FT_sub <- processFeatureTable(StM14_out$ft,StM14_out$result$x_exp, rt_range = c(60,1200))
+
+head(StM14_FT_sub)
+```
+
+## 2. MS2 processing
+
+Building per-feature consensus MS2 spectra is a three-step process:
+extract candidate MS2 scans for each feature (`get_ms2_peaks()`, a wrapper
+around `xcms::chromPeakSpectra()`), collapse repeated scans of the same
+feature into one consensus spectrum (`combineSpectra()`), then convert the
+result into the named list format the annotator expects
+(`read_ms2_consensus()`).
+
+```{r ms2-consensus-baseline, eval=FALSE}
+# Not run — kept for reference.
+# Requires access to the XcmsExperiment object from last step
+# Step 1 — get MS2 peaks with feature_name
+ms2_peaks <- get_ms2_peaks(StM14_x_exp, expand_rt = 20, expand_mz = 0.02)
+
+
+# Step 2 — build consensus
+ms2_consensus <- combineSpectra(
+  ms2_peaks,
+  FUN          = combinePeaksData,
+  ppm          = 20,
+  peaks        = "intersect",
+  minProp      = 0.50,
+  intensityFun = median,
+  mzFun        = median,
+  f            = factor(ms2_peaks$feature_name)
+)
+
+ms2_list <- read_ms2_consensus(ms2_consensus, feature_table = StM14_FT_sub)
+
+
+
+```
+
+
+
+```{r ms2-consensus-refined, eval=FALSE}
+# Not run by default — requires the raw MSMS files and the XcmsExperiment object from last step
+
+# Step 1: rerun get_ms2_peaks 
+ms2_peaks <- suppressWarnings(
+  get_ms2_peaks(StM14_x_exp, expand_rt = 10, expand_mz = 0.02)
+)
+# Step 2: combine per-feature consensus
+ms2_consensus <- combineSpectra(
+  ms2_peaks,
+  f            = ms2_peaks$feature_name,
+  method       = combinePeaks,
+  minProp      = 0.5,
+  intensityFun = base::mean,
+  mzFun        = base::mean,
+  ppm          = 10
+)
+
+# Step 3: convert to named list
+ms2_list <- read_ms2_consensus(ms2_consensus, feature_table = StM14_FT_sub)
+
+
+#saveRDS(ms2_consensus,"StM14_ms2_consensus.rds")
+```
+
+In this tutorial we just load the cached result.
+
+
+```{r load-cached-ms2-consensus}
+ms2_consensus <- readRDS(system.file("extdata", "RDS_files", "StM14", "StM14_ms2_consensus.rds", package = "MS1Match"))
+ms2_list <- read_ms2_consensus(ms2_consensus, feature_table = StM14_FT_sub)
+```
+
+
+## 3. Reference library and lookup tables
+
+Next we load two lookup tables — an adduct table and a neutral-loss table — plus the Si14 MS1
+reference spectral library used for direct library matching in the next section.
+
+```{r load-library-and-lookup-tables}
+# ── 3. adduct_table  ───────────────────────────────────────────────
+adduct_table <- read.csv(
+  system.file("extdata", "Adducts", "adducts_with_4M.csv", package = "MS1Match")
+)
+
+neutral_loss_table <- read.csv(
+  system.file("extdata", "Neutral loss", "neutral loss database.csv", package = "MS1Match"),
+  check.names = TRUE
+)
+
+# ── 4. library  ───────────────────────────────────────────────
+
+Si14_library <- import_msp(
+  file_path = system.file(
+    "extdata",
+    "StM14_library",
+    "Si14_library.msp",
+    package = "MS1Match"
+  ),
+  ionPolarity = "pos",
+  spectrum_type = "MS1"
+)
+
+
+```
+
+## 4. MS1Match Pipeline: library match and annotation 
+
+
+This is the core MS1Match pipeline, run in four steps:
+
+1. **`createDirectLibMatch()` + `libAnnotate()`** — match features against the
+   library reference within a retention-time and ppm window, scored with
+   cosine similarity and mirror plots.
+2. **`createPeakAnnotationFromLibraryMatch()` + `annotateLibMatch()`** —
+   annotate features from the library matches, resolving adducts and neutral
+   losses to assign Phase 1 tiers (Tier 1a–Tier 2), with an optional Phase 2
+   expansion (Tier 1a_exp–Tier 1d_exp) for lower-confidence, [M+H]⁺-relative
+   matches. `cutoff_MH` applies for all tiers.
+3. **`createPeakAnnotationISF()` + `annotateISF()`** — attribute in-source
+   fragments to their confirmed parent (Tier 1a anchor) using the MS2
+   consensus spectra, within `ppm_isf`/`rt_isf_threshold` tolerances.
+4. **`join_annotation_results()`** — merge everything into one tier-resolved,
+   cross-compound-aware annotation table.
+   
+```{r ms1match-pipeline}
+DirectLibMatch_MS1_StM14_obj <- createDirectLibMatch(
+  FT = StM14_FT_sub,
+  compounds_list = Si14_library,
+  rt_thr_compound = 30,
+  rt_thr_coelution = 5, 
+  ppm = 10,
+  ms_level = "MS1",
+  polarity = "pos"
+)
+
+direct_match_StM14_MS1_obj <- libAnnotate(
+  DirectLibMatch_MS1_StM14_obj,
+  compute_cosine = TRUE,
+  ppm = 20,
+  BPPARAM = SerialParam()
+)
+
+# Accessing MS1 Matching Results
+
+direct_match_StM14_res_MS1 <- results(direct_match_StM14_MS1_obj)
+
+# ──  Create annotation object ───────────────────────────────────────────────
+PeakAnnotation_obj_MS1 <- createPeakAnnotationFromLibraryMatch(
+  library_matches    = direct_match_StM14_res_MS1,
+  adducts_df         = adduct_table,
+  neutral_loss_table = neutral_loss_table,
+  FT            = StM14_FT_sub,
+  polarity           = "positive",
+  ppm                = 30
+)
+
+# ──  Run lib-match annotation (Phase 1 + optional Phase 2 expansion) ────────
+StM14_annotate_res_ms1 <- annotateLibMatch(
+  PeakAnnotation_obj_MS1,
+  cutoff_MH = TRUE
+)
+
+# ── Create ISF annotation object ──────────────────────────────────────────
+
+PeakAnnotation_ISF_obj <- createPeakAnnotationISF(
+  phase1_result    = StM14_annotate_res_ms1,
+  ms2_list         = ms2_list,
+  FT          = StM14_FT_sub,
+  parent_col       = "PI_match",
+  ppm_isf          = 10,
+  rt_isf_threshold = 5.0
+)
+
+# ── Run ISF / MS2 fragment annotation ─────────────────────────────────────
+isf_result <- annotateISF(PeakAnnotation_ISF_obj)
+
+# ──  Join outputs ───────
+anno_result <- join_annotation_results(
+  FT              = StM14_FT_sub,
+  direct_lib_list = direct_match_StM14_res_MS1,
+  lib_anno_list   = StM14_annotate_res_ms1,
+  isf_result      = isf_result,
+  include_phase2  = TRUE
+)
+
+```
+
+
+
+
+
+### Visualizing MS1 Spectral Matches
+`MS1Match` provides visualization tools to help inspect the quality of spectral matches between query features and reference library compounds using mirror.
+This function `plotMirrorSpectraSingle` creates a mirror plot using the matched feature peaks (on top) and reference library spectrum (on bottom).
+The cosine similarity score (inner and outer cosine from `Spectra` package) and the match score are displayed in the plot.
+If no `output_dir` is provided, only the plot is shown. If `output_dir` is set, the plot will be saved as a PNG file instead.
+
+```{r mirror-plot-single}
+plotMirrorSpectraSingle(object = direct_match_StM14_MS1_obj, match = direct_match_StM14_res_MS1[[5]], output_dir = NULL)
+```
+
+
+### Plot All Matches and Export
+To generate and export mirror plots for all matched compounds at once:
+
+```{r mirror-plot-all, eval=FALSE}
+plotMirrorSpectra(object = direct_match_StM14_MS1_obj, matches = direct_match_StM14_res_MS1, output_dir = "mirror_plots_StM14_MS1")
+```
+
+
+### Saving the result
+
+Vignette 3 starts from this `anno_result`. The package ships a copy as
+`extdata/RDS_files/StM14/anno_result_StM14.rds`; for your own data, save it:
+
+```{r save-anno-result, eval=FALSE}
+saveRDS(anno_result, "anno_result_StM14.rds")
+```
+
+
+## 5. Exporting the annotation tables
+
+All tables from `join_annotation_results()` are exported to a single folder.
+
+```{r export-annotation-tables, eval=FALSE}
+export_dir <- paste0("anno_export_StM14_MS1MS2_", format(Sys.Date(), "%Y%m%d"))
+dir.create(export_dir, showWarnings = FALSE)
+
+# Full: all features (with annotation or not), all FT columns + annotation columns
+exportFeatureTable(anno_result$export_full_table,
+                   file.path(export_dir, "anno_full_table_StM14_MS1MS2.csv"), na = "")
+
+# Reduced: all features (with annotation or not), only ID (name/mz/rt) + annotation columns
+write.csv(anno_result$export_reduced_table,
+          file.path(export_dir, "anno_reduced_table_StM14_MS1MS2.csv"),
+          na = "", row.names = FALSE)
+
+# Reduced anno: reduced table, annotated features only (Compound_name not NA)
+write.csv(anno_result$export_reduced_anno_table,
+          file.path(export_dir, "anno_reduced_anno_table_StM14_MS1MS2.csv"),
+          na = "", row.names = FALSE)
+
+# Summary: one row per feature x compound x Lib_group
+write.csv(anno_result$export_feature_compound_summary,
+          file.path(export_dir, "anno_feature_compound_summary_StM14_MS1MS2.csv"),
+          na = "", row.names = FALSE)
+
+# Match: annotation evidence before FT join
+write.csv(anno_result$export_match_table,
+          file.path(export_dir, "anno_match_table_StM14_MS1MS2.csv"),
+          na = "", row.names = FALSE)
+```
+
+
+## 6. Tier distribution: plot and per-compound tables
+
+This section builds the summary figure: a stacked bar chart of annotation
+tiers, split into Phase 1 (blue, direct annotation) and Phase 2 (green, expanded
+annotation), with per-tier percentages of all feature assignments. Tier 2
+(unexplained features) is further split into below/above `[M+H]+`(in-source fragments vs. higher adducts/multimers).
+
+
+```{r tier-distribution-plot}
+library(ggplot2)
+library(RColorBrewer)
+
+# ── Input ─────────────────────────────────────────────────────────────────────
+
+dat_all <- anno_result$export_feature_compound_summary %>% data.frame()
+dat_all$cutoff_to_MH[dat_all$reference_tier != "Tier2_Unexplained"] <- NA_character_
+
+# ── plot_tier ─────────────────────────────────────────────────────────────────
+is_tier2 <- !is.na(dat_all$reference_tier) &
+            dat_all$reference_tier == "Tier2_Unexplained"
+dat_all$plot_tier <- dat_all$reference_tier
+dat_all$plot_tier[is_tier2] <- paste0("Tier2_", dat_all$cutoff_to_MH[is_tier2])
+
+# ── Phase split ───────────────────────────────────────────────────────────────
+dat_p1 <- dat_all[!is.na(dat_all$annotation_phase) &
+                    dat_all$annotation_phase == "Phase1", ]
+dat_p2 <- dat_all[!is.na(dat_all$annotation_phase) &
+                    grepl("Phase2", dat_all$annotation_phase), ]
+
+# ── Colour palettes ───────────────────────────────────────────────────────────
+.p1_blues <- RColorBrewer::brewer.pal(9, "Blues")
+.greens   <- RColorBrewer::brewer.pal(9, "Greens")
+
+tier_colors <- c(
+  "Tier1a_AnnoMatch"       = .p1_blues[9],
+  "Tier1b_Isotope"           = .p1_blues[7],
+  "Tier1c_MS2Fragment"       = .p1_blues[5],
+  "Tier1d_NeutralLoss"       = .p1_blues[3],
+  "Tier2_below_MH"           = "#FCC66D",
+  "Tier2_above_MH"           = "#EF9F27",
+  "Tier1a_exp_AnnoMatch"   = .greens[8],
+  "Tier1b_exp_Isotope"       = .greens[6],
+  "Tier1c_MS2Fragment_exp"   = .greens[4],
+  "Tier1d_exp_NeutralLoss"   = .greens[2]
+)
+
+tier_labels <- c(
+  "Tier1a_AnnoMatch"       = "Tier1a       annotation",
+  "Tier1b_Isotope"           = "Tier1b       isotope",
+  "Tier1c_MS2Fragment"       = "Tier1c       MS2 fragment",
+  "Tier1d_NeutralLoss"       = "Tier1d       neutral loss",
+  "Tier2_below_MH"           = "Tier2        below [M+H]+",
+  "Tier2_above_MH"           = "Tier2        above [M+H]+",
+  "Tier1a_exp_AnnoMatch"   = "Tier1a(exp)  annotation",
+  "Tier1b_exp_Isotope"       = "Tier1b(exp)  isotope",
+  "Tier1c_MS2Fragment_exp"   = "Tier1c(exp)  MS2 fragment",
+  "Tier1d_exp_NeutralLoss"   = "Tier1d(exp)  neutral loss"
+)
+
+p1_stack <- c("Tier1a_AnnoMatch", "Tier1b_Isotope",
+              "Tier1c_MS2Fragment", "Tier1d_NeutralLoss",
+              "Tier2_below_MH",     "Tier2_above_MH")
+
+p2_stack <- c("Tier1a_exp_AnnoMatch", "Tier1b_exp_Isotope",
+              "Tier1c_MS2Fragment_exp", "Tier1d_exp_NeutralLoss")
+
+p1_xlevels <- c("Tier1a_AnnoMatch", "Tier1b_Isotope",
+                "Tier1c_MS2Fragment", "Tier1d_NeutralLoss", "Tier2")
+p2_xlevels <- c("Tier1a_exp_AnnoMatch", "Tier1b_exp_Isotope",
+                "Tier1c_MS2Fragment_exp", "Tier1d_exp_NeutralLoss")
+
+all_xlevels <- c(p1_xlevels, p2_xlevels)
+
+all_xlabels <- c(
+  "Tier1a_AnnoMatch"      = "Tier1a\nannotation",
+  "Tier1b_Isotope"          = "Tier1b\nisotope",
+  "Tier1c_MS2Fragment"      = "Tier1c\nMS2 frag",
+  "Tier1d_NeutralLoss"      = "Tier1d\nneutral loss",
+  "Tier2"                   = "Tier2\nunexpl.",
+  "Tier1a_exp_AnnoMatch"  = "Tier1a(exp)\nannotation",
+  "Tier1b_exp_Isotope"      = "Tier1b(exp)\nisotope",
+  "Tier1c_MS2Fragment_exp"  = "Tier1c(exp)\nMS2 frag",
+  "Tier1d_exp_NeutralLoss"  = "Tier1d(exp)\nneutral loss"
+)
+
+# ── Helper: build summary df ──────────────────────────────────────────────────
+build_summary <- function(dat, stack_levels, x_levels) {
+  dat$plot_tier <- factor(dat$plot_tier, levels = stack_levels)
+  x_pos_chr <- as.character(dat$plot_tier)
+  x_pos_chr[grepl("^Tier2", x_pos_chr)] <- "Tier2"
+  dat$x_pos <- factor(x_pos_chr, levels = x_levels)
+  overall <- as.data.frame(
+    table(x_pos = dat$x_pos, plot_tier = dat$plot_tier),
+    stringsAsFactors = FALSE
+  )
+  overall$x_pos     <- factor(overall$x_pos,     levels = all_xlevels)
+  overall$plot_tier <- factor(overall$plot_tier, levels = names(tier_colors))
+  overall
+}
+
+n_grand    <- nrow(dat_all)
+overall_p1 <- build_summary(dat_p1, p1_stack, p1_xlevels)
+overall_p2 <- build_summary(dat_p2, p2_stack, p2_xlevels)
+overall    <- rbind(overall_p1, overall_p2)
+overall$pct <- overall$Freq / n_grand * 100
+
+active_tiers   <- intersect(names(tier_colors),
+                            as.character(unique(overall$plot_tier[overall$Freq > 0])))
+active_xlevels <- intersect(all_xlevels,
+                            as.character(unique(overall$x_pos[overall$Freq > 0])))
+
+overall <- overall[overall$Freq > 0, ]
+overall$plot_tier <- factor(overall$plot_tier, levels = active_tiers)
+overall$x_pos     <- factor(overall$x_pos,     levels = active_xlevels)
+
+totals       <- aggregate(pct ~ x_pos, data = overall, FUN = sum)
+totals$x_pos <- factor(totals$x_pos, levels = active_xlevels)
+
+active_p1_x        <- intersect(p1_xlevels, active_xlevels)
+active_p2_x        <- intersect(p2_xlevels, active_xlevels)
+n_p1_active        <- length(active_p1_x)
+n_p2_active        <- length(active_p2_x)
+phase_split_active <- n_p1_active + 0.5
+p2_xmid_active     <- if (n_p2_active > 0) phase_split_active + n_p2_active / 2 else NA_real_
+
+# ── plot ──────────────────────────────────────────────────────────────────────
+p <- ggplot(overall, aes(x = x_pos, y = pct, fill = plot_tier)) +
+  annotate("rect",
+           xmin = 0.5, xmax = phase_split_active,
+           ymin = -Inf, ymax = Inf,
+           fill = "#F0F4FA", alpha = 0.5) +
+  {if (n_p2_active > 0)
+    annotate("rect",
+             xmin = phase_split_active,
+             xmax = phase_split_active + n_p2_active,
+             ymin = -Inf, ymax = Inf,
+             fill = "#F0FAF4", alpha = 0.5)} +
+  {if (n_p2_active > 0)
+    annotate("segment",
+             x = phase_split_active, xend = phase_split_active,
+             y = 0, yend = Inf,
+             linetype = "dashed", colour = "grey60", linewidth = 0.4)} +
+  annotate("text", x = (n_p1_active + 1) / 2, y = Inf,
+           label = "Phase 1",
+           vjust = 2, size = 3.5, colour = "grey40", fontface = "bold") +
+  {if (n_p2_active > 0 && !is.na(p2_xmid_active))
+    annotate("text", x = p2_xmid_active, y = Inf,
+             label = "Phase 2",
+             vjust = 2, size = 3.5, colour = "grey40", fontface = "bold")} +
+  geom_col(width = 0.6) +
+  geom_text(data = totals[totals$pct > 0, ],
+            aes(x = x_pos, y = pct, label = sprintf("%.1f%%", pct), fill = NULL),
+            vjust = -0.4, size = 3.0, colour = "grey30") +
+  scale_fill_manual(values = tier_colors[active_tiers],
+                    labels = tier_labels[active_tiers],
+                    name   = NULL) +
+  scale_x_discrete(labels = all_xlabels[active_xlevels]) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.15)),
+                     labels = function(x) paste0(x, "%")) +
+  coord_cartesian(clip = "off") +
+  labs(
+    title = "Annotation tier distribution — Phase 1 & Phase 2",
+    x     = NULL,
+    y     = "% of all feature assignments (Phase 1 + Phase 2)"
+  ) +
+  theme_minimal(base_size = 11) +
+  theme(
+    legend.position    = "right",
+    legend.key.size    = unit(0.4, "cm"),
+    legend.text        = element_text(size = 8.5),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor   = element_blank(),
+    axis.text.x        = element_text(size = 7),
+    plot.title         = element_text(size = 12, face = "bold"),
+    plot.margin        = margin(t = 15, r = 10, b = 5, l = 5)
+  )
+
+print(p)
+
+# ── Phase 1 per-compound summary ──────────────────────────────────────
+tier_cols_p1 <- c("Tier1a_AnnoMatch", "Tier1b_Isotope",
+                  "Tier1c_MS2Fragment", "Tier1d_NeutralLoss",
+                  "Tier2_below_MH",     "Tier2_above_MH")
+
+per_cpd <- do.call(rbind, lapply(
+  split(dat_p1, dat_p1$Compound_name),
+  function(df) {
+    n_total <- nrow(df)
+    counts  <- table(factor(df$plot_tier, levels = tier_cols_p1))
+    data.frame(
+      Compound_name   = df$Compound_name[1],
+      n_total         = n_total,
+      n_Tier1a        = as.integer(counts["Tier1a_AnnoMatch"]),
+      n_Tier1b        = as.integer(counts["Tier1b_Isotope"]),
+      n_Tier1c_MS2    = as.integer(counts["Tier1c_MS2Fragment"]),
+      n_Tier1d        = as.integer(counts["Tier1d_NeutralLoss"]),
+      n_Tier2_below   = as.integer(counts["Tier2_below_MH"]),
+      n_Tier2_above   = as.integer(counts["Tier2_above_MH"]),
+      pct_Tier1a      = round(counts["Tier1a_AnnoMatch"] / n_total * 100, 1),
+      pct_Tier1b      = round(counts["Tier1b_Isotope"]     / n_total * 100, 1),
+      pct_Tier1c_MS2  = round(counts["Tier1c_MS2Fragment"] / n_total * 100, 1),
+      pct_Tier1d      = round(counts["Tier1d_NeutralLoss"] / n_total * 100, 1),
+      pct_Tier2_below = round(counts["Tier2_below_MH"]     / n_total * 100, 1),
+      pct_Tier2_above = round(counts["Tier2_above_MH"]     / n_total * 100, 1),
+      stringsAsFactors = FALSE, row.names = NULL
+    )
+  }
+))
+
+# ── Phase 2 per-compound summary ──────────────────────────────────────
+tier_cols_p2 <- c("Tier1a_exp_AnnoMatch", "Tier1b_exp_Isotope",
+                  "Tier1c_MS2Fragment_exp", "Tier1d_exp_NeutralLoss")
+
+per_cpd_p2 <- do.call(rbind, lapply(
+  split(dat_p2, dat_p2$Compound_name),
+  function(df) {
+    n_total <- nrow(df)
+    counts  <- table(factor(df$plot_tier, levels = tier_cols_p2))
+    data.frame(
+      Compound_name      = df$Compound_name[1],
+      n_total            = n_total,
+      n_Tier1a_exp       = as.integer(counts["Tier1a_exp_AnnoMatch"]),
+      n_Tier1b_exp       = as.integer(counts["Tier1b_exp_Isotope"]),
+      n_Tier1c_MS2_exp   = as.integer(counts["Tier1c_MS2Fragment_exp"]),
+      n_Tier1d_exp       = as.integer(counts["Tier1d_exp_NeutralLoss"]),
+      pct_Tier1a_exp     = round(counts["Tier1a_exp_AnnoMatch"] / n_total * 100, 1),
+      pct_Tier1b_exp     = round(counts["Tier1b_exp_Isotope"]     / n_total * 100, 1),
+      pct_Tier1c_MS2_exp = round(counts["Tier1c_MS2Fragment_exp"] / n_total * 100, 1),
+      pct_Tier1d_exp     = round(counts["Tier1d_exp_NeutralLoss"] / n_total * 100, 1),
+      stringsAsFactors = FALSE, row.names = NULL
+    )
+  }
+))
+
+per_cpd    <- per_cpd[order(per_cpd$n_total,       decreasing = TRUE), ]
+per_cpd_p2 <- per_cpd_p2[order(per_cpd_p2$n_total, decreasing = TRUE), ]
+rownames(per_cpd)    <- NULL
+rownames(per_cpd_p2) <- NULL
+
+cat("\n── Phase 1 per-compound summary ──\n")
+print(per_cpd,    row.names = FALSE)
+cat("\n── Phase 2 per-compound summary ──\n")
+print(per_cpd_p2, row.names = FALSE)
+```
+
+## 7. Exporting the figure
+
+The tier-distribution plot is exported in three formats — PDF and SVG as vector
+formats for publication figures, PNG as a raster preview — at a fixed
+180 × 120 mm size.
+
+```{r export-figure, eval=FALSE}
+# ── Export ─────────────────────────────────────────────────────
+
+fig_width_mm  <- 180
+fig_height_mm <- 120
+fig_dpi       <- 600
+fig_base      <- "StM14_tier_distribution"
+ 
+ggplot2::ggsave(paste0(fig_base, ".pdf"),
+                plot   = p,
+                width  = fig_width_mm,
+                height = fig_height_mm,
+                units  = "mm",
+                device = cairo_pdf)
+ 
+ggplot2::ggsave(paste0(fig_base, ".png"),
+                plot   = p,
+                width  = fig_width_mm,
+                height = fig_height_mm,
+                units  = "mm",
+                dpi    = fig_dpi)
+ 
+ggplot2::ggsave(paste0(fig_base, ".svg"),
+                plot   = p,
+                width  = fig_width_mm,
+                height = fig_height_mm,
+                units  = "mm",
+                device = svglite::svglite)
+ 
+message("Exported: ", fig_base, ".pdf / .png / .svg")
+
+```
+
+## 8. Exporting per-compound summaries to Excel
+
+`export_tier_summary_xlsx()` writes the Phase 1 and Phase 2 per-compound tables
+from Section 6 to two styled sheets in a single workbook (header colour matches
+the blue/green Phase 1/Phase 2 convention used in the plot).
+
+```{r export-xlsx, eval=FALSE}
+library(openxlsx)
+
+# ── per-compound summaries to Excel ────────────────────────────────────
+
+# ── helper: header ──────────────────────────────
+add_styled_sheet <- function(wb, sheet_name, df, header_colour) {
+    openxlsx::addWorksheet(wb, sheet_name)
+    openxlsx::writeData(wb, sheet_name, df, startRow = 1, startCol = 1,
+                        headerStyle = openxlsx::createStyle(
+                          fontName     = "Arial",
+                          fontSize     = 10,
+                          fontColour   = "#FFFFFF",
+                          fgFill       = header_colour,
+                          halign       = "CENTER",
+                          valign       = "CENTER",
+                          textDecoration = "bold",
+                          border       = "Bottom",
+                          borderColour = "#D0D0D0"
+                        ))
+
+
+    body_style <- openxlsx::createStyle(
+      fontName = "Arial", fontSize = 10,
+      border   = "Bottom", borderColour = "#D0D0D0"
+    )
+    if (nrow(df) > 0)
+      openxlsx::addStyle(wb, sheet_name, body_style,
+                         rows  = 2:(nrow(df) + 1),
+                         cols  = 1:ncol(df),
+                         gridExpand = TRUE)
+
+    num_cols <- which(sapply(df, is.numeric))
+    if (length(num_cols) > 0 && nrow(df) > 0) {
+      num_style <- openxlsx::createStyle(
+        fontName = "Arial", fontSize = 10, halign = "CENTER",
+        border   = "Bottom", borderColour = "#D0D0D0"
+      )
+      openxlsx::addStyle(wb, sheet_name, num_style,
+                         rows  = 2:(nrow(df) + 1),
+                         cols  = num_cols,
+                         gridExpand = TRUE)
+    }
+
+    openxlsx::setColWidths(wb, sheet_name, cols = 1:ncol(df), widths = "auto")
+    openxlsx::freezePane(wb,  sheet_name, firstRow = TRUE)
+  }
+
+
+export_tier_summary_xlsx <- function(per_cpd, per_cpd_p2,
+                                     file = "annotation_tier_summary.xlsx") {
+  if (!requireNamespace("openxlsx", quietly = TRUE))
+    stop("Please install openxlsx:  install.packages('openxlsx')")
+
+  wb <- openxlsx::createWorkbook()
+
+  add_styled_sheet(wb, "Phase1_per_compound", per_cpd,    "#2F6496")  # dark blue
+  add_styled_sheet(wb, "Phase2_per_compound", per_cpd_p2, "#2E7D4F")  # dark green
+
+  openxlsx::saveWorkbook(wb, file, overwrite = TRUE)
+  message("Saved: ", file)
+  invisible(file)
+}
+
+# ───────────────────────────────────────────────────────────────────────
+export_tier_summary_xlsx(per_cpd, per_cpd_p2,
+                         file = "StM14_annotation_tier_summary.xlsx")
+```
+
+Final look at the two per-compound summary tables:
+
+```{r per-compound-p1}
+per_cpd
+```
+
+```{r per-compound-p2}
+per_cpd_p2
+```
+
+
+---
+
+## Session info
+
+```{r session-info, eval=TRUE}
+sessionInfo()
+```

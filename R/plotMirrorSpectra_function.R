@@ -111,18 +111,24 @@ plotMirrorSpectraSingle <- function(match, object, output_dir = NULL, ppm = 10) 
 
   if (!is.null(output_dir)) {
     if (!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
-    file_path <- file.path(
-      output_dir,
-      paste0("MirrorPlot_", gsub("[^A-Za-z0-9_]", "_", comp_name_ref), ".png")
-    )
-    grDevices::png(file_path, width = 1200, height = 800, res = 300)
+
+    base_name <- paste0("MirrorPlot_", gsub("[^A-Za-z0-9_]", "_", comp_name_ref))
+
+    file_path_pdf <- file.path(output_dir, paste0(base_name, ".pdf"))
+    file_path_svg <- file.path(output_dir, paste0(base_name, ".svg"))
+
+    grDevices::pdf(file_path_pdf, width = 12, height = 8)
     plot_fun()
     grDevices::dev.off()
-    message("Saved mirror plot to: ", file_path)
+
+    grDevices::svg(file_path_svg, width = 12, height = 8)
+    plot_fun()
+    grDevices::dev.off()
+
+    message("Saved mirror plots to: ", output_dir)
   } else {
     plot_fun()
   }
-
   invisible(list(
     compound_name = comp_name_ref,
     inner_cosine = inner_cosine,

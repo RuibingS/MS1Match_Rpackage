@@ -6,10 +6,15 @@
 \alias{MS1Match}
 \title{MS1Match Package}
 \description{
-Provides functions for direct MS1 peak matching for LC-MS and FIA-MS workflows.
+Provides functions for direct MS1 peak matching and feature annotation for LC-MS untargeted metabolomics datasets.
 }
 \author{
-\strong{Maintainer}: First Last \email{first.last@example.com}
+\strong{Maintainer}: Ruibing Shi \email{ruibingshi@gmail.com}
+
+Authors:
+\itemize{
+  \item Ruibing Shi \email{ruibingshi@gmail.com}
+}
 
 }
 \keyword{internal}
