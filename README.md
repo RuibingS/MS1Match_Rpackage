@@ -18,12 +18,6 @@ grouping and annotation of LC-MS data (MS1 and MS2). It offers:
        alt="MS1Match workflow: inputs, the four-step MS1Match pipeline producing anno_result, and the optional evaluation of feature-grouping tools" />
 </p>
 
-> **Access before publication.** The repository will be made public when the
-> manuscript is published. Until then, it is shared with collaborators and
-> reviewers by invitation. Installing or cloning it requires a GitHub
-> personal access token from an invited account; see
-> [Access token](#access-token-before-publication) below.
-
 # Installation
 
 ## Requirements
