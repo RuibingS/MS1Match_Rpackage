@@ -1,0 +1,13 @@
+url: https://ruibings.github.io/MS1Match_Rpackage/
+
+template:
+  bootstrap: 5
+
+articles:
+  - title: Tutorials
+    contents:
+      - 01_preprocessing_xcms
+      - 02a_ms1match_StM14
+      - 02b_ms1match_SuperPool
+      - 02c_ms1match_other_inputs
+      - 03_evaluate_grouping_tools

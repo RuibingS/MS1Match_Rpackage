@@ -21,3 +21,4 @@
 ^analysis$
 ^docs$
 ^_pkgdown\.yml$
+^pkgdown$
