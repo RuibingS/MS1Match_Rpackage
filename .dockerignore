@@ -1,0 +1,12 @@
+.git
+.Rproj.user
+.Rhistory
+.RData
+doc
+Meta
+docs
+analysis/html
+*.Rcheck
+src/*.o
+src/*.so
+src/*.dll

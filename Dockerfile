@@ -7,24 +7,19 @@ FROM rocker/r-ver:latest
 # standard dependencies necessary to build bioconductor packages such as xcms/MSnbase.
 RUN apt-get update -qq && apt-get install -y --no-install-recommends \
     build-essential \
+    libuv1-dev \
+    libxml2-dev \
     libcurl4-openssl-dev \
     libssl-dev \
-    libxml2-dev \
-    libglpk-dev \
     libnetcdf-dev \
-    libpng-dev \
+    zlib1g-dev \
     libbz2-dev \
     liblzma-dev \
-    zlib1g-dev \
+    libpng-dev \
+    libglpk-dev \
     libfontconfig1-dev \
-    libharfbuzz-dev \
-    libfribidi-dev \
     libfreetype6-dev \
-    libtiff5-dev \
-    libjpeg-dev \
-    git \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+ && rm -rf /var/lib/apt/lists/*
 
 # Install the Rcpp package for compiling C++ code
 RUN R -e "install.packages('Rcpp', repos = c(CRAN = 'https://cloud.r-project.org'))"
