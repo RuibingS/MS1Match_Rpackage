@@ -84,19 +84,6 @@ remotes::install_github("RuibingS/MS1Match_Rpackage",
 takes a few minutes. Leave it out for a faster install; the tutorials are
 then not available offline with `vignette()`.
 
-### Access token (before publication)
-
-1. On GitHub: *Settings → Developer settings → Personal access tokens*;
-   create a token with read access to this repository.
-2. Store it once, so R finds it:
-
-   ```r
-   install.packages("gitcreds")
-   gitcreds::gitcreds_set()     # paste the token when asked
-   ```
-3. Run the `install_github()` call above. For `git clone` (e.g. for
-   Docker), use the same token as password when Git asks for one.
-
 ## Check the installation
 
 ```r
