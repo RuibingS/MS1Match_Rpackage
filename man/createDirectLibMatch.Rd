@@ -7,8 +7,8 @@
 createDirectLibMatch(
   FT,
   compounds_list,
-  diff_mz_thr,
-  diff_rt_thr,
+  rt_thr_compound,
+  rt_thr_coelution = 5,
   ppm,
   ms_level = "MS1",
   polarity = "pos"
@@ -19,15 +19,16 @@ createDirectLibMatch(
 
 \item{compounds_list}{A list of compounds}
 
-\item{diff_mz_thr}{Numeric m/z difference threshold}
+\item{rt_thr_compound}{Numeric loose RT threshold for precursor gate vs library RT (e.g. 30 s)}
 
-\item{diff_rt_thr}{Numeric RT difference threshold}
+\item{rt_thr_coelution}{Numeric strict RT threshold for co-elution pool anchored to
+the matched precursor feature (e.g. 5 s). Defaults to \code{5}.}
 
 \item{ppm}{Numeric ppm tolerance}
 
-\item{ms_level}{Either "MS1" or "MS2"}
+\item{ms_level}{Either \code{"MS1"} or \code{"MS2"}}
 
-\item{polarity}{Either "pos" or "neg"}
+\item{polarity}{Either \code{"pos"} or \code{"neg"}}
 }
 \value{
 A DirectLibMatch S4 object

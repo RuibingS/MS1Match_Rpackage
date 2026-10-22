@@ -2,7 +2,7 @@
 % Please edit documentation in R/import_msp.R
 \name{import_msp}
 \alias{import_msp}
-\title{Import a Mass Spectral Library (MSP format)}
+\title{Import a standardized NIST MSP spectral library}
 \usage{
 import_msp(
   file_path,
@@ -10,49 +10,152 @@ import_msp(
   ionPolarity = NULL,
   ioniMethod = NULL,
   colEnergy = NULL,
-  instName = NULL
+  instName = NULL,
+  filter = NULL,
+  dedup_by = c("name_adduct_mode_energy", "name_adduct_mode", "name_only", "none"),
+  require_formula = FALSE,
+  reserve_n = 60000L,
+  max_records = -1L
 )
 }
 \arguments{
-\item{file_path}{Path to the \code{.msp} file.}
+\item{file_path}{Path to the NIST \code{.msp} file.}
 
-\item{spectrum_type}{Optional filter for spectrum type: \code{"MS1"} or \code{"MS2"}.}
+\item{spectrum_type}{Optional filter: \code{"MS1"} or \code{"MS2"}.
+MoNA entries labelled \code{Spectrum_type: MS} match \code{"MS1"}.}
 
-\item{ionPolarity}{Optional filter for ion mode (e.g. \code{"POSITIVE"}, \code{"NEGATIVE"}).}
+\item{ionPolarity}{Optional filter: \code{"POSITIVE"} or \code{"NEGATIVE"}
+(also accepts \code{"pos"}, \code{"neg"}, \code{"P"}, \code{"N"}).}
 
-\item{ioniMethod}{Optional filter for ionization method (e.g. \code{"ESI-QTOF"}).}
+\item{ioniMethod}{Optional filter for ionization method (string match).}
 
 \item{colEnergy}{Optional filter for collision energy (string match).}
 
-\item{instName}{Optional filter for instrument name.}
+\item{instName}{Optional filter for instrument name (string match).}
+
+\item{filter}{Optional filter for metadata fields. Accepts either:
+\itemize{
+\item A \strong{single} named list with elements \code{field} and
+\code{pattern} — drops entries whose field does not contain the
+pattern:
+\preformatted{filter = list(field   = "Instrument_type",
+                 pattern = "LC-ESI-QTOF")}
+\item A \strong{list of} such named lists for multiple conditions
+(AND logic — all conditions must be satisfied):
+\preformatted{filter = list(
+      list(field = "Instrument_type", pattern = "LC-ESI-QTOF"),
+      list(field = "Instrument",      pattern = "Agilent 6520 QTOF")
+    )}
+}
+Match is case-sensitive and fixed.}
+
+\item{dedup_by}{Deduplication grouping key:
+\describe{
+\item{\code{"name_adduct_mode_energy"}}{(default) One entry per
+Name + Adduct + IonMode + CollisionEnergy. Preserves fragmentation
+diversity across energies — recommended for MoNA MS2.}
+\item{\code{"name_adduct_mode"}}{One entry per Name + Adduct + IonMode.}
+\item{\code{"name_only"}}{One entry per compound name — recommended
+for CSU-PMF and other MS1 libraries where collision energy variants
+are not meaningful. Keeps the entry with the most peaks.}
+\item{\code{"none"}}{No deduplication — keep all entries.
+Recommended for small in-house libraries.}
+}}
+
+\item{require_formula}{Logical. If \code{TRUE}, entries with a missing or
+invalid formula (\code{"unk"}, empty) are discarded after parsing.
+Default \code{FALSE}. Set to \code{TRUE} when exact mass is required
+for downstream matching or annotation — for example, CSU-PMF MS1
+libraries where entries without a formula cannot be used.}
+
+\item{reserve_n}{Memory hint: expected number of compounds (default 60000).
+Increase for very large files to reduce internal reallocations.}
+
+\item{max_records}{Integer. Stop after this many records (-1 = no limit).}
 }
 \value{
-A list of compounds. Each compound is a named list with:
-\itemize{
-\item Metadata fields (Name, Formula, ExactMass, InChI, SMILES, etc.)
-\item \code{Peaks}: a data.frame with two numeric columns:
-\itemize{
-\item \code{mz}: m/z values
-\item \code{rel_intensity}: relative intensity values
-}
-}
+A named list of compounds. Each element contains standardized
+metadata fields and a \code{Peaks} data frame (\code{mz},
+\code{rel_intensity}).
 }
 \description{
-This function imports and parses an MSP file into R, extracting compound
-metadata and peak tables.
-}
-\details{
+Full-featured importer for clean NIST-format \code{.msp} files. Supports
+filtering by spectrum type, ion polarity, ionization method, collision
+energy and instrument name. Applies smart deduplication — all implemented
+in C++ for performance.
+
+Use this function for:
 \itemize{
-\item Peaks are parsed directly from the lines following \code{"Num Peaks:"}.
-\item Filters (\code{spectrum_type}, \code{ionPolarity}, etc.) are applied during parsing.
-\item If \code{ExactMass} is not present but \code{Formula} is, the exact mass
-is calculated using \pkg{MetaboCoreUtils}.
+\item MoNA \code{.msp} downloads
+\item Files previously converted with \code{\link{convert_to_nist_msp}}
+\item Any NIST-standard \code{.msp} file
 }
+
+For raw non-standard files (Bruker \code{.library}, CSU-PMF \code{.mspLib}),
+use \code{\link{read_library}} → \code{\link{convert_to_nist_msp}} first.
 }
 \examples{
 \dontrun{
-msp_data <- import_msp("example.msp", spectrum_type = "MS2", ionPolarity = "POSITIVE")
-str(msp_data[[1]])
+# MoNA MS1 QTOF library — single instrument type filter
+mona_lib <- import_msp(
+  system.file("extdata", "Massbank_MS1",
+              "massbank_result.nist_msp_MS1_TOF.msp", package = "MS1Match"),
+  spectrum_type = "MS1",
+  ionPolarity   = "POSITIVE",
+  dedup_by      = "name_only",
+  filter        = list(field = "Instrument_type", pattern = "LC-ESI-QTOF")
+)
+
+# Filter by both instrument type AND specific instrument model
+# Keeps only Agilent 6520 QTOF entries
+mona_agilent <- import_msp(
+  "ms1_tof_positive_filtered.msp",
+  spectrum_type = "MS1",
+  ionPolarity   = "pos",
+  filter = list(
+    list(field = "Instrument_type", pattern = "LC-ESI-QTOF"),
+    list(field = "Instrument",      pattern = "Agilent 6520 QTOF")
+  )
+)
+
+# Filter by instrument type only (keeps all LC-ESI-QTOF regardless of model)
+mona_qtof <- import_msp(
+  "ms1_tof_positive_filtered.msp",
+  spectrum_type = "MS1",
+  ionPolarity   = "pos",
+  filter        = list(field = "Instrument_type", pattern = "LC-ESI-QTOF")
+)
+
+# No filter — import everything in the pre-filtered MSP
+mona_all <- import_msp(
+  "ms1_tof_positive_filtered.msp",
+  spectrum_type = "MS1",
+  ionPolarity   = "pos"
+)
+
+# In-house MS1 library (after conversion from Bruker .library)
+inhouse_lib <- import_msp(
+  system.file("extdata", "CBIO", "CBIO_Standards.msp", package = "MS1Match"),
+  spectrum_type = "MS1",
+  dedup_by      = "name_only"
+)
+
+# CSU-PMF MS1 library — one entry per compound, formula required
+csu_lib <- import_msp(
+  system.file("extdata", "CSUPMF_C8_lib", "CSUPMF_library.msp",
+              package = "MS1Match"),
+  spectrum_type   = "MS1",
+  dedup_by        = "name_only",
+  require_formula = TRUE
+)
+
+# Access individual compounds
+inhouse_lib[["Caffeine"]]$ExactMass
+inhouse_lib[["Caffeine"]]$Peaks
 }
 
+}
+\seealso{
+\code{\link{read_library}}, \code{\link{convert_to_nist_msp}},
+\code{\link{calculate_exact_mass}}
 }

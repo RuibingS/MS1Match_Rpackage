@@ -6,8 +6,9 @@
 #'
 #' @slot FT A \code{data.frame} of detected features (must include m/z and RT columns)
 #' @slot compounds_list A \code{list} of known compounds with metadata
-#' @slot diff_mz_thr Numeric m/z difference threshold
-#' @slot diff_rt_thr Numeric RT difference threshold
+#' @slot rt_thr_compound Numeric loose RT threshold for precursor gate vs library RT (e.g. 30 s)
+#' @slot rt_thr_coelution Numeric strict RT threshold for co-elution features to
+#'   the matched precursor feature (e.g. 5 s).
 #' @slot ppm Numeric parts-per-million tolerance for m/z
 #' @slot ms_level Character, either \code{"MS1"} or \code{"MS2"}
 #' @slot polarity Character, either \code{"pos"} or \code{"neg"}
@@ -16,13 +17,12 @@
 #' @export
 setClass("DirectLibMatch",
          slots = c(
-           FT = "data.frame",
+           FT             = "data.frame",
            compounds_list = "list",
-           diff_mz_thr = "numeric",
-           diff_rt_thr = "numeric",
-           ppm = "numeric",
-           ms_level = "character",
-           polarity = "character",
-           results = "list"
-
+           rt_thr_compound    = "numeric",
+           rt_thr_coelution = "numeric",
+           ppm            = "numeric",
+           ms_level       = "character",
+           polarity       = "character",
+           results        = "list"
          ))

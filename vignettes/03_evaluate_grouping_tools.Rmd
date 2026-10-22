@@ -1,0 +1,594 @@
+---
+title: "3. Evaluate a feature-grouping tool against MS1Match"
+subtitle: "Compound-centric benchmark against the MS1Match tier-stratified reference feature set"
+author: "Ruibing Shi"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    theme: flatly
+    highlight: tango
+    df_print: paged
+vignette: >
+  %\VignetteIndexEntry{3. Evaluate a feature-grouping tool against MS1Match}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  echo       = TRUE,
+  message    = FALSE,
+  warning    = FALSE,
+  fig.width  = 10,
+  fig.height = 6
+)
+
+show_table <- function(df, caption = NULL, align = NULL, bold_col = 1,
+                       mono_col = NULL, highlight_last = FALSE,
+                       scroll = FALSE) {
+  if (!requireNamespace("kableExtra", quietly = TRUE))
+    return(knitr::kable(df, caption = caption, align = align, digits = 1))
+  k <- knitr::kable(df, format = "html", caption = caption, align = align,
+                    digits = 1) |>
+    kableExtra::kable_styling(
+      bootstrap_options = c("striped", "hover", "condensed"),
+      full_width        = FALSE,
+      position          = "left"
+    )
+  if (!is.null(bold_col))
+    k <- kableExtra::column_spec(k, bold_col, bold = TRUE)
+  if (!is.null(mono_col))
+    k <- kableExtra::column_spec(k, mono_col, monospace = TRUE, color = "black")
+  if (highlight_last)
+    k <- kableExtra::row_spec(k, nrow(df), bold = TRUE, background = "#f0f7ff")
+  if (scroll)
+    k <- kableExtra::scroll_box(k, width = "100%")
+  k
+}
+```
+
+```{css, echo = FALSE}
+pre, pre code { white-space: pre; overflow-x: auto; word-wrap: normal; }
+pre.workflow { line-height: 1.2; }
+```
+
+# Overview
+
+Feature-grouping tools such as CAMERA, RAMClustR or MZmine ion identity
+networking combine the features of one compound (adducts, isotopes,
+in-source fragments) into groups. Untargeted metabolomics has no absolute
+ground truth for these groups. MS1Match therefore provides a
+**compound-centric reference feature set**: the features it assigned to library
+compounds, stratified by evidence tier. This vignette evaluates the groups
+of another tool against that reference set.
+
+**This vignette does not run MS1Match.** It starts from a finished MS1Match
+result:
+
+- for an xcms feature table, see vignette *2a. MS1Match workflow: StM14*;
+- for an MZmine or other CSV feature table, or data without MS2, see
+  vignette *2c. MS1Match with other inputs*.
+
+MS1Match is the reference here, not one of the tools being compared.
+Evaluating MS1Match's own groups against its own reference set would be
+circular.
+
+The examples use the StM14 data shipped with the package, with CAMERA and
+RAMClustR as example tools. The last section collects the calls for your own
+data.
+
+```{r packages}
+library(MS1Match)
+library(dplyr)
+```
+
+# What you need
+
+```{r tab-inputs, echo = FALSE}
+show_table(data.frame(
+  Input = c("Feature table", "MS1Match result", "Grouping result"),
+  `Where it comes from` = c(
+    "The feature table MS1Match was run on",
+    "anno_result from join_annotation_results() (vignette 2a or 2c)",
+    "Your grouping tool, run on the same feature table"),
+  check.names = FALSE), align = c("l", "l"))
+```
+
+**The one requirement:** MS1Match and the grouping tool must work on the
+**same feature table**, so that both refer to a feature by the same id (for
+xcms `FT0001`, `FT0002`, ...).
+
+```{.workflow}
+                 ┌─> MS1Match ──────> anno_result ──┐   (vignette 2a / 2c)
+                 │                                  │
+feature table ──>┤                                  ├─> evaluate_grouping()
+                 │                                  │   (this vignette)
+                 └─> grouping tool ─> grouping ─────┘
+                     (CAMERA, RAMClustR, ...)
+```
+
+The evaluation has five steps:
+
+1. Load the feature table and the MS1Match result.
+2. Convert the grouping result into a standard table.
+3. Check that both used the same feature table.
+4. Evaluate one or several tools.
+5. Read the results.
+
+# Step 1 — Load the feature table and the MS1Match result
+
+For StM14, the feature table is the xcms result `StM14_out.rds`. MS1Match,
+CAMERA and RAMClustR were all run on it. `anno_result` was saved at the end
+of vignette 2a.
+
+```{r load-ms1match}
+data_dir <- system.file("extdata", "RDS_files", "StM14", package = "MS1Match")
+
+StM14_out     <- readRDS(file.path(data_dir, "StM14_out.rds"))
+feature_table <- StM14_out$ft
+
+anno_result   <- readRDS(file.path(data_dir, "anno_result_StM14.rds"))
+```
+
+The evaluation uses two tables of `anno_result`:
+
+- `export_feature_compound_summary`: the reference features, one row per
+  feature × compound;
+- `export_reduced_anno_table`: used to find each compound's Tier 1a
+  `[M+H]+` anchor.
+
+# Step 2 — Convert the grouping result into a standard table
+
+Every tool is reduced to one row per feature with these columns:
+
+```{r tab-columns, echo = FALSE}
+show_table(data.frame(
+  Column  = c("feature_name", "group", "mz", "rt"),
+  Meaning = c("feature id, as in the MS1Match feature table",
+              "group / cluster id; NA = feature not grouped",
+              "m/z of the feature, used to verify the feature table",
+              "retention time in seconds (optional)")),
+  align = c("l", "l"), mono_col = 1)
+```
+
+The table must list **every** feature the tool processed, including the
+ones it did not group (`group = NA`). The converters below do this.
+
+Pick the subsection that matches your tool.
+
+## CAMERA
+
+Use the peak list from `CAMERA::getPeaklist()`. If it has no `feature_name`
+column, `camera_to_grouping()` creates xcms-style ids from the row order.
+To be explicit, pass `feature_names = rownames(featureDefinitions(xdata))`.
+
+```{r camera}
+CAMERA_peaklist <- read.csv(file.path(data_dir, "CAMERA_annotated_StM14_FT.csv"))
+
+grouping_camera <- camera_to_grouping(CAMERA_peaklist)
+head(grouping_camera)
+```
+
+## RAMClustR
+
+Pass the object returned by `RAMClustR::ramclustR()`. Features RAMClustR did
+not cluster (`featclus = 0`) get `group = NA`.
+
+```{r ramclustr-check, include = FALSE}
+rc_path <- file.path(data_dir, "RC_StM14.rds")
+has_rc  <- file.exists(rc_path)
+```
+
+```{r ramclustr, eval = has_rc}
+RC <- readRDS(rc_path)
+
+grouping_ramclustr <- ramclustr_to_grouping(RC)
+head(grouping_ramclustr)
+```
+
+## MZmine
+
+This applies when MS1Match was run on an MZmine feature table imported with
+`read_mzmine_feature_table()` (vignette 2c). Take the grouping from the same
+MZmine full feature table: `feature_group` (correlation grouping) or
+`ion_identities:iin_id` (ion identity networks).
+
+`mzmine_to_grouping()` applies the same conversions as the import:
+
+- MZmine `id` becomes an `FT0001`-style id;
+- RT is converted from minutes to seconds;
+- features removed by the import's detection filter are dropped.
+
+MZmine numbers its groups from 0, so `0` is a real group. Set
+`unassigned = ""` so that only empty cells count as "not grouped".
+
+```{r mzmine, eval = FALSE}
+mzmine_file <- system.file("extdata", "MZmine_feature_table", "StM14_MZmine_export",
+                           "StM14_mzmine_full_feature_table.csv",
+                           package = "MS1Match")
+
+ft_mzmine  <- read_mzmine_feature_table(mzmine_file)   # table MS1Match ran on
+mzmine_raw <- read.csv(mzmine_file, check.names = FALSE)
+
+grouping_mzmine <- mzmine_to_grouping(
+  mzmine_raw,
+  group_col     = "ion_identities:iin_id",   # or "feature_group"
+  keep_features = ft_mzmine$feature_name,
+  unassigned    = ""                         # MZmine group ids start at 0
+)
+```
+
+## Any other tool
+
+This covers a tool that ran on the MS1Match feature table and exports its
+result in its own format, e.g. a CSV. Name its feature-id and group columns:
+
+```{r other-tool, eval = FALSE}
+my_result <- read.csv("my_tool_groups.csv")
+
+grouping_mytool <- prepare_grouping_table(
+  my_result,
+  feature_col = "feature_id",   # your tool's feature-id column (FT0001, ...)
+  group_col   = "cluster",      # your tool's group column
+  mz_col      = "mz",           # your tool's m/z column (required for the check)
+  rt_col      = "rt",           # optional
+  rt_unit     = "sec",          # or "min"; converted to seconds
+  unassigned  = c("0", "")      # values meaning "not grouped"; check whether
+                                #   your tool uses 0 as a real group id
+)
+```
+
+### The tool's output has no feature ids
+
+If the tool exported m/z and RT but no feature ids, give each row the id of
+the feature with the same m/z and RT in the MS1Match feature table. The tool
+ran on that table, so the values are identical.
+
+```{r other-tool-noid, eval = FALSE}
+my_result <- assign_feature_names(
+  my_result, feature_table,
+  mz_col  = "mz",
+  rt_col  = "rt",
+  rt_unit = "min"            # unit of my_result$rt; converted to seconds here
+)
+
+# RT is now in seconds: keep the default rt_unit = "sec"
+grouping_mytool <- prepare_grouping_table(
+  my_result, group_col = "cluster", mz_col = "mz", rt_col = "rt")
+```
+
+Do not create ids by sorting the grouping result. Sorted ids only agree with
+the feature table if both hold exactly the same rows in the same order.
+Matching on m/z and RT also works for subsets.
+
+### The groups are in the feature table itself
+
+Some pre-processing software (e.g. MZmine, MS-DIAL) exports one table that
+holds both the features and a group / cluster column. That table serves
+both branches:
+
+1. Run MS1Match on it as described in vignette 2c. This gives `ft` and
+   `anno_result`. (For MZmine tables, use `mzmine_to_grouping()` above
+   instead.)
+2. Take the grouping from the same `ft`:
+
+```{r own-table-groups, eval = FALSE}
+grouping_mytool <- prepare_grouping_table(
+  ft,
+  group_col = "cluster",                    # the group column of your table
+  mz_col    = "mzmed", rt_col = "rtmed"     # column names in ft; check names(ft)
+)
+```
+
+3. Continue with Step 3, using `feature_table = ft`.
+
+## If the feature tables differ
+
+Two different feature tables cannot be compared. A feature in one table has
+no defined counterpart in the other, so "same group as the anchor" has no
+meaning. Run both on one table instead:
+
+- **Run the grouping tool on the MS1Match feature table.** For example, give
+  CAMERA, RAMClustR or cliqueMS the same xcms object that MS1Match used.
+- **Or run MS1Match on the grouping tool's feature table.** For example,
+  import an MZmine feature table with `read_mzmine_feature_table()`, run
+  MS1Match on it (vignette 2c), and evaluate the MZmine grouping with
+  `mzmine_to_grouping()`.
+
+# Step 3 — Check that both used the same feature table
+
+The check answers yes or no. Every feature id shared by the MS1Match result,
+the grouping table and the feature table must have **the same m/z** (and RT,
+where available). Feature ids alone are not enough, because separate xcms
+runs all name their features `FT0001`, `FT0002`, ...
+
+```{r feature-match}
+check_feature_match(anno_result, grouping_camera, feature_table)
+```
+
+If the answer is NO, the printout lists the first mismatching features and
+the reason: m/z differs, RT differs, or a reference feature is missing from
+the feature table. `evaluate_grouping()` runs the same check and stops on NO.
+
+**Subsets are allowed.** One table may be a subset of the other, e.g.
+MS1Match run on an RT-truncated feature table and the grouping tool on the
+full one. The evaluation then uses only the features present in both. The
+printout reports how many were excluded on each side.
+
+A feature missing from the grouping table is treated as outside the shared
+feature table, not as Ref-unassigned.
+
+# Step 4 — Evaluate
+
+## One tool
+
+```{r evaluate}
+eval_camera <- evaluate_grouping(
+  anno_result,
+  grouping_camera,
+  tool_name     = "CAMERA",
+  feature_table = feature_table,
+  rt_window     = c(60, 1200)
+)
+eval_camera
+```
+
+`rt_window` only restricts features *outside* the reference set. It keeps
+their counts comparable between tools: here, MS1Match was run on features
+within 60–1200 s. Reference features are always evaluated.
+
+## Several tools
+
+Every tool is evaluated with the same call; only the grouping table and the
+name change. Put the grouping tables in a named list:
+
+```{r evaluate-many}
+groupings <- list(CAMERA = grouping_camera)
+if (has_rc) groupings$RAMClustR <- grouping_ramclustr
+# groupings$MyTool <- grouping_mytool     # any table from Step 2
+
+evals <- lapply(names(groupings), function(tool)
+  evaluate_grouping(anno_result, groupings[[tool]],
+                    tool_name     = tool,
+                    feature_table = feature_table,
+                    rt_window     = c(60, 1200)))
+names(evals) <- names(groupings)
+```
+
+# Step 5 — Results
+
+Each evaluation contains three tables:
+
+```{r tab-outputs, echo = FALSE}
+show_table(data.frame(
+  Table = c("benchmark", "status_counts", "full_table"),
+  Content = c(
+    "One row per tier: counts and % of reference features per status",
+    "Status counts over all features, including those outside the reference set",
+    "One row per reference feature × compound, plus one row per feature outside the reference set")),
+  align = c("l", "l"), mono_col = 1)
+```
+
+## Tier benchmark
+
+```{r benchmark}
+show_table(eval_camera$benchmark,
+           caption = "CAMERA: tier-stratified benchmark (StM14)",
+           highlight_last = TRUE, scroll = TRUE)   # last row = Total
+```
+
+## Status over all features
+
+```{r status-counts}
+show_table(eval_camera$status_counts,
+           caption = "CAMERA: reference-relative status of all features")
+```
+
+## Comparing tools
+
+```{r compare}
+show_table(do.call(compare_grouping, unname(evals)),
+           caption = "Status (%) per tier and tool",
+           highlight_last = TRUE, scroll = TRUE)
+```
+
+## Single compounds
+
+Use `full_table` to see how a tool grouped the features of one compound:
+
+```{r inspect}
+eval_camera$full_table %>%
+  filter(Compound_name == Compound_name[1]) %>%
+  select(feature_name, Compound_name, tier, group, anchor_group, ref_status)
+```
+
+## Per-feature overview of all standards
+
+One row per reference feature × compound (here: all features MS1Match
+assigned to the 14 StM14 standards), with:
+
+- the MS1Match evidence: tier and annotation;
+- per tool: the feature's group, the anchor's group and the reference
+  status (`NA` group = the tool did not group the feature);
+- for CAMERA also its own isotope and adduct labels.
+
+The statuses are taken from `evals` (Step 4), so they match the benchmark.
+
+```{r feature-overview}
+# MS1Match evidence per reference row
+evidence <- anno_result$export_feature_compound_summary %>%
+  select(feature_name, Compound_name, Lib_group, reference_tier,
+         any_of(c("grp_anno_match", "exp_anno_match", "iso_annotation"))) %>%
+  mutate(MS1Match_anno = coalesce(na_if(grp_anno_match, ""),
+                                  na_if(exp_anno_match, ""))) %>%
+  select(-any_of(c("grp_anno_match", "exp_anno_match")))
+
+# group, anchor group and status per tool, prefixed with the tool name
+tool_cols <- function(tool) {
+  evals[[tool]]$full_table %>%
+    filter(!is.na(Compound_name)) %>%
+    select(feature_name, Compound_name, Lib_group,
+           !!paste0(tool, "_group")        := group,
+           !!paste0(tool, "_anchor_group") := anchor_group,
+           !!paste0(tool, "_ref_status")   := ref_status)
+}
+
+feature_overview <- Reduce(
+  function(acc, tool) left_join(acc, tool_cols(tool),
+                                by = c("feature_name", "Compound_name", "Lib_group")),
+  names(evals),
+  evidence %>% filter(feature_name %in% evals[[1]]$full_table$feature_name)
+)
+
+# CAMERA's own labels
+camera_labels <- CAMERA_peaklist %>%
+  select(feature_name, any_of(c("isotopes", "adduct"))) %>%
+  rename_with(~ paste0("CAMERA_", .x), -feature_name) %>%
+  mutate(across(-feature_name, ~ na_if(trimws(as.character(.x)), "")))
+
+feature_overview <- feature_overview %>%
+  left_join(feature_table %>% select(feature_name, mzmed, rtmed), by = "feature_name") %>%
+  left_join(camera_labels, by = "feature_name") %>%
+  relocate(Compound_name, feature_name, mzmed, rtmed, reference_tier,
+           MS1Match_anno, any_of("iso_annotation")) %>%
+  arrange(Compound_name, rtmed, mzmed)
+
+feature_overview
+```
+
+Per standard: how many of its reference features each tool grouped with the
+anchor, split from it, or left ungrouped.
+
+```{r feature-overview-summary}
+status_summary <- function(tool) {
+  st <- feature_overview[[paste0(tool, "_ref_status")]]
+  feature_overview %>%
+    mutate(.st = st) %>%
+    group_by(Compound_name) %>%
+    summarise(
+      !!paste0(tool, "_confirmed")   := sum(.st == "Ref-confirmed",   na.rm = TRUE),
+      !!paste0(tool, "_conflicting") := sum(.st == "Ref-conflicting", na.rm = TRUE),
+      !!paste0(tool, "_unassigned")  := sum(.st %in% c("Ref-unassigned",
+                                                        "Ref-unassigned (no-anchor)")),
+      .groups = "drop")
+}
+
+per_standard <- Reduce(
+  function(acc, tool) left_join(acc, status_summary(tool), by = "Compound_name"),
+  names(evals),
+  feature_overview %>% count(Compound_name, name = "n_features")
+) %>%
+  arrange(desc(n_features))
+
+show_table(per_standard,
+           caption = "Reference features per standard and their status per tool",
+           scroll = TRUE)
+```
+
+```{r feature-overview-export, eval = FALSE}
+write.csv(feature_overview, "StM14_feature_overview.csv", row.names = FALSE, na = "")
+write.csv(per_standard,     "StM14_per_standard.csv",     row.names = FALSE)
+```
+
+# Reading the output
+
+For each compound, the Tier 1a `[M+H]+` feature is the **anchor**; the group
+the tool assigns to it is the compound's expected group. Every reference
+compound has an anchor by construction. Each reference feature gets the
+first status that applies, in this order:
+
+```{r tab-status, echo = FALSE}
+show_table(data.frame(
+  Status = c("Ref-unassigned (no-anchor)", "Ref-unassigned",
+             "Ref-confirmed", "Ref-conflicting",
+             "Ref-unmatched, co-grouped", "Ref-unmatched, unrelated"),
+  Meaning = c(
+    "The tool did not group the compound's anchor; none of its features can be evaluated",
+    "The anchor is grouped, this feature is not",
+    "Same group as its compound's anchor",
+    "Different group than its compound's anchor",
+    "Feature outside the reference set, in a group with a compound anchor (possible over-grouping)",
+    "Feature outside the reference set, in a group without an anchor, or in no group")),
+  align = c("l", "l"))
+```
+
+The first four statuses apply to reference features and make up the tier
+benchmark. The last two apply to features outside the reference set and
+appear only in `status_counts` and `full_table`.
+
+The benchmark also reports **coverage** (`pct_grouped`): the share of
+reference features the tool grouped at all. Tools that group every feature
+(e.g. CAMERA) have 100 % coverage and always 0 Ref-unassigned and 0
+Ref-unassigned (no-anchor).
+
+A further status, *Not evaluable*, appears only if a compound's anchor is
+missing from the shared feature table (e.g. cut off by an RT window). It
+should be 0; `evaluate_grouping()` warns otherwise.
+
+# Using your own data
+
+The same calls, collected. Replace the three inputs:
+
+```{r own-data, eval = FALSE}
+# Inputs
+feature_table <- my_xcms_result$ft                 # the table MS1Match ran on
+anno_result   <- readRDS("my_anno_result.rds")     # from vignette 2a / 2c
+grouping      <- camera_to_grouping(getPeaklist(my_xsa))
+                 # or ramclustr_to_grouping(RC), mzmine_to_grouping(...),
+                 # or prepare_grouping_table(...)
+
+# Check, evaluate
+check_feature_match(anno_result, grouping, feature_table)   # must YES
+
+res <- evaluate_grouping(anno_result, grouping,
+                         tool_name     = "MyTool",
+                         feature_table = feature_table,
+                         rt_window     = c(60, 1200))
+res
+
+# Export
+write.csv(res$benchmark,     "MyTool_benchmark.csv",     row.names = FALSE)
+write.csv(res$status_counts, "MyTool_status_counts.csv", row.names = FALSE)
+write.csv(res$full_table,    "MyTool_full_table.csv",    row.names = FALSE)
+```
+
+To export all tools from Step 4 at once:
+
+```{r export-many, eval = FALSE}
+for (tool in names(evals)) {
+  write.csv(evals[[tool]]$benchmark,
+            paste0(tool, "_benchmark.csv"),  row.names = FALSE)
+  write.csv(evals[[tool]]$full_table,
+            paste0(tool, "_full_table.csv"), row.names = FALSE)
+}
+```
+
+# Optional: CAMERA adduct annotation accuracy
+
+Besides groups, CAMERA assigns adduct labels. For Tier 1a features, their
+coverage and accuracy are computed with CAMERA-specific functions. These
+join on `feature_name` only and do not repeat the feature-table check. Run
+them only after Step 3 has said YES.
+
+```{r camera-annotation, eval = FALSE}
+eval_full     <- build_eval_full(anno_result$export_feature_compound_summary,
+                                 CAMERA_ft = CAMERA_peaklist)
+anchors       <- build_anchors(eval_full,
+                               full_anno = anno_result$export_reduced_anno_table)
+anno_accuracy <- build_anno_accuracy(eval_full, anchors, ppm_tol = 10)
+anno_accuracy$summary
+```
+
+The full CAMERA analysis (pcgroup purity, adduct confusion, case studies) is
+in `analysis/StM14_CAMERA_evaluation.Rmd` in the GitHub repository.
+
+---
+
+# Session info
+
+```{r session-info}
+sessionInfo()
+```

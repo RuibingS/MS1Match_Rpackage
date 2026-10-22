@@ -7,7 +7,7 @@
 results_df(object, collapse_full = TRUE, remove_full = TRUE, suffix = "_str")
 }
 \arguments{
-\item{object}{A \linkS4class{DirectLibMatch} object with \code{results} populated
+\item{object}{A \link[=DirectLibMatch-class]{DirectLibMatch} object with \code{results} populated
 (e.g., after calling \code{\link[=libAnnotate]{libAnnotate()}}).}
 
 \item{collapse_full}{Logical; collapse \verb{*_full} vectors to strings? Default is \code{TRUE}.}
@@ -24,7 +24,7 @@ A \code{data.frame} with one row per element of \code{object@results}.
 }
 \description{
 Convert the \code{results} slot (a list of per-feature/per-hit lists) from a
-\linkS4class{DirectLibMatch} object into a single \code{data.frame}. Optionally collapse
+\link[=DirectLibMatch-class]{DirectLibMatch} object into a single \code{data.frame}. Optionally collapse
 vector fields \code{Compound_peak_mz_full} and \code{Compound_peak_int_full} into
 comma-separated strings, either overwriting the originals or writing to
 new \verb{*_str} columns.

@@ -11,9 +11,9 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// annotate_from_adduct_table
-DataFrame annotate_from_adduct_table(List lib, DataFrame adduct_table, std::string lib_name, Nullable<CharacterVector> filter_names, std::string desired_polarity, double tol);
-RcppExport SEXP _MS1Match_annotate_from_adduct_table(SEXP libSEXP, SEXP adduct_tableSEXP, SEXP lib_nameSEXP, SEXP filter_namesSEXP, SEXP desired_polaritySEXP, SEXP tolSEXP) {
+// annotate_and_summarize
+List annotate_and_summarize(List lib, DataFrame adduct_table, std::string lib_name, Nullable<CharacterVector> filter_names, std::string desired_polarity, double tol, double ppm_tol);
+RcppExport SEXP _MS1Match_annotate_and_summarize(SEXP libSEXP, SEXP adduct_tableSEXP, SEXP lib_nameSEXP, SEXP filter_namesSEXP, SEXP desired_polaritySEXP, SEXP tolSEXP, SEXP ppm_tolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -23,221 +23,62 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Nullable<CharacterVector> >::type filter_names(filter_namesSEXP);
     Rcpp::traits::input_parameter< std::string >::type desired_polarity(desired_polaritySEXP);
     Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
-    rcpp_result_gen = Rcpp::wrap(annotate_from_adduct_table(lib, adduct_table, lib_name, filter_names, desired_polarity, tol));
+    Rcpp::traits::input_parameter< double >::type ppm_tol(ppm_tolSEXP);
+    rcpp_result_gen = Rcpp::wrap(annotate_and_summarize(lib, adduct_table, lib_name, filter_names, desired_polarity, tol, ppm_tol));
     return rcpp_result_gen;
 END_RCPP
 }
-// DI_dirct_match_fun
-Rcpp::List DI_dirct_match_fun(Rcpp::DataFrame FT, Rcpp::List compounds_list, double diff_mz_thr, int ppm);
-RcppExport SEXP _MS1Match_DI_dirct_match_fun(SEXP FTSEXP, SEXP compounds_listSEXP, SEXP diff_mz_thrSEXP, SEXP ppmSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type FT(FTSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List >::type compounds_list(compounds_listSEXP);
-    Rcpp::traits::input_parameter< double >::type diff_mz_thr(diff_mz_thrSEXP);
-    Rcpp::traits::input_parameter< int >::type ppm(ppmSEXP);
-    rcpp_result_gen = Rcpp::wrap(DI_dirct_match_fun(FT, compounds_list, diff_mz_thr, ppm));
-    return rcpp_result_gen;
-END_RCPP
-}
-// EIC_cor_mat_pairs
-DataFrame EIC_cor_mat_pairs(List feature_EIC_combined_result, DataFrame feature_pairs, double rt_EIC_thr, std::string method, bool parallel, int n_threads);
-RcppExport SEXP _MS1Match_EIC_cor_mat_pairs(SEXP feature_EIC_combined_resultSEXP, SEXP feature_pairsSEXP, SEXP rt_EIC_thrSEXP, SEXP methodSEXP, SEXP parallelSEXP, SEXP n_threadsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type feature_EIC_combined_result(feature_EIC_combined_resultSEXP);
-    Rcpp::traits::input_parameter< DataFrame >::type feature_pairs(feature_pairsSEXP);
-    Rcpp::traits::input_parameter< double >::type rt_EIC_thr(rt_EIC_thrSEXP);
-    Rcpp::traits::input_parameter< std::string >::type method(methodSEXP);
-    Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
-    Rcpp::traits::input_parameter< int >::type n_threads(n_threadsSEXP);
-    rcpp_result_gen = Rcpp::wrap(EIC_cor_mat_pairs(feature_EIC_combined_result, feature_pairs, rt_EIC_thr, method, parallel, n_threads));
-    return rcpp_result_gen;
-END_RCPP
-}
-// annotate_peaks_fia
-List annotate_peaks_fia(List compounds_list, DataFrame FT, DataFrame adducts_df, DataFrame neutral_loss_table, std::string polarity, NumericVector intensity, double threshold, double iso_threshold, int max_charge, int max_isotope);
-RcppExport SEXP _MS1Match_annotate_peaks_fia(SEXP compounds_listSEXP, SEXP FTSEXP, SEXP adducts_dfSEXP, SEXP neutral_loss_tableSEXP, SEXP polaritySEXP, SEXP intensitySEXP, SEXP thresholdSEXP, SEXP iso_thresholdSEXP, SEXP max_chargeSEXP, SEXP max_isotopeSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type compounds_list(compounds_listSEXP);
-    Rcpp::traits::input_parameter< DataFrame >::type FT(FTSEXP);
-    Rcpp::traits::input_parameter< DataFrame >::type adducts_df(adducts_dfSEXP);
-    Rcpp::traits::input_parameter< DataFrame >::type neutral_loss_table(neutral_loss_tableSEXP);
-    Rcpp::traits::input_parameter< std::string >::type polarity(polaritySEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type intensity(intensitySEXP);
-    Rcpp::traits::input_parameter< double >::type threshold(thresholdSEXP);
-    Rcpp::traits::input_parameter< double >::type iso_threshold(iso_thresholdSEXP);
-    Rcpp::traits::input_parameter< int >::type max_charge(max_chargeSEXP);
-    Rcpp::traits::input_parameter< int >::type max_isotope(max_isotopeSEXP);
-    rcpp_result_gen = Rcpp::wrap(annotate_peaks_fia(compounds_list, FT, adducts_df, neutral_loss_table, polarity, intensity, threshold, iso_threshold, max_charge, max_isotope));
-    return rcpp_result_gen;
-END_RCPP
-}
-// PImatch_fia_fun
-List PImatch_fia_fun(DataFrame FT, DataFrame Comp_data, CharacterVector PIon, double diff_mz_thr, int ppm);
-RcppExport SEXP _MS1Match_PImatch_fia_fun(SEXP FTSEXP, SEXP Comp_dataSEXP, SEXP PIonSEXP, SEXP diff_mz_thrSEXP, SEXP ppmSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< DataFrame >::type FT(FTSEXP);
-    Rcpp::traits::input_parameter< DataFrame >::type Comp_data(Comp_dataSEXP);
-    Rcpp::traits::input_parameter< CharacterVector >::type PIon(PIonSEXP);
-    Rcpp::traits::input_parameter< double >::type diff_mz_thr(diff_mz_thrSEXP);
-    Rcpp::traits::input_parameter< int >::type ppm(ppmSEXP);
-    rcpp_result_gen = Rcpp::wrap(PImatch_fia_fun(FT, Comp_data, PIon, diff_mz_thr, ppm));
-    return rcpp_result_gen;
-END_RCPP
-}
-// findNL_fia_fun
-List findNL_fia_fun(DataFrame NL_data, DataFrame adj_long, double diff_mz_thr, int ppm);
-RcppExport SEXP _MS1Match_findNL_fia_fun(SEXP NL_dataSEXP, SEXP adj_longSEXP, SEXP diff_mz_thrSEXP, SEXP ppmSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< DataFrame >::type NL_data(NL_dataSEXP);
-    Rcpp::traits::input_parameter< DataFrame >::type adj_long(adj_longSEXP);
-    Rcpp::traits::input_parameter< double >::type diff_mz_thr(diff_mz_thrSEXP);
-    Rcpp::traits::input_parameter< int >::type ppm(ppmSEXP);
-    rcpp_result_gen = Rcpp::wrap(findNL_fia_fun(NL_data, adj_long, diff_mz_thr, ppm));
-    return rcpp_result_gen;
-END_RCPP
-}
-// Check_Iso_Charge_fia
-Rcpp::CharacterVector Check_Iso_Charge_fia(Rcpp::CharacterVector name, Rcpp::NumericVector mz, Rcpp::NumericVector intensity, double iso_threshold, int max_charge, int max_isotope);
-RcppExport SEXP _MS1Match_Check_Iso_Charge_fia(SEXP nameSEXP, SEXP mzSEXP, SEXP intensitySEXP, SEXP iso_thresholdSEXP, SEXP max_chargeSEXP, SEXP max_isotopeSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type name(nameSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type mz(mzSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type intensity(intensitySEXP);
-    Rcpp::traits::input_parameter< double >::type iso_threshold(iso_thresholdSEXP);
-    Rcpp::traits::input_parameter< int >::type max_charge(max_chargeSEXP);
-    Rcpp::traits::input_parameter< int >::type max_isotope(max_isotopeSEXP);
-    rcpp_result_gen = Rcpp::wrap(Check_Iso_Charge_fia(name, mz, intensity, iso_threshold, max_charge, max_isotope));
-    return rcpp_result_gen;
-END_RCPP
-}
-// annotate_from_librarymatch_cpp
-Rcpp::List annotate_from_librarymatch_cpp(Rcpp::List library_matches, Rcpp::DataFrame adducts_df, Rcpp::DataFrame neutral_loss_table, std::string polarity, double mz_threshold, double ppm, double rt_threshold, double iso_threshold, int max_charge, int max_isotope);
-RcppExport SEXP _MS1Match_annotate_from_librarymatch_cpp(SEXP library_matchesSEXP, SEXP adducts_dfSEXP, SEXP neutral_loss_tableSEXP, SEXP polaritySEXP, SEXP mz_thresholdSEXP, SEXP ppmSEXP, SEXP rt_thresholdSEXP, SEXP iso_thresholdSEXP, SEXP max_chargeSEXP, SEXP max_isotopeSEXP) {
+// annotate_librarymatch_phase1_cpp
+Rcpp::List annotate_librarymatch_phase1_cpp(Rcpp::List library_matches, Rcpp::DataFrame FT, Rcpp::DataFrame adducts_df, Rcpp::DataFrame neutral_loss_table, std::string polarity, double mz_threshold, double ppm, double pi_ppm, double nl_ppm, double iso_ppm, double rt_threshold, double pi_rt_threshold, double rt_exp_threshold, double iso_threshold, int max_charge, int max_isotope, double mzabs);
+RcppExport SEXP _MS1Match_annotate_librarymatch_phase1_cpp(SEXP library_matchesSEXP, SEXP FTSEXP, SEXP adducts_dfSEXP, SEXP neutral_loss_tableSEXP, SEXP polaritySEXP, SEXP mz_thresholdSEXP, SEXP ppmSEXP, SEXP pi_ppmSEXP, SEXP nl_ppmSEXP, SEXP iso_ppmSEXP, SEXP rt_thresholdSEXP, SEXP pi_rt_thresholdSEXP, SEXP rt_exp_thresholdSEXP, SEXP iso_thresholdSEXP, SEXP max_chargeSEXP, SEXP max_isotopeSEXP, SEXP mzabsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::List >::type library_matches(library_matchesSEXP);
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type adducts_df(adducts_dfSEXP);
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type neutral_loss_table(neutral_loss_tableSEXP);
-    Rcpp::traits::input_parameter< std::string >::type polarity(polaritySEXP);
-    Rcpp::traits::input_parameter< double >::type mz_threshold(mz_thresholdSEXP);
-    Rcpp::traits::input_parameter< double >::type ppm(ppmSEXP);
-    Rcpp::traits::input_parameter< double >::type rt_threshold(rt_thresholdSEXP);
-    Rcpp::traits::input_parameter< double >::type iso_threshold(iso_thresholdSEXP);
-    Rcpp::traits::input_parameter< int >::type max_charge(max_chargeSEXP);
-    Rcpp::traits::input_parameter< int >::type max_isotope(max_isotopeSEXP);
-    rcpp_result_gen = Rcpp::wrap(annotate_from_librarymatch_cpp(library_matches, adducts_df, neutral_loss_table, polarity, mz_threshold, ppm, rt_threshold, iso_threshold, max_charge, max_isotope));
-    return rcpp_result_gen;
-END_RCPP
-}
-// annotate_with_rt_cpp
-List annotate_with_rt_cpp(List compounds_list, DataFrame FT, DataFrame adducts_df, DataFrame neutral_loss_table, std::string polarity, double mz_threshold, double ppm, double PI_rt_threshold, double rt_threshold, double iso_threshold, int max_charge, int max_isotope, bool run_PI_match, bool run_adduct_match, bool run_NL_match);
-RcppExport SEXP _MS1Match_annotate_with_rt_cpp(SEXP compounds_listSEXP, SEXP FTSEXP, SEXP adducts_dfSEXP, SEXP neutral_loss_tableSEXP, SEXP polaritySEXP, SEXP mz_thresholdSEXP, SEXP ppmSEXP, SEXP PI_rt_thresholdSEXP, SEXP rt_thresholdSEXP, SEXP iso_thresholdSEXP, SEXP max_chargeSEXP, SEXP max_isotopeSEXP, SEXP run_PI_matchSEXP, SEXP run_adduct_matchSEXP, SEXP run_NL_matchSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type compounds_list(compounds_listSEXP);
-    Rcpp::traits::input_parameter< DataFrame >::type FT(FTSEXP);
-    Rcpp::traits::input_parameter< DataFrame >::type adducts_df(adducts_dfSEXP);
-    Rcpp::traits::input_parameter< DataFrame >::type neutral_loss_table(neutral_loss_tableSEXP);
-    Rcpp::traits::input_parameter< std::string >::type polarity(polaritySEXP);
-    Rcpp::traits::input_parameter< double >::type mz_threshold(mz_thresholdSEXP);
-    Rcpp::traits::input_parameter< double >::type ppm(ppmSEXP);
-    Rcpp::traits::input_parameter< double >::type PI_rt_threshold(PI_rt_thresholdSEXP);
-    Rcpp::traits::input_parameter< double >::type rt_threshold(rt_thresholdSEXP);
-    Rcpp::traits::input_parameter< double >::type iso_threshold(iso_thresholdSEXP);
-    Rcpp::traits::input_parameter< int >::type max_charge(max_chargeSEXP);
-    Rcpp::traits::input_parameter< int >::type max_isotope(max_isotopeSEXP);
-    Rcpp::traits::input_parameter< bool >::type run_PI_match(run_PI_matchSEXP);
-    Rcpp::traits::input_parameter< bool >::type run_adduct_match(run_adduct_matchSEXP);
-    Rcpp::traits::input_parameter< bool >::type run_NL_match(run_NL_matchSEXP);
-    rcpp_result_gen = Rcpp::wrap(annotate_with_rt_cpp(compounds_list, FT, adducts_df, neutral_loss_table, polarity, mz_threshold, ppm, PI_rt_threshold, rt_threshold, iso_threshold, max_charge, max_isotope, run_PI_match, run_adduct_match, run_NL_match));
-    return rcpp_result_gen;
-END_RCPP
-}
-// findNL_fun
-Rcpp::List findNL_fun(Rcpp::DataFrame NL_data, Rcpp::DataFrame adj_long, double diff_mz_thr, double diff_rt_thr, int ppm);
-RcppExport SEXP _MS1Match_findNL_fun(SEXP NL_dataSEXP, SEXP adj_longSEXP, SEXP diff_mz_thrSEXP, SEXP diff_rt_thrSEXP, SEXP ppmSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type NL_data(NL_dataSEXP);
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type adj_long(adj_longSEXP);
-    Rcpp::traits::input_parameter< double >::type diff_mz_thr(diff_mz_thrSEXP);
-    Rcpp::traits::input_parameter< double >::type diff_rt_thr(diff_rt_thrSEXP);
-    Rcpp::traits::input_parameter< int >::type ppm(ppmSEXP);
-    rcpp_result_gen = Rcpp::wrap(findNL_fun(NL_data, adj_long, diff_mz_thr, diff_rt_thr, ppm));
-    return rcpp_result_gen;
-END_RCPP
-}
-// annotate_without_rt_cpp
-List annotate_without_rt_cpp(List compounds_list, Rcpp::DataFrame FT, Rcpp::DataFrame adducts_df, Rcpp::DataFrame neutral_loss_table, std::string polarity, double mz_threshold, double iso_threshold, int max_charge, int max_isotope, bool run_PI_match, bool run_adduct_match, bool run_NL_match);
-RcppExport SEXP _MS1Match_annotate_without_rt_cpp(SEXP compounds_listSEXP, SEXP FTSEXP, SEXP adducts_dfSEXP, SEXP neutral_loss_tableSEXP, SEXP polaritySEXP, SEXP mz_thresholdSEXP, SEXP iso_thresholdSEXP, SEXP max_chargeSEXP, SEXP max_isotopeSEXP, SEXP run_PI_matchSEXP, SEXP run_adduct_matchSEXP, SEXP run_NL_matchSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type compounds_list(compounds_listSEXP);
     Rcpp::traits::input_parameter< Rcpp::DataFrame >::type FT(FTSEXP);
     Rcpp::traits::input_parameter< Rcpp::DataFrame >::type adducts_df(adducts_dfSEXP);
     Rcpp::traits::input_parameter< Rcpp::DataFrame >::type neutral_loss_table(neutral_loss_tableSEXP);
     Rcpp::traits::input_parameter< std::string >::type polarity(polaritySEXP);
     Rcpp::traits::input_parameter< double >::type mz_threshold(mz_thresholdSEXP);
+    Rcpp::traits::input_parameter< double >::type ppm(ppmSEXP);
+    Rcpp::traits::input_parameter< double >::type pi_ppm(pi_ppmSEXP);
+    Rcpp::traits::input_parameter< double >::type nl_ppm(nl_ppmSEXP);
+    Rcpp::traits::input_parameter< double >::type iso_ppm(iso_ppmSEXP);
+    Rcpp::traits::input_parameter< double >::type rt_threshold(rt_thresholdSEXP);
+    Rcpp::traits::input_parameter< double >::type pi_rt_threshold(pi_rt_thresholdSEXP);
+    Rcpp::traits::input_parameter< double >::type rt_exp_threshold(rt_exp_thresholdSEXP);
     Rcpp::traits::input_parameter< double >::type iso_threshold(iso_thresholdSEXP);
     Rcpp::traits::input_parameter< int >::type max_charge(max_chargeSEXP);
     Rcpp::traits::input_parameter< int >::type max_isotope(max_isotopeSEXP);
-    Rcpp::traits::input_parameter< bool >::type run_PI_match(run_PI_matchSEXP);
-    Rcpp::traits::input_parameter< bool >::type run_adduct_match(run_adduct_matchSEXP);
-    Rcpp::traits::input_parameter< bool >::type run_NL_match(run_NL_matchSEXP);
-    rcpp_result_gen = Rcpp::wrap(annotate_without_rt_cpp(compounds_list, FT, adducts_df, neutral_loss_table, polarity, mz_threshold, iso_threshold, max_charge, max_isotope, run_PI_match, run_adduct_match, run_NL_match));
+    Rcpp::traits::input_parameter< double >::type mzabs(mzabsSEXP);
+    rcpp_result_gen = Rcpp::wrap(annotate_librarymatch_phase1_cpp(library_matches, FT, adducts_df, neutral_loss_table, polarity, mz_threshold, ppm, pi_ppm, nl_ppm, iso_ppm, rt_threshold, pi_rt_threshold, rt_exp_threshold, iso_threshold, max_charge, max_isotope, mzabs));
     return rcpp_result_gen;
 END_RCPP
 }
-// Check_Iso_Charge_no_rt
-Rcpp::CharacterVector Check_Iso_Charge_no_rt(Rcpp::CharacterVector name, Rcpp::NumericVector mz, Rcpp::NumericVector intensity, double iso_threshold, int max_charge, int max_isotope);
-RcppExport SEXP _MS1Match_Check_Iso_Charge_no_rt(SEXP nameSEXP, SEXP mzSEXP, SEXP intensitySEXP, SEXP iso_thresholdSEXP, SEXP max_chargeSEXP, SEXP max_isotopeSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type name(nameSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type mz(mzSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type intensity(intensitySEXP);
-    Rcpp::traits::input_parameter< double >::type iso_threshold(iso_thresholdSEXP);
-    Rcpp::traits::input_parameter< int >::type max_charge(max_chargeSEXP);
-    Rcpp::traits::input_parameter< int >::type max_isotope(max_isotopeSEXP);
-    rcpp_result_gen = Rcpp::wrap(Check_Iso_Charge_no_rt(name, mz, intensity, iso_threshold, max_charge, max_isotope));
-    return rcpp_result_gen;
-END_RCPP
-}
-// PImatch_no_rt_fun
-Rcpp::List PImatch_no_rt_fun(Rcpp::DataFrame FT, Rcpp::DataFrame Comp_data, Rcpp::CharacterVector PIon, double diff_mz_thr, int ppm);
-RcppExport SEXP _MS1Match_PImatch_no_rt_fun(SEXP FTSEXP, SEXP Comp_dataSEXP, SEXP PIonSEXP, SEXP diff_mz_thrSEXP, SEXP ppmSEXP) {
+// annotate_librarymatch_phase2_cpp
+Rcpp::List annotate_librarymatch_phase2_cpp(Rcpp::DataFrame FT, Rcpp::DataFrame confirmed_M_df, Rcpp::DataFrame iso_labels_df, Rcpp::CharacterVector phase1_features, Rcpp::DataFrame adducts_df, Rcpp::DataFrame neutral_loss_table, std::string polarity, double mz_threshold, double ppm_exp, double nl_ppm, double rt_exp_threshold);
+RcppExport SEXP _MS1Match_annotate_librarymatch_phase2_cpp(SEXP FTSEXP, SEXP confirmed_M_dfSEXP, SEXP iso_labels_dfSEXP, SEXP phase1_featuresSEXP, SEXP adducts_dfSEXP, SEXP neutral_loss_tableSEXP, SEXP polaritySEXP, SEXP mz_thresholdSEXP, SEXP ppm_expSEXP, SEXP nl_ppmSEXP, SEXP rt_exp_thresholdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::DataFrame >::type FT(FTSEXP);
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type Comp_data(Comp_dataSEXP);
-    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type PIon(PIonSEXP);
-    Rcpp::traits::input_parameter< double >::type diff_mz_thr(diff_mz_thrSEXP);
-    Rcpp::traits::input_parameter< int >::type ppm(ppmSEXP);
-    rcpp_result_gen = Rcpp::wrap(PImatch_no_rt_fun(FT, Comp_data, PIon, diff_mz_thr, ppm));
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type confirmed_M_df(confirmed_M_dfSEXP);
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type iso_labels_df(iso_labels_dfSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type phase1_features(phase1_featuresSEXP);
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type adducts_df(adducts_dfSEXP);
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type neutral_loss_table(neutral_loss_tableSEXP);
+    Rcpp::traits::input_parameter< std::string >::type polarity(polaritySEXP);
+    Rcpp::traits::input_parameter< double >::type mz_threshold(mz_thresholdSEXP);
+    Rcpp::traits::input_parameter< double >::type ppm_exp(ppm_expSEXP);
+    Rcpp::traits::input_parameter< double >::type nl_ppm(nl_ppmSEXP);
+    Rcpp::traits::input_parameter< double >::type rt_exp_threshold(rt_exp_thresholdSEXP);
+    rcpp_result_gen = Rcpp::wrap(annotate_librarymatch_phase2_cpp(FT, confirmed_M_df, iso_labels_df, phase1_features, adducts_df, neutral_loss_table, polarity, mz_threshold, ppm_exp, nl_ppm, rt_exp_threshold));
     return rcpp_result_gen;
 END_RCPP
 }
 // classify_Ion_Forms_library
-DataFrame classify_Ion_Forms_library(List lib, DataFrame adduct_table, std::string lib_name, Nullable<CharacterVector> filter_names, std::string desired_polarity, double tol);
-RcppExport SEXP _MS1Match_classify_Ion_Forms_library(SEXP libSEXP, SEXP adduct_tableSEXP, SEXP lib_nameSEXP, SEXP filter_namesSEXP, SEXP desired_polaritySEXP, SEXP tolSEXP) {
+DataFrame classify_Ion_Forms_library(List lib, DataFrame adduct_table, std::string lib_name, Nullable<CharacterVector> filter_names, std::string desired_polarity, double tol, bool tol_in_ppm);
+RcppExport SEXP _MS1Match_classify_Ion_Forms_library(SEXP libSEXP, SEXP adduct_tableSEXP, SEXP lib_nameSEXP, SEXP filter_namesSEXP, SEXP desired_polaritySEXP, SEXP tolSEXP, SEXP tol_in_ppmSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -247,7 +88,48 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Nullable<CharacterVector> >::type filter_names(filter_namesSEXP);
     Rcpp::traits::input_parameter< std::string >::type desired_polarity(desired_polaritySEXP);
     Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
-    rcpp_result_gen = Rcpp::wrap(classify_Ion_Forms_library(lib, adduct_table, lib_name, filter_names, desired_polarity, tol));
+    Rcpp::traits::input_parameter< bool >::type tol_in_ppm(tol_in_ppmSEXP);
+    rcpp_result_gen = Rcpp::wrap(classify_Ion_Forms_library(lib, adduct_table, lib_name, filter_names, desired_polarity, tol, tol_in_ppm));
+    return rcpp_result_gen;
+END_RCPP
+}
+// classify_match_cpp
+CharacterVector classify_match_cpp(CharacterVector ik1, CharacterVector ik2, CharacterVector name1, CharacterVector name2, CharacterVector syn1, CharacterVector syn2);
+RcppExport SEXP _MS1Match_classify_match_cpp(SEXP ik1SEXP, SEXP ik2SEXP, SEXP name1SEXP, SEXP name2SEXP, SEXP syn1SEXP, SEXP syn2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< CharacterVector >::type ik1(ik1SEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type ik2(ik2SEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type name1(name1SEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type name2(name2SEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type syn1(syn1SEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type syn2(syn2SEXP);
+    rcpp_result_gen = Rcpp::wrap(classify_match_cpp(ik1, ik2, name1, name2, syn1, syn2));
+    return rcpp_result_gen;
+END_RCPP
+}
+// compare_libraries_cpp
+DataFrame compare_libraries_cpp(CharacterVector formula1, CharacterVector formula2, CharacterVector ik1, CharacterVector ik2, CharacterVector name1, CharacterVector name2, CharacterVector syn1, CharacterVector syn2, CharacterVector orig_name1, CharacterVector orig_name2, CharacterVector orig_syn1, CharacterVector orig_syn2, CharacterVector orig_ik1, CharacterVector orig_ik2);
+RcppExport SEXP _MS1Match_compare_libraries_cpp(SEXP formula1SEXP, SEXP formula2SEXP, SEXP ik1SEXP, SEXP ik2SEXP, SEXP name1SEXP, SEXP name2SEXP, SEXP syn1SEXP, SEXP syn2SEXP, SEXP orig_name1SEXP, SEXP orig_name2SEXP, SEXP orig_syn1SEXP, SEXP orig_syn2SEXP, SEXP orig_ik1SEXP, SEXP orig_ik2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< CharacterVector >::type formula1(formula1SEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type formula2(formula2SEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type ik1(ik1SEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type ik2(ik2SEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type name1(name1SEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type name2(name2SEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type syn1(syn1SEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type syn2(syn2SEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type orig_name1(orig_name1SEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type orig_name2(orig_name2SEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type orig_syn1(orig_syn1SEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type orig_syn2(orig_syn2SEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type orig_ik1(orig_ik1SEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type orig_ik2(orig_ik2SEXP);
+    rcpp_result_gen = Rcpp::wrap(compare_libraries_cpp(formula1, formula2, ik1, ik2, name1, name2, syn1, syn2, orig_name1, orig_name2, orig_syn1, orig_syn2, orig_ik1, orig_ik2));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -280,228 +162,50 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// pearson_cpp
-double pearson_cpp(NumericVector x, NumericVector y);
-RcppExport SEXP _MS1Match_pearson_cpp(SEXP xSEXP, SEXP ySEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
-    rcpp_result_gen = Rcpp::wrap(pearson_cpp(x, y));
-    return rcpp_result_gen;
-END_RCPP
-}
-// spearman_via_r
-double spearman_via_r(NumericVector x, NumericVector y);
-RcppExport SEXP _MS1Match_spearman_via_r(SEXP xSEXP, SEXP ySEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
-    rcpp_result_gen = Rcpp::wrap(spearman_via_r(x, y));
-    return rcpp_result_gen;
-END_RCPP
-}
-// kendall_via_r
-double kendall_via_r(NumericVector x, NumericVector y);
-RcppExport SEXP _MS1Match_kendall_via_r(SEXP xSEXP, SEXP ySEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
-    rcpp_result_gen = Rcpp::wrap(kendall_via_r(x, y));
-    return rcpp_result_gen;
-END_RCPP
-}
-// CorPairs_cpp
-DataFrame CorPairs_cpp(NumericMatrix log_intensity_t, CharacterVector feature_names, DataFrame feature_pairs, std::string method);
-RcppExport SEXP _MS1Match_CorPairs_cpp(SEXP log_intensity_tSEXP, SEXP feature_namesSEXP, SEXP feature_pairsSEXP, SEXP methodSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type log_intensity_t(log_intensity_tSEXP);
-    Rcpp::traits::input_parameter< CharacterVector >::type feature_names(feature_namesSEXP);
-    Rcpp::traits::input_parameter< DataFrame >::type feature_pairs(feature_pairsSEXP);
-    Rcpp::traits::input_parameter< std::string >::type method(methodSEXP);
-    rcpp_result_gen = Rcpp::wrap(CorPairs_cpp(log_intensity_t, feature_names, feature_pairs, method));
-    return rcpp_result_gen;
-END_RCPP
-}
-// calculateCorrelation
-double calculateCorrelation(NumericVector col1, NumericVector col2, std::string method);
-RcppExport SEXP _MS1Match_calculateCorrelation(SEXP col1SEXP, SEXP col2SEXP, SEXP methodSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type col1(col1SEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type col2(col2SEXP);
-    Rcpp::traits::input_parameter< std::string >::type method(methodSEXP);
-    rcpp_result_gen = Rcpp::wrap(calculateCorrelation(col1, col2, method));
-    return rcpp_result_gen;
-END_RCPP
-}
-// pairwiseCor
-NumericMatrix pairwiseCor(NumericMatrix x, std::string method);
-RcppExport SEXP _MS1Match_pairwiseCor(SEXP xSEXP, SEXP methodSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type x(xSEXP);
-    Rcpp::traits::input_parameter< std::string >::type method(methodSEXP);
-    rcpp_result_gen = Rcpp::wrap(pairwiseCor(x, method));
-    return rcpp_result_gen;
-END_RCPP
-}
 // direct_match_MS1Lib_cpp
-Rcpp::List direct_match_MS1Lib_cpp(Rcpp::DataFrame FT, Rcpp::List compounds_list, double diff_mz_thr, double diff_rt_thr, int ppm);
-RcppExport SEXP _MS1Match_direct_match_MS1Lib_cpp(SEXP FTSEXP, SEXP compounds_listSEXP, SEXP diff_mz_thrSEXP, SEXP diff_rt_thrSEXP, SEXP ppmSEXP) {
+Rcpp::List direct_match_MS1Lib_cpp(Rcpp::DataFrame FT, Rcpp::List compounds_list, double rt_thr_compound, double rt_thr_coelution, int ppm);
+RcppExport SEXP _MS1Match_direct_match_MS1Lib_cpp(SEXP FTSEXP, SEXP compounds_listSEXP, SEXP rt_thr_compoundSEXP, SEXP rt_thr_coelutionSEXP, SEXP ppmSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::DataFrame >::type FT(FTSEXP);
     Rcpp::traits::input_parameter< Rcpp::List >::type compounds_list(compounds_listSEXP);
-    Rcpp::traits::input_parameter< double >::type diff_mz_thr(diff_mz_thrSEXP);
-    Rcpp::traits::input_parameter< double >::type diff_rt_thr(diff_rt_thrSEXP);
+    Rcpp::traits::input_parameter< double >::type rt_thr_compound(rt_thr_compoundSEXP);
+    Rcpp::traits::input_parameter< double >::type rt_thr_coelution(rt_thr_coelutionSEXP);
     Rcpp::traits::input_parameter< int >::type ppm(ppmSEXP);
-    rcpp_result_gen = Rcpp::wrap(direct_match_MS1Lib_cpp(FT, compounds_list, diff_mz_thr, diff_rt_thr, ppm));
+    rcpp_result_gen = Rcpp::wrap(direct_match_MS1Lib_cpp(FT, compounds_list, rt_thr_compound, rt_thr_coelution, ppm));
     return rcpp_result_gen;
 END_RCPP
 }
 // direct_match_MS2Lib_cpp
-Rcpp::List direct_match_MS2Lib_cpp(Rcpp::DataFrame FT, Rcpp::List compounds_list, double diff_mz_thr, double diff_rt_thr, int ppm);
-RcppExport SEXP _MS1Match_direct_match_MS2Lib_cpp(SEXP FTSEXP, SEXP compounds_listSEXP, SEXP diff_mz_thrSEXP, SEXP diff_rt_thrSEXP, SEXP ppmSEXP) {
+Rcpp::List direct_match_MS2Lib_cpp(Rcpp::DataFrame FT, Rcpp::List compounds_list, double rt_thr_compound, double rt_thr_coelution, int ppm, bool verbose);
+RcppExport SEXP _MS1Match_direct_match_MS2Lib_cpp(SEXP FTSEXP, SEXP compounds_listSEXP, SEXP rt_thr_compoundSEXP, SEXP rt_thr_coelutionSEXP, SEXP ppmSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::DataFrame >::type FT(FTSEXP);
     Rcpp::traits::input_parameter< Rcpp::List >::type compounds_list(compounds_listSEXP);
-    Rcpp::traits::input_parameter< double >::type diff_mz_thr(diff_mz_thrSEXP);
-    Rcpp::traits::input_parameter< double >::type diff_rt_thr(diff_rt_thrSEXP);
+    Rcpp::traits::input_parameter< double >::type rt_thr_compound(rt_thr_compoundSEXP);
+    Rcpp::traits::input_parameter< double >::type rt_thr_coelution(rt_thr_coelutionSEXP);
     Rcpp::traits::input_parameter< int >::type ppm(ppmSEXP);
-    rcpp_result_gen = Rcpp::wrap(direct_match_MS2Lib_cpp(FT, compounds_list, diff_mz_thr, diff_rt_thr, ppm));
-    return rcpp_result_gen;
-END_RCPP
-}
-// PImatch_hmdb_fun
-Rcpp::List PImatch_hmdb_fun(Rcpp::DataFrame FT, Rcpp::DataFrame Comp_data, Rcpp::CharacterVector PIon, double diff_mz_thr, int ppm);
-RcppExport SEXP _MS1Match_PImatch_hmdb_fun(SEXP FTSEXP, SEXP Comp_dataSEXP, SEXP PIonSEXP, SEXP diff_mz_thrSEXP, SEXP ppmSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type FT(FTSEXP);
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type Comp_data(Comp_dataSEXP);
-    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type PIon(PIonSEXP);
-    Rcpp::traits::input_parameter< double >::type diff_mz_thr(diff_mz_thrSEXP);
-    Rcpp::traits::input_parameter< int >::type ppm(ppmSEXP);
-    rcpp_result_gen = Rcpp::wrap(PImatch_hmdb_fun(FT, Comp_data, PIon, diff_mz_thr, ppm));
-    return rcpp_result_gen;
-END_RCPP
-}
-// dirct_match_FIA_fun
-Rcpp::List dirct_match_FIA_fun(Rcpp::DataFrame FT, Rcpp::List compounds_list, double diff_mz_thr, int ppm);
-RcppExport SEXP _MS1Match_dirct_match_FIA_fun(SEXP FTSEXP, SEXP compounds_listSEXP, SEXP diff_mz_thrSEXP, SEXP ppmSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type FT(FTSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List >::type compounds_list(compounds_listSEXP);
-    Rcpp::traits::input_parameter< double >::type diff_mz_thr(diff_mz_thrSEXP);
-    Rcpp::traits::input_parameter< int >::type ppm(ppmSEXP);
-    rcpp_result_gen = Rcpp::wrap(dirct_match_FIA_fun(FT, compounds_list, diff_mz_thr, ppm));
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(direct_match_MS2Lib_cpp(FT, compounds_list, rt_thr_compound, rt_thr_coelution, ppm, verbose));
     return rcpp_result_gen;
 END_RCPP
 }
 // PImatch_target_rcpp
-Rcpp::List PImatch_target_rcpp(Rcpp::DataFrame FT, Rcpp::DataFrame Comp_data, Rcpp::CharacterVector PIon, double diff_mz_thr, std::string polarity, int ppm);
-RcppExport SEXP _MS1Match_PImatch_target_rcpp(SEXP FTSEXP, SEXP Comp_dataSEXP, SEXP PIonSEXP, SEXP diff_mz_thrSEXP, SEXP polaritySEXP, SEXP ppmSEXP) {
+Rcpp::List PImatch_target_rcpp(Rcpp::DataFrame FT, Rcpp::DataFrame Comp_data, std::string polarity, double diff_mz_thr, int ppm, double rt_thr_compound);
+RcppExport SEXP _MS1Match_PImatch_target_rcpp(SEXP FTSEXP, SEXP Comp_dataSEXP, SEXP polaritySEXP, SEXP diff_mz_thrSEXP, SEXP ppmSEXP, SEXP rt_thr_compoundSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::DataFrame >::type FT(FTSEXP);
     Rcpp::traits::input_parameter< Rcpp::DataFrame >::type Comp_data(Comp_dataSEXP);
-    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type PIon(PIonSEXP);
-    Rcpp::traits::input_parameter< double >::type diff_mz_thr(diff_mz_thrSEXP);
     Rcpp::traits::input_parameter< std::string >::type polarity(polaritySEXP);
+    Rcpp::traits::input_parameter< double >::type diff_mz_thr(diff_mz_thrSEXP);
     Rcpp::traits::input_parameter< int >::type ppm(ppmSEXP);
-    rcpp_result_gen = Rcpp::wrap(PImatch_target_rcpp(FT, Comp_data, PIon, diff_mz_thr, polarity, ppm));
-    return rcpp_result_gen;
-END_RCPP
-}
-// feature_EIC_process_full_fun_cpp
-List feature_EIC_process_full_fun_cpp(List input_list, int nrows, int ncols, CharacterVector eic_row_names, DataFrame ft, std::string policy, double sn_min, double pad, bool parallel, int n_threads);
-RcppExport SEXP _MS1Match_feature_EIC_process_full_fun_cpp(SEXP input_listSEXP, SEXP nrowsSEXP, SEXP ncolsSEXP, SEXP eic_row_namesSEXP, SEXP ftSEXP, SEXP policySEXP, SEXP sn_minSEXP, SEXP padSEXP, SEXP parallelSEXP, SEXP n_threadsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type input_list(input_listSEXP);
-    Rcpp::traits::input_parameter< int >::type nrows(nrowsSEXP);
-    Rcpp::traits::input_parameter< int >::type ncols(ncolsSEXP);
-    Rcpp::traits::input_parameter< CharacterVector >::type eic_row_names(eic_row_namesSEXP);
-    Rcpp::traits::input_parameter< DataFrame >::type ft(ftSEXP);
-    Rcpp::traits::input_parameter< std::string >::type policy(policySEXP);
-    Rcpp::traits::input_parameter< double >::type sn_min(sn_minSEXP);
-    Rcpp::traits::input_parameter< double >::type pad(padSEXP);
-    Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
-    Rcpp::traits::input_parameter< int >::type n_threads(n_threadsSEXP);
-    rcpp_result_gen = Rcpp::wrap(feature_EIC_process_full_fun_cpp(input_list, nrows, ncols, eic_row_names, ft, policy, sn_min, pad, parallel, n_threads));
-    return rcpp_result_gen;
-END_RCPP
-}
-// closest_rt_fun
-DataFrame closest_rt_fun(NumericVector rt1, NumericVector int1, NumericVector rt2, NumericVector int2, double rt_EIC_thr);
-RcppExport SEXP _MS1Match_closest_rt_fun(SEXP rt1SEXP, SEXP int1SEXP, SEXP rt2SEXP, SEXP int2SEXP, SEXP rt_EIC_thrSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type rt1(rt1SEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type int1(int1SEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type rt2(rt2SEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type int2(int2SEXP);
-    Rcpp::traits::input_parameter< double >::type rt_EIC_thr(rt_EIC_thrSEXP);
-    rcpp_result_gen = Rcpp::wrap(closest_rt_fun(rt1, int1, rt2, int2, rt_EIC_thr));
-    return rcpp_result_gen;
-END_RCPP
-}
-// get_max_fun_cpp
-NumericVector get_max_fun_cpp(DataFrame chromPeaks);
-RcppExport SEXP _MS1Match_get_max_fun_cpp(SEXP chromPeaksSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< DataFrame >::type chromPeaks(chromPeaksSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_max_fun_cpp(chromPeaks));
-    return rcpp_result_gen;
-END_RCPP
-}
-// feature_EIC_process_fun_cpp
-List feature_EIC_process_fun_cpp(List input_list, int nrows, int ncols);
-RcppExport SEXP _MS1Match_feature_EIC_process_fun_cpp(SEXP input_listSEXP, SEXP nrowsSEXP, SEXP ncolsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type input_list(input_listSEXP);
-    Rcpp::traits::input_parameter< int >::type nrows(nrowsSEXP);
-    Rcpp::traits::input_parameter< int >::type ncols(ncolsSEXP);
-    rcpp_result_gen = Rcpp::wrap(feature_EIC_process_fun_cpp(input_list, nrows, ncols));
-    return rcpp_result_gen;
-END_RCPP
-}
-// EIC_cor_pairs_by_sample
-SEXP EIC_cor_pairs_by_sample(List feature_EIC_process, DataFrame feature_pairs, double rt_EIC_thr, std::string method, bool parallel, int n_threads);
-RcppExport SEXP _MS1Match_EIC_cor_pairs_by_sample(SEXP feature_EIC_processSEXP, SEXP feature_pairsSEXP, SEXP rt_EIC_thrSEXP, SEXP methodSEXP, SEXP parallelSEXP, SEXP n_threadsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type feature_EIC_process(feature_EIC_processSEXP);
-    Rcpp::traits::input_parameter< DataFrame >::type feature_pairs(feature_pairsSEXP);
-    Rcpp::traits::input_parameter< double >::type rt_EIC_thr(rt_EIC_thrSEXP);
-    Rcpp::traits::input_parameter< std::string >::type method(methodSEXP);
-    Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
-    Rcpp::traits::input_parameter< int >::type n_threads(n_threadsSEXP);
-    rcpp_result_gen = Rcpp::wrap(EIC_cor_pairs_by_sample(feature_EIC_process, feature_pairs, rt_EIC_thr, method, parallel, n_threads));
+    Rcpp::traits::input_parameter< double >::type rt_thr_compound(rt_thr_compoundSEXP);
+    rcpp_result_gen = Rcpp::wrap(PImatch_target_rcpp(FT, Comp_data, polarity, diff_mz_thr, ppm, rt_thr_compound));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -514,19 +218,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< std::string >::type expr(exprSEXP);
     Rcpp::traits::input_parameter< double >::type M(MSEXP);
     rcpp_result_gen = Rcpp::wrap(parse_and_eval_adduct(expr, M));
-    return rcpp_result_gen;
-END_RCPP
-}
-// gaussian_kernel_dist
-SEXP gaussian_kernel_dist(NumericVector rt_values, double sigma, Nullable<DataFrame> feature_pairs);
-RcppExport SEXP _MS1Match_gaussian_kernel_dist(SEXP rt_valuesSEXP, SEXP sigmaSEXP, SEXP feature_pairsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type rt_values(rt_valuesSEXP);
-    Rcpp::traits::input_parameter< double >::type sigma(sigmaSEXP);
-    Rcpp::traits::input_parameter< Nullable<DataFrame> >::type feature_pairs(feature_pairsSEXP);
-    rcpp_result_gen = Rcpp::wrap(gaussian_kernel_dist(rt_values, sigma, feature_pairs));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -557,15 +248,22 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// inverse_scaling_dist
-SEXP inverse_scaling_dist(NumericVector rt_values, Nullable<DataFrame> feature_pairs);
-RcppExport SEXP _MS1Match_inverse_scaling_dist(SEXP rt_valuesSEXP, SEXP feature_pairsSEXP) {
+// isf_annotate_cpp
+DataFrame isf_annotate_cpp(NumericVector pool_mz, CharacterVector pool_ids, NumericVector fragment_mz, std::string parent_id, double parent_mz, double parent_rt, NumericVector pool_rt, double ppm_isf, double mz_threshold_isf);
+RcppExport SEXP _MS1Match_isf_annotate_cpp(SEXP pool_mzSEXP, SEXP pool_idsSEXP, SEXP fragment_mzSEXP, SEXP parent_idSEXP, SEXP parent_mzSEXP, SEXP parent_rtSEXP, SEXP pool_rtSEXP, SEXP ppm_isfSEXP, SEXP mz_threshold_isfSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type rt_values(rt_valuesSEXP);
-    Rcpp::traits::input_parameter< Nullable<DataFrame> >::type feature_pairs(feature_pairsSEXP);
-    rcpp_result_gen = Rcpp::wrap(inverse_scaling_dist(rt_values, feature_pairs));
+    Rcpp::traits::input_parameter< NumericVector >::type pool_mz(pool_mzSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type pool_ids(pool_idsSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type fragment_mz(fragment_mzSEXP);
+    Rcpp::traits::input_parameter< std::string >::type parent_id(parent_idSEXP);
+    Rcpp::traits::input_parameter< double >::type parent_mz(parent_mzSEXP);
+    Rcpp::traits::input_parameter< double >::type parent_rt(parent_rtSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type pool_rt(pool_rtSEXP);
+    Rcpp::traits::input_parameter< double >::type ppm_isf(ppm_isfSEXP);
+    Rcpp::traits::input_parameter< double >::type mz_threshold_isf(mz_threshold_isfSEXP);
+    rcpp_result_gen = Rcpp::wrap(isf_annotate_cpp(pool_mz, pool_ids, fragment_mz, parent_id, parent_mz, parent_rt, pool_rt, ppm_isf, mz_threshold_isf));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -619,201 +317,81 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// calCorrelation
-double calCorrelation(NumericVector col1, NumericVector col2, std::string method);
-RcppExport SEXP _MS1Match_calCorrelation(SEXP col1SEXP, SEXP col2SEXP, SEXP methodSEXP) {
+// calculate_exact_mass_cpp
+Rcpp::NumericVector calculate_exact_mass_cpp(Rcpp::CharacterVector formulas);
+RcppExport SEXP _MS1Match_calculate_exact_mass_cpp(SEXP formulasSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type col1(col1SEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type col2(col2SEXP);
-    Rcpp::traits::input_parameter< std::string >::type method(methodSEXP);
-    rcpp_result_gen = Rcpp::wrap(calCorrelation(col1, col2, method));
-    return rcpp_result_gen;
-END_RCPP
-}
-// pairwiseCor_mat
-NumericMatrix pairwiseCor_mat(NumericMatrix x, std::string method);
-RcppExport SEXP _MS1Match_pairwiseCor_mat(SEXP xSEXP, SEXP methodSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type x(xSEXP);
-    Rcpp::traits::input_parameter< std::string >::type method(methodSEXP);
-    rcpp_result_gen = Rcpp::wrap(pairwiseCor_mat(x, method));
-    return rcpp_result_gen;
-END_RCPP
-}
-// pairwiseCor_long
-DataFrame pairwiseCor_long(NumericMatrix x, CharacterVector feature_names, std::string method);
-RcppExport SEXP _MS1Match_pairwiseCor_long(SEXP xSEXP, SEXP feature_namesSEXP, SEXP methodSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type x(xSEXP);
-    Rcpp::traits::input_parameter< CharacterVector >::type feature_names(feature_namesSEXP);
-    Rcpp::traits::input_parameter< std::string >::type method(methodSEXP);
-    rcpp_result_gen = Rcpp::wrap(pairwiseCor_long(x, feature_names, method));
-    return rcpp_result_gen;
-END_RCPP
-}
-// pairwise_features_labels
-DataFrame pairwise_features_labels(DataFrame feature_table, List feature_compounds, double rt_threshold);
-RcppExport SEXP _MS1Match_pairwise_features_labels(SEXP feature_tableSEXP, SEXP feature_compoundsSEXP, SEXP rt_thresholdSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< DataFrame >::type feature_table(feature_tableSEXP);
-    Rcpp::traits::input_parameter< List >::type feature_compounds(feature_compoundsSEXP);
-    Rcpp::traits::input_parameter< double >::type rt_threshold(rt_thresholdSEXP);
-    rcpp_result_gen = Rcpp::wrap(pairwise_features_labels(feature_table, feature_compounds, rt_threshold));
-    return rcpp_result_gen;
-END_RCPP
-}
-// parse_any_library_cpp
-Rcpp::List parse_any_library_cpp(std::string file_path, bool truncateMS1, double ppm_tol, int max_isotope, std::string adduct_type, Rcpp::Nullable<std::string> spectrum_type, Rcpp::Nullable<std::string> ionPolarity, Rcpp::Nullable<std::string> export_path);
-RcppExport SEXP _MS1Match_parse_any_library_cpp(SEXP file_pathSEXP, SEXP truncateMS1SEXP, SEXP ppm_tolSEXP, SEXP max_isotopeSEXP, SEXP adduct_typeSEXP, SEXP spectrum_typeSEXP, SEXP ionPolaritySEXP, SEXP export_pathSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type file_path(file_pathSEXP);
-    Rcpp::traits::input_parameter< bool >::type truncateMS1(truncateMS1SEXP);
-    Rcpp::traits::input_parameter< double >::type ppm_tol(ppm_tolSEXP);
-    Rcpp::traits::input_parameter< int >::type max_isotope(max_isotopeSEXP);
-    Rcpp::traits::input_parameter< std::string >::type adduct_type(adduct_typeSEXP);
-    Rcpp::traits::input_parameter< Rcpp::Nullable<std::string> >::type spectrum_type(spectrum_typeSEXP);
-    Rcpp::traits::input_parameter< Rcpp::Nullable<std::string> >::type ionPolarity(ionPolaritySEXP);
-    Rcpp::traits::input_parameter< Rcpp::Nullable<std::string> >::type export_path(export_pathSEXP);
-    rcpp_result_gen = Rcpp::wrap(parse_any_library_cpp(file_path, truncateMS1, ppm_tol, max_isotope, adduct_type, spectrum_type, ionPolarity, export_path));
-    return rcpp_result_gen;
-END_RCPP
-}
-// parse_library_cpp_old_remove
-Rcpp::List parse_library_cpp_old_remove(std::string file_path, Rcpp::Nullable<std::string> spectrum_type, Rcpp::Nullable<std::string> ionPolarity, Rcpp::Nullable<std::string> ioniMethod, Rcpp::Nullable<std::string> colEnergy, Rcpp::Nullable<std::string> instName);
-RcppExport SEXP _MS1Match_parse_library_cpp_old_remove(SEXP file_pathSEXP, SEXP spectrum_typeSEXP, SEXP ionPolaritySEXP, SEXP ioniMethodSEXP, SEXP colEnergySEXP, SEXP instNameSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type file_path(file_pathSEXP);
-    Rcpp::traits::input_parameter< Rcpp::Nullable<std::string> >::type spectrum_type(spectrum_typeSEXP);
-    Rcpp::traits::input_parameter< Rcpp::Nullable<std::string> >::type ionPolarity(ionPolaritySEXP);
-    Rcpp::traits::input_parameter< Rcpp::Nullable<std::string> >::type ioniMethod(ioniMethodSEXP);
-    Rcpp::traits::input_parameter< Rcpp::Nullable<std::string> >::type colEnergy(colEnergySEXP);
-    Rcpp::traits::input_parameter< Rcpp::Nullable<std::string> >::type instName(instNameSEXP);
-    rcpp_result_gen = Rcpp::wrap(parse_library_cpp_old_remove(file_path, spectrum_type, ionPolarity, ioniMethod, colEnergy, instName));
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type formulas(formulasSEXP);
+    rcpp_result_gen = Rcpp::wrap(calculate_exact_mass_cpp(formulas));
     return rcpp_result_gen;
 END_RCPP
 }
 // parse_msp_library_cpp
-Rcpp::List parse_msp_library_cpp(std::string file_path, Rcpp::Nullable<std::string> spectrum_type, Rcpp::Nullable<std::string> ionPolarity, Rcpp::Nullable<std::string> ioniMethod, Rcpp::Nullable<std::string> colEnergy, Rcpp::Nullable<std::string> instName);
-RcppExport SEXP _MS1Match_parse_msp_library_cpp(SEXP file_pathSEXP, SEXP spectrum_typeSEXP, SEXP ionPolaritySEXP, SEXP ioniMethodSEXP, SEXP colEnergySEXP, SEXP instNameSEXP) {
+Rcpp::List parse_msp_library_cpp(std::string file_path, Rcpp::Nullable<std::string> spec, Rcpp::Nullable<std::string> pol, Rcpp::Nullable<std::string> meth, Rcpp::Nullable<std::string> cen, Rcpp::Nullable<std::string> inst, std::string dedup, int reserven, int maxrec);
+RcppExport SEXP _MS1Match_parse_msp_library_cpp(SEXP file_pathSEXP, SEXP specSEXP, SEXP polSEXP, SEXP methSEXP, SEXP cenSEXP, SEXP instSEXP, SEXP dedupSEXP, SEXP reservenSEXP, SEXP maxrecSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string >::type file_path(file_pathSEXP);
-    Rcpp::traits::input_parameter< Rcpp::Nullable<std::string> >::type spectrum_type(spectrum_typeSEXP);
-    Rcpp::traits::input_parameter< Rcpp::Nullable<std::string> >::type ionPolarity(ionPolaritySEXP);
-    Rcpp::traits::input_parameter< Rcpp::Nullable<std::string> >::type ioniMethod(ioniMethodSEXP);
-    Rcpp::traits::input_parameter< Rcpp::Nullable<std::string> >::type colEnergy(colEnergySEXP);
-    Rcpp::traits::input_parameter< Rcpp::Nullable<std::string> >::type instName(instNameSEXP);
-    rcpp_result_gen = Rcpp::wrap(parse_msp_library_cpp(file_path, spectrum_type, ionPolarity, ioniMethod, colEnergy, instName));
+    Rcpp::traits::input_parameter< Rcpp::Nullable<std::string> >::type spec(specSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<std::string> >::type pol(polSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<std::string> >::type meth(methSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<std::string> >::type cen(cenSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<std::string> >::type inst(instSEXP);
+    Rcpp::traits::input_parameter< std::string >::type dedup(dedupSEXP);
+    Rcpp::traits::input_parameter< int >::type reserven(reservenSEXP);
+    Rcpp::traits::input_parameter< int >::type maxrec(maxrecSEXP);
+    rcpp_result_gen = Rcpp::wrap(parse_msp_library_cpp(file_path, spec, pol, meth, cen, inst, dedup, reserven, maxrec));
     return rcpp_result_gen;
 END_RCPP
 }
-// summarize_peak_mz_cpp
-DataFrame summarize_peak_mz_cpp(List lib, double ppm_tol, double isotope_shift, int max_isotope);
-RcppExport SEXP _MS1Match_summarize_peak_mz_cpp(SEXP libSEXP, SEXP ppm_tolSEXP, SEXP isotope_shiftSEXP, SEXP max_isotopeSEXP) {
+// Check_Iso_Charge
+Rcpp::CharacterVector Check_Iso_Charge(Rcpp::CharacterVector name, Rcpp::NumericVector mz, Rcpp::NumericVector rt, Rcpp::NumericVector intensity, double iso_threshold, int max_charge, int max_isotope, int& groupIndex, double ppm, double mzabs, double rt_threshold);
+RcppExport SEXP _MS1Match_Check_Iso_Charge(SEXP nameSEXP, SEXP mzSEXP, SEXP rtSEXP, SEXP intensitySEXP, SEXP iso_thresholdSEXP, SEXP max_chargeSEXP, SEXP max_isotopeSEXP, SEXP groupIndexSEXP, SEXP ppmSEXP, SEXP mzabsSEXP, SEXP rt_thresholdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type lib(libSEXP);
-    Rcpp::traits::input_parameter< double >::type ppm_tol(ppm_tolSEXP);
-    Rcpp::traits::input_parameter< double >::type isotope_shift(isotope_shiftSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type name(nameSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type mz(mzSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type rt(rtSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type intensity(intensitySEXP);
+    Rcpp::traits::input_parameter< double >::type iso_threshold(iso_thresholdSEXP);
+    Rcpp::traits::input_parameter< int >::type max_charge(max_chargeSEXP);
     Rcpp::traits::input_parameter< int >::type max_isotope(max_isotopeSEXP);
-    rcpp_result_gen = Rcpp::wrap(summarize_peak_mz_cpp(lib, ppm_tol, isotope_shift, max_isotope));
-    return rcpp_result_gen;
-END_RCPP
-}
-// test_eic_similarity_df
-double test_eic_similarity_df(DataFrame eic_df1, DataFrame eic_df2, double rt_thr);
-RcppExport SEXP _MS1Match_test_eic_similarity_df(SEXP eic_df1SEXP, SEXP eic_df2SEXP, SEXP rt_thrSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< DataFrame >::type eic_df1(eic_df1SEXP);
-    Rcpp::traits::input_parameter< DataFrame >::type eic_df2(eic_df2SEXP);
-    Rcpp::traits::input_parameter< double >::type rt_thr(rt_thrSEXP);
-    rcpp_result_gen = Rcpp::wrap(test_eic_similarity_df(eic_df1, eic_df2, rt_thr));
-    return rcpp_result_gen;
-END_RCPP
-}
-// truncate_parsed_library_cpp
-List truncate_parsed_library_cpp(List parsed_list, int max_isotope, std::string adduct_type, Nullable<std::string> export_path);
-RcppExport SEXP _MS1Match_truncate_parsed_library_cpp(SEXP parsed_listSEXP, SEXP max_isotopeSEXP, SEXP adduct_typeSEXP, SEXP export_pathSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type parsed_list(parsed_listSEXP);
-    Rcpp::traits::input_parameter< int >::type max_isotope(max_isotopeSEXP);
-    Rcpp::traits::input_parameter< std::string >::type adduct_type(adduct_typeSEXP);
-    Rcpp::traits::input_parameter< Nullable<std::string> >::type export_path(export_pathSEXP);
-    rcpp_result_gen = Rcpp::wrap(truncate_parsed_library_cpp(parsed_list, max_isotope, adduct_type, export_path));
+    Rcpp::traits::input_parameter< int& >::type groupIndex(groupIndexSEXP);
+    Rcpp::traits::input_parameter< double >::type ppm(ppmSEXP);
+    Rcpp::traits::input_parameter< double >::type mzabs(mzabsSEXP);
+    Rcpp::traits::input_parameter< double >::type rt_threshold(rt_thresholdSEXP);
+    rcpp_result_gen = Rcpp::wrap(Check_Iso_Charge(name, mz, rt, intensity, iso_threshold, max_charge, max_isotope, groupIndex, ppm, mzabs, rt_threshold));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_MS1Match_annotate_from_adduct_table", (DL_FUNC) &_MS1Match_annotate_from_adduct_table, 6},
-    {"_MS1Match_DI_dirct_match_fun", (DL_FUNC) &_MS1Match_DI_dirct_match_fun, 4},
-    {"_MS1Match_EIC_cor_mat_pairs", (DL_FUNC) &_MS1Match_EIC_cor_mat_pairs, 6},
-    {"_MS1Match_annotate_peaks_fia", (DL_FUNC) &_MS1Match_annotate_peaks_fia, 10},
-    {"_MS1Match_PImatch_fia_fun", (DL_FUNC) &_MS1Match_PImatch_fia_fun, 5},
-    {"_MS1Match_findNL_fia_fun", (DL_FUNC) &_MS1Match_findNL_fia_fun, 4},
-    {"_MS1Match_Check_Iso_Charge_fia", (DL_FUNC) &_MS1Match_Check_Iso_Charge_fia, 6},
-    {"_MS1Match_annotate_from_librarymatch_cpp", (DL_FUNC) &_MS1Match_annotate_from_librarymatch_cpp, 10},
-    {"_MS1Match_annotate_with_rt_cpp", (DL_FUNC) &_MS1Match_annotate_with_rt_cpp, 15},
-    {"_MS1Match_findNL_fun", (DL_FUNC) &_MS1Match_findNL_fun, 5},
-    {"_MS1Match_annotate_without_rt_cpp", (DL_FUNC) &_MS1Match_annotate_without_rt_cpp, 12},
-    {"_MS1Match_Check_Iso_Charge_no_rt", (DL_FUNC) &_MS1Match_Check_Iso_Charge_no_rt, 6},
-    {"_MS1Match_PImatch_no_rt_fun", (DL_FUNC) &_MS1Match_PImatch_no_rt_fun, 5},
-    {"_MS1Match_classify_Ion_Forms_library", (DL_FUNC) &_MS1Match_classify_Ion_Forms_library, 6},
+    {"_MS1Match_annotate_and_summarize", (DL_FUNC) &_MS1Match_annotate_and_summarize, 7},
+    {"_MS1Match_annotate_librarymatch_phase1_cpp", (DL_FUNC) &_MS1Match_annotate_librarymatch_phase1_cpp, 17},
+    {"_MS1Match_annotate_librarymatch_phase2_cpp", (DL_FUNC) &_MS1Match_annotate_librarymatch_phase2_cpp, 11},
+    {"_MS1Match_classify_Ion_Forms_library", (DL_FUNC) &_MS1Match_classify_Ion_Forms_library, 7},
+    {"_MS1Match_classify_match_cpp", (DL_FUNC) &_MS1Match_classify_match_cpp, 6},
+    {"_MS1Match_compare_libraries_cpp", (DL_FUNC) &_MS1Match_compare_libraries_cpp, 14},
     {"_MS1Match_compare_library_peaks", (DL_FUNC) &_MS1Match_compare_library_peaks, 4},
     {"_MS1Match_compare_library_peaks_3lib", (DL_FUNC) &_MS1Match_compare_library_peaks_3lib, 5},
-    {"_MS1Match_pearson_cpp", (DL_FUNC) &_MS1Match_pearson_cpp, 2},
-    {"_MS1Match_spearman_via_r", (DL_FUNC) &_MS1Match_spearman_via_r, 2},
-    {"_MS1Match_kendall_via_r", (DL_FUNC) &_MS1Match_kendall_via_r, 2},
-    {"_MS1Match_CorPairs_cpp", (DL_FUNC) &_MS1Match_CorPairs_cpp, 4},
-    {"_MS1Match_calculateCorrelation", (DL_FUNC) &_MS1Match_calculateCorrelation, 3},
-    {"_MS1Match_pairwiseCor", (DL_FUNC) &_MS1Match_pairwiseCor, 2},
     {"_MS1Match_direct_match_MS1Lib_cpp", (DL_FUNC) &_MS1Match_direct_match_MS1Lib_cpp, 5},
-    {"_MS1Match_direct_match_MS2Lib_cpp", (DL_FUNC) &_MS1Match_direct_match_MS2Lib_cpp, 5},
-    {"_MS1Match_PImatch_hmdb_fun", (DL_FUNC) &_MS1Match_PImatch_hmdb_fun, 5},
-    {"_MS1Match_dirct_match_FIA_fun", (DL_FUNC) &_MS1Match_dirct_match_FIA_fun, 4},
+    {"_MS1Match_direct_match_MS2Lib_cpp", (DL_FUNC) &_MS1Match_direct_match_MS2Lib_cpp, 6},
     {"_MS1Match_PImatch_target_rcpp", (DL_FUNC) &_MS1Match_PImatch_target_rcpp, 6},
-    {"_MS1Match_feature_EIC_process_full_fun_cpp", (DL_FUNC) &_MS1Match_feature_EIC_process_full_fun_cpp, 10},
-    {"_MS1Match_closest_rt_fun", (DL_FUNC) &_MS1Match_closest_rt_fun, 5},
-    {"_MS1Match_get_max_fun_cpp", (DL_FUNC) &_MS1Match_get_max_fun_cpp, 1},
-    {"_MS1Match_feature_EIC_process_fun_cpp", (DL_FUNC) &_MS1Match_feature_EIC_process_fun_cpp, 3},
-    {"_MS1Match_EIC_cor_pairs_by_sample", (DL_FUNC) &_MS1Match_EIC_cor_pairs_by_sample, 6},
     {"_MS1Match_parse_and_eval_adduct", (DL_FUNC) &_MS1Match_parse_and_eval_adduct, 2},
-    {"_MS1Match_gaussian_kernel_dist", (DL_FUNC) &_MS1Match_gaussian_kernel_dist, 3},
     {"_MS1Match_parse_library_cpp", (DL_FUNC) &_MS1Match_parse_library_cpp, 6},
     {"_MS1Match_parse_library_CSU_cpp", (DL_FUNC) &_MS1Match_parse_library_CSU_cpp, 1},
-    {"_MS1Match_inverse_scaling_dist", (DL_FUNC) &_MS1Match_inverse_scaling_dist, 2},
+    {"_MS1Match_isf_annotate_cpp", (DL_FUNC) &_MS1Match_isf_annotate_cpp, 9},
     {"_MS1Match_left_join_and_mutate_fun", (DL_FUNC) &_MS1Match_left_join_and_mutate_fun, 3},
     {"_MS1Match_left_join_and_mutate_NL_fun", (DL_FUNC) &_MS1Match_left_join_and_mutate_NL_fun, 3},
     {"_MS1Match_left_join_MS2PI_fun", (DL_FUNC) &_MS1Match_left_join_MS2PI_fun, 2},
     {"_MS1Match_left_join_MS2PI_MZmine3_fun", (DL_FUNC) &_MS1Match_left_join_MS2PI_MZmine3_fun, 2},
-    {"_MS1Match_calCorrelation", (DL_FUNC) &_MS1Match_calCorrelation, 3},
-    {"_MS1Match_pairwiseCor_mat", (DL_FUNC) &_MS1Match_pairwiseCor_mat, 2},
-    {"_MS1Match_pairwiseCor_long", (DL_FUNC) &_MS1Match_pairwiseCor_long, 3},
-    {"_MS1Match_pairwise_features_labels", (DL_FUNC) &_MS1Match_pairwise_features_labels, 3},
-    {"_MS1Match_parse_any_library_cpp", (DL_FUNC) &_MS1Match_parse_any_library_cpp, 8},
-    {"_MS1Match_parse_library_cpp_old_remove", (DL_FUNC) &_MS1Match_parse_library_cpp_old_remove, 6},
-    {"_MS1Match_parse_msp_library_cpp", (DL_FUNC) &_MS1Match_parse_msp_library_cpp, 6},
-    {"_MS1Match_summarize_peak_mz_cpp", (DL_FUNC) &_MS1Match_summarize_peak_mz_cpp, 4},
-    {"_MS1Match_test_eic_similarity_df", (DL_FUNC) &_MS1Match_test_eic_similarity_df, 3},
-    {"_MS1Match_truncate_parsed_library_cpp", (DL_FUNC) &_MS1Match_truncate_parsed_library_cpp, 4},
+    {"_MS1Match_calculate_exact_mass_cpp", (DL_FUNC) &_MS1Match_calculate_exact_mass_cpp, 1},
+    {"_MS1Match_parse_msp_library_cpp", (DL_FUNC) &_MS1Match_parse_msp_library_cpp, 9},
+    {"_MS1Match_Check_Iso_Charge", (DL_FUNC) &_MS1Match_Check_Iso_Charge, 11},
     {NULL, NULL, 0}
 };
 

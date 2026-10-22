@@ -15,9 +15,10 @@ using m/z and RT thresholds, ppm tolerance, MS level, and ion polarity.
 
 \item{\code{compounds_list}}{A \code{list} of known compounds with metadata}
 
-\item{\code{diff_mz_thr}}{Numeric m/z difference threshold}
+\item{\code{rt_thr_compound}}{Numeric loose RT threshold for precursor gate vs library RT (e.g. 30 s)}
 
-\item{\code{diff_rt_thr}}{Numeric RT difference threshold}
+\item{\code{rt_thr_coelution}}{Numeric strict RT threshold for co-elution features to
+the matched precursor feature (e.g. 5 s).}
 
 \item{\code{ppm}}{Numeric parts-per-million tolerance for m/z}
 

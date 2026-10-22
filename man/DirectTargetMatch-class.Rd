@@ -3,23 +3,38 @@
 \docType{class}
 \name{DirectTargetMatch-class}
 \alias{DirectTargetMatch-class}
-\title{S4 class for direct target list PI matching}
+\title{Class for Direct Target Matching}
 \description{
-S4 class for direct target list PI matching
+Holds all inputs and results for matching a feature table against a
+compound target list using primary ion m/z (\code{"[M+H]+"} or \code{"[M-H]-"}).
+
+The target list (\code{Comp_data}) can be in any supported format —
+HMDB, plate-based, PA14, etc. Column normalisation is handled
+automatically inside \code{PImatch_target()}.
 }
 \section{Slots}{
 
 \describe{
-\item{\code{FT}}{A data.frame of features}
+\item{\code{FT}}{A \code{data.frame} of detected features (needs
+\code{feature_name} and \code{mzmed}/\code{mz} columns; optionally
+\code{rtmed}/\code{rt} for RT gating).}
 
-\item{\code{Comp_data}}{A data frame of parsed compounds target list}
+\item{\code{Comp_data}}{A \code{data.frame} target list in any supported
+format (HMDB, plate-based, PA14, …).}
 
-\item{\code{diff_mz_thr}}{Numeric m/z difference threshold}
+\item{\code{PIon}}{Character. Primary ion selector: \code{"[M+H]+"} for
+positive mode, \code{"[M-H]-"} for negative mode.}
 
-\item{\code{PIon}}{character \verb{[M+H]+} for positive ion mode. \verb{[M-H]-} for negative ion mode}
+\item{\code{diff_mz_thr}}{Numeric. Absolute m/z tolerance in Da (floor applied
+when ppm tolerance is smaller, e.g. at low m/z).}
 
-\item{\code{diff_rt_thr}}{Numeric RT difference threshold. If rt exist in the target list, it will skip rt threshold}
+\item{\code{ppm}}{Numeric. Parts-per-million m/z tolerance.}
 
-\item{\code{ppm}}{Numeric ppm for m/z tolerance}
+\item{\code{rt_thr_compound}}{Numeric. RT window in seconds for feature vs compound
+RT gating. Only applied when the target list contains an RT column and
+the feature table has RT values. Set to \code{Inf} to disable.}
+
+\item{\code{results}}{List of raw match results (populated by
+\code{PImatch_target()}).}
 }}
 

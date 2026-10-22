@@ -1,2 +1,2 @@
-#' @export
-setGeneric("annotate", function(object) standardGeneric("annotate"))
+setGeneric("annotateLibMatch",
+           function(object, cutoff_MH = FALSE, ...) standardGeneric("annotateLibMatch"))

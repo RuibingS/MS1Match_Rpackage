@@ -1,0 +1,327 @@
+---
+title: "2c. MS1Match with other inputs: MZmine, CSV, no MS2"
+subtitle: "Running MS1Match on a feature table from other pre-processing software"
+author: "Ruibing Shi"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    theme: flatly
+    highlight: tango
+    df_print: paged
+vignette: >
+  %\VignetteIndexEntry{2c. MS1Match with other inputs: MZmine, CSV, no MS2}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE,
+                      fig.width = 9, fig.height = 5.5)
+```
+
+## Overview
+
+Vignettes 2a and 2b start from an xcms feature table. This vignette runs
+MS1Match on a feature table from other software instead:
+
+1. **An MZmine feature table**, imported with `read_mzmine_feature_table()`.
+   This is the main example; it runs on data shipped with the package.
+2. **Any other CSV feature table**, imported with `read_feature_table()`
+   (template only).
+3. **Data without MS2.** The example has MS1 files only, so the in-source
+   fragment step is skipped.
+
+The MS1Match steps themselves are the same as in vignette 2a; only the
+import and the missing MS2 step differ. The resulting `anno_result` is the
+input for vignette *3. Evaluate a feature-grouping tool against MS1Match*.
+
+```{r packages}
+library(MS1Match)
+library(BiocParallel)
+library(dplyr)
+```
+
+## 1. Import the MZmine feature table
+
+The example is StM14 processed with MZmine: 9 MS1 files (4, 8 and 10 µM,
+three replicates each), exported as MZmine's **full feature table** CSV.
+
+The full export is needed, not a filtered one (e.g. "only rows with an ion
+identity"). MS1Match should see every feature, and vignette 3 can only
+evaluate a grouping on features that are in the table.
+
+```{r import-mzmine}
+mzmine_file <- system.file("extdata", "MZmine_feature_table", "StM14_MZmine_export",
+                           "StM14_mzmine_full_feature_table.csv",
+                           package = "MS1Match")
+
+ft <- read_mzmine_feature_table(mzmine_file)
+
+dim(ft)
+head(ft[, 1:6])
+```
+
+`read_mzmine_feature_table()` converts the MZmine export to the layout the
+other MS1Match functions expect:
+
+- MZmine `id` becomes `feature_name` (`1` → `FT0001`);
+- `mz` becomes `mzmed`, and `rt` is converted from minutes to seconds as
+  `rtmed`;
+- the per-file `datafile:<file>:area` columns become the sample intensities,
+  plus `intensity_mean` and `intensity_median`;
+- features found in fewer than `min_detect_fraction` of the samples are
+  dropped (default 0.5, i.e. at least 5 of the 9 files here).
+
+MZmine's own groupings (`feature_group`, `ion_identities:iin_id`) are not
+part of `ft`. Section 5 reads them from the same CSV.
+
+The MZmine features in this example all elute between 62 and 1197 s, so no
+extra RT window is needed. For other data, apply the same 60–1200 s window
+as in vignette 2a before running MS1Match.
+
+## 2. Library and lookup tables
+
+The same library and tables as in vignette 2a:
+
+```{r library-and-tables}
+adduct_table <- read.csv(
+  system.file("extdata", "Adducts", "adducts_with_4M.csv", package = "MS1Match")
+)
+
+neutral_loss_table <- read.csv(
+  system.file("extdata", "Neutral loss", "neutral loss database.csv", package = "MS1Match"),
+  check.names = TRUE
+)
+
+Si14_library <- import_msp(
+  file_path     = system.file("extdata", "StM14_library", "Si14_library.msp",
+                              package = "MS1Match"),
+  ionPolarity   = "pos",
+  spectrum_type = "MS1"
+)
+```
+
+## 3. MS1Match pipeline without MS2
+
+Library matching and the Phase 1 / Phase 2 annotation run as in vignette 2a.
+Without MS2 spectra, the in-source fragment step (`createPeakAnnotationISF()`
+and `annotateISF()`) is skipped and `join_annotation_results()` gets
+`isf_result = NULL`.
+
+```{r ms1match-pipeline}
+direct_obj <- createDirectLibMatch(
+  FT               = ft,
+  compounds_list   = Si14_library,
+  rt_thr_compound  = 30,
+  rt_thr_coelution = 5,
+  ppm              = 10,
+  ms_level         = "MS1",
+  polarity         = "pos"
+)
+
+direct_obj <- libAnnotate(direct_obj, compute_cosine = TRUE, ppm = 20,
+                          BPPARAM = SerialParam())
+direct_res <- results(direct_obj)
+
+anno_obj <- createPeakAnnotationFromLibraryMatch(
+  library_matches    = direct_res,
+  adducts_df         = adduct_table,
+  neutral_loss_table = neutral_loss_table,
+  FT                 = ft,
+  polarity           = "positive",
+  ppm                = 30
+)
+lib_anno_res <- annotateLibMatch(anno_obj, cutoff_MH = TRUE)
+
+anno_result <- join_annotation_results(
+  FT              = ft,
+  direct_lib_list = direct_res,
+  lib_anno_list   = lib_anno_res,
+  isf_result      = NULL,         # no MS2 data
+  include_phase2  = TRUE
+)
+```
+
+Without MS2, the tiers Tier 1c and Tier 1c_exp (in-source MS2 fragments)
+are not assigned. Fragments that would otherwise be Tier 1c usually end up
+in Tier 2 (unexplained, below `[M+H]+`). All other tiers work as usual.
+
+```{r tier-counts}
+anno_result$export_feature_compound_summary %>%
+  count(reference_tier, annotation_phase) %>%
+  arrange(reference_tier)
+```
+
+## 4. Save the result
+
+```{r save, eval = FALSE}
+saveRDS(ft,          "ft_StM14_mzmine.rds")
+saveRDS(anno_result, "anno_result_StM14_mzmine.rds")
+```
+
+The tables of `anno_result` are exported exactly as in vignette 2a,
+Section 5.
+
+## 5. Next: evaluate MZmine's own grouping
+
+The same CSV also holds MZmine's groupings. MS1Match ran on the full feature
+table (Section 1); the groupings are read from that file and restricted to
+the same features with `keep_features`. Vignette 3 explains the evaluation;
+the short version:
+
+```{r evaluate-mzmine}
+mzmine_raw <- read.csv(mzmine_file, check.names = FALSE)
+
+groupings <- list(
+  # correlation grouping (the counterpart of CAMERA pcgroups)
+  MZmine_corr = mzmine_to_grouping(mzmine_raw, group_col = "feature_group",
+                                   keep_features = ft$feature_name,
+                                   unassigned = ""),
+  # ion identity networks
+  MZmine_IIN  = mzmine_to_grouping(mzmine_raw, group_col = "ion_identities:iin_id",
+                                   keep_features = ft$feature_name,
+                                   unassigned = "")
+)
+
+evals <- lapply(names(groupings), function(tool)
+  evaluate_grouping(anno_result, groupings[[tool]], tool_name = tool,
+                    feature_table = ft, rt_window = c(60, 1200)))
+names(evals) <- names(groupings)
+
+do.call(compare_grouping, unname(evals))
+```
+
+Two things to keep in mind:
+
+- `unassigned = ""` matters here. MZmine numbers its groups from 0, so group
+  `0` is a real group, and only an empty cell means "not grouped".
+- Ion identity networks cover only the features MZmine could give an ion
+  identity, so many reference features have no network. If a compound's
+  `[M+H]+` anchor has no network, all its features are Ref-unassigned
+  (no-anchor); if the anchor has one, its features without a network are
+  Ref-unassigned. Read both as IIN's coverage (`pct_grouped` in the
+  benchmark), not as errors. Ref-confirmed vs Ref-conflicting shows whether
+  the networks it did form are right. `feature_group` (correlation grouping) covers most
+  features and is the direct counterpart of CAMERA's pcgroups.
+
+### Per-feature overview
+
+One row per feature that MS1Match assigned to a library compound (feature ×
+compound), with:
+
+- the MS1Match evidence: tier and annotation;
+- MZmine's correlation group and ion identity network, plus the ion
+  identity MZmine assigned (`NA` = MZmine did not group the feature);
+- the anchor's group and the reference status of the feature for each
+  MZmine grouping.
+
+The statuses are taken from `evals`, so they are the same as in the summary
+table above.
+
+```{r feature-overview}
+# MZmine's own ion identity label per feature
+mzmine_ion <- mzmine_raw %>%
+  transmute(feature_name  = sprintf("FT%04d", as.integer(id)),
+            MZmine_ion_id = na_if(trimws(`ion_identities:ion_identities`), ""))
+
+# status per reference row, one block of columns per MZmine grouping
+status_cols <- function(tool, prefix) {
+  evals[[tool]]$full_table %>%
+    filter(!is.na(Compound_name)) %>%
+    select(feature_name, Compound_name, Lib_group,
+           !!paste0(prefix, "_group")        := group,
+           !!paste0(prefix, "_anchor_group") := anchor_group,
+           !!paste0(prefix, "_ref_status")   := ref_status)
+}
+
+# MS1Match evidence per reference row
+evidence <- anno_result$export_feature_compound_summary %>%
+  select(feature_name, Compound_name, Lib_group, reference_tier,
+         any_of(c("annotation_phase", "grp_anno_match", "exp_anno_match",
+                  "NL_match", "iso_annotation")))
+
+feature_overview <- evidence %>%
+  inner_join(status_cols("MZmine_corr", "corr"),
+             by = c("feature_name", "Compound_name", "Lib_group")) %>%
+  left_join(status_cols("MZmine_IIN", "IIN"),
+            by = c("feature_name", "Compound_name", "Lib_group")) %>%
+  left_join(ft %>% select(feature_name, mzmed, rtmed), by = "feature_name") %>%
+  left_join(mzmine_ion, by = "feature_name") %>%
+  mutate(
+    MS1Match_anno = coalesce(na_if(grp_anno_match, ""), na_if(exp_anno_match, "")),
+    MZmine_grouped = case_when(
+      !is.na(corr_group) & !is.na(IIN_group) ~ "corr + IIN",
+      !is.na(corr_group)                     ~ "corr only",
+      !is.na(IIN_group)                      ~ "IIN only",
+      TRUE                                   ~ "not grouped"
+    )
+  ) %>%
+  select(Compound_name, feature_name, mzmed, rtmed,
+         reference_tier, MS1Match_anno, any_of("iso_annotation"),
+         MZmine_grouped,
+         corr_group, corr_anchor_group, corr_ref_status,
+         IIN_group, MZmine_ion_id, IIN_anchor_group, IIN_ref_status) %>%
+  arrange(Compound_name, rtmed, mzmed)
+
+feature_overview
+```
+
+Which reference features did MZmine not group, per compound:
+
+```{r feature-overview-summary}
+feature_overview %>%
+  group_by(Compound_name) %>%
+  summarise(
+    n_features        = n(),
+    n_corr_grouped    = sum(!is.na(corr_group)),
+    n_IIN_grouped     = sum(!is.na(IIN_group)),
+    n_not_grouped     = sum(MZmine_grouped == "not grouped"),
+    corr_confirmed    = sum(corr_ref_status == "Ref-confirmed"),
+    corr_conflicting  = sum(corr_ref_status == "Ref-conflicting"),
+    IIN_confirmed     = sum(IIN_ref_status  == "Ref-confirmed"),
+    IIN_conflicting   = sum(IIN_ref_status  == "Ref-conflicting"),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(n_features))
+
+# overall: how the reference features split across the two MZmine groupings
+feature_overview %>% count(MZmine_grouped)
+table(corr = feature_overview$corr_ref_status,
+      IIN  = feature_overview$IIN_ref_status, useNA = "ifany")
+```
+
+```{r feature-overview-export, eval = FALSE}
+write.csv(feature_overview, "StM14_mzmine_feature_overview.csv",
+          row.names = FALSE, na = "")
+```
+
+## 6. Any other CSV feature table
+
+For other software (MS-DIAL, OpenMS, an Excel export, ...), name the
+columns of your table. All other columns, e.g. a group / cluster column,
+are kept.
+
+```{r import-csv, eval = FALSE}
+ft <- read_feature_table(
+  "my_feature_table.csv",
+  mz_col      = "mz",
+  rt_col      = "rt",
+  rt_unit     = "min",          # "sec" or "min"; converted to seconds
+  sample_cols = "\\.mzML$",     # sample intensity columns: names or a regex
+  id_col      = NULL            # existing id column, or NULL for FT0001, ...
+)
+```
+
+Then continue with Sections 2 and 3. If your MS2 spectra are available, run
+the in-source fragment step as in vignette 2a, Sections 2 and 4.
+
+---
+
+## Session info
+
+```{r session-info}
+sessionInfo()
+```

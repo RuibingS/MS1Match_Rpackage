@@ -1,42 +1,37 @@
-#' S4 class for direct target list PI matching
+#' Class for Direct Target Matching
 #'
-#' @slot FT A data.frame of features
-#' @slot Comp_data A data frame of parsed compounds target list
-#' @slot diff_mz_thr Numeric m/z difference threshold
-#' @slot PIon character `[M+H]+` for positive ion mode. `[M-H]-` for negative ion mode
-#' @slot diff_rt_thr Numeric RT difference threshold. If rt exist in the target list, it will skip rt threshold
-#' @slot ppm Numeric ppm for m/z tolerance
+#' @description
+#' Holds all inputs and results for matching a feature table against a
+#' compound target list using primary ion m/z (\code{"[M+H]+"} or \code{"[M-H]-"}).
+#'
+#' The target list (\code{Comp_data}) can be in any supported format —
+#' HMDB, plate-based, PA14, etc. Column normalisation is handled
+#' automatically inside \code{PImatch_target()}.
+#'
+#' @slot FT             A \code{data.frame} of detected features (needs
+#'   \code{feature_name} and \code{mzmed}/\code{mz} columns; optionally
+#'   \code{rtmed}/\code{rt} for RT gating).
+#' @slot Comp_data      A \code{data.frame} target list in any supported
+#'   format (HMDB, plate-based, PA14, …).
+#' @slot PIon           Character. Primary ion selector: \code{"[M+H]+"} for
+#'   positive mode, \code{"[M-H]-"} for negative mode.
+#' @slot diff_mz_thr    Numeric. Absolute m/z tolerance in Da (floor applied
+#'   when ppm tolerance is smaller, e.g. at low m/z).
+#' @slot ppm            Numeric. Parts-per-million m/z tolerance.
+#' @slot rt_thr_compound Numeric. RT window in seconds for feature vs compound
+#'   RT gating. Only applied when the target list contains an RT column and
+#'   the feature table has RT values. Set to \code{Inf} to disable.
+#' @slot results        List of raw match results (populated by
+#'   \code{PImatch_target()}).
+#'
 #' @export
 setClass("DirectTargetMatch",
          slots = c(
-           FT = "data.frame",
-           Comp_data = "data.frame",
-           PIon = "character",
-           diff_mz_thr = "numeric",
-           diff_rt_thr = "numeric",
-           ppm = "numeric"
-
-
-                    ))
-#' Constructor for DirectTargetMatch
-#'
-#' @param FT Feature table (data.frame)
-#' @param Comp_data Compound target list (data.frame)
-#' @param PIon Ion mode, e.g.,`"[M+H]+"` or `"[M-H]-"`.
-#' @param diff_mz_thr m/z tolerance (numeric)
-#' @param diff_rt_thr retention time tolerance (numeric), default NA
-#' @param ppm m/z tolerance in ppm
-#'
-#' @return A DirectTargetMatch object
-#' @export
-DirectTargetMatch <- function(FT, Comp_data, PIon,
-                              diff_mz_thr, ppm,
-                              diff_rt_thr = NA_real_) {
-  new("DirectTargetMatch",
-      FT = FT,
-      Comp_data = Comp_data,
-      PIon = PIon,
-      diff_mz_thr = diff_mz_thr,
-      diff_rt_thr = diff_rt_thr,
-      ppm = ppm)
-}
+           FT              = "data.frame",
+           Comp_data       = "data.frame",
+           PIon            = "character",
+           diff_mz_thr     = "numeric",
+           ppm             = "numeric",
+           rt_thr_compound = "numeric",
+           results         = "list"
+         ))

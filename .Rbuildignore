@@ -17,3 +17,8 @@
 ^vignettes/MS1Match_tutorial_StM14_truncated\.Rmd$
 ^vignettes/StM14_MS1_MS2_compare\.Rmd$
 ^vignettes/Truncated_MS1_Si16\.Rmd$
+^Analysis$
+^analysis$
+^docs$
+^_pkgdown\.yml$
+^pkgdown$
