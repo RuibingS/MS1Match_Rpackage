@@ -218,6 +218,6 @@ in `analysis/html/`.
 
 # Citation
 
-If you use MS1Match, please cite: *(manuscript in preparation)*.
+If you use MS1Match, please cite:
 Ruibing Shi, Frank Klawonn, Mark Brönstrup, and Raimo Franke. MS1Match for Library-guided  Annotation and Grouping of Re-dundant MS1 Features in LC-MS Untargeted Metabolomics
 *Manuscript submitted*, 2026.
