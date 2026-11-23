@@ -78,14 +78,8 @@ install.packages("RAMClustR")
 if (!requireNamespace("remotes", quietly = TRUE))
   install.packages("remotes")
 
-remotes::install_github("RuibingS/MS1Match_Rpackage",
-                        build_vignettes = TRUE,
-                        dependencies    = TRUE)
+remotes::install_github("RuibingS/MS1Match_Rpackage", dependencies = TRUE)
 ```
-
-`build_vignettes = TRUE` knits the tutorials during installation, which
-takes a few minutes. Leave it out for a faster install; the tutorials are
-then not available offline with `vignette()`.
 
 ## Check the installation
 
