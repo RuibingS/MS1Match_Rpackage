@@ -6,7 +6,16 @@
 \alias{MS1Match}
 \title{MS1Match Package}
 \description{
-Provides functions for direct MS1 peak matching and feature annotation for LC-MS untargeted metabolomics datasets.
+Annotates redundant MS1 features in LC-MS untargeted metabolomics (adducts, isotopes and in-source fragments) by matching them to an MS1 reference library built from pure standards. Features are grouped per compound and assigned to evidence tiers, optionally supported by MS2 fragment matching. The resulting reference groups can be used to benchmark feature-grouping tools.
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://ruibings.github.io/MS1Match_Rpackage}
+  \item \url{https://github.com/RuibingS/MS1Match_Rpackage}
+  \item Report bugs at \url{https://github.com/RuibingS/MS1Match_Rpackage/issues}
+}
+
 }
 \author{
 \strong{Maintainer}: Ruibing Shi \email{ruibingshi@gmail.com}

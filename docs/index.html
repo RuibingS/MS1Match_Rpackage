@@ -5,14 +5,14 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>MS1 Library-guided Comprehensive Annotation of Redundant MS1 Features in LC-MS Untargeted Metabolomics • MS1Match</title>
+<title>MS1Match for Library-guided Annotation and Grouping of Re-dundant MS1 Features in LC-MS Untargeted Metabolomics • MS1Match</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="MS1 Library-guided Comprehensive Annotation of Redundant MS1 Features in LC-MS Untargeted Metabolomics">
-<meta name="description" content="Provides functions for direct MS1 peak matching and feature annotation for LC-MS untargeted metabolomics datasets.">
-<meta property="og:description" content="Provides functions for direct MS1 peak matching and feature annotation for LC-MS untargeted metabolomics datasets.">
+<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="MS1Match for Library-guided Annotation and Grouping of Re-dundant MS1 Features in LC-MS Untargeted Metabolomics">
+<meta name="description" content="Annotates redundant MS1 features in LC-MS untargeted metabolomics (adducts, isotopes and in-source fragments) by matching them to an MS1 reference library built from pure standards. Features are grouped per compound and assigned to evidence tiers, optionally supported by MS2 fragment matching. The resulting reference groups can be used to benchmark feature-grouping tools.">
+<meta property="og:description" content="Annotates redundant MS1 features in LC-MS untargeted metabolomics (adducts, isotopes and in-source fragments) by matching them to an MS1 reference library built from pure standards. Features are grouped per compound and assigned to evidence tiers, optionally supported by MS2 fragment matching. The resulting reference groups can be used to benchmark feature-grouping tools.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">MS1Match</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -38,6 +38,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json">
 </form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/RuibingS/MS1Match_Rpackage/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -48,13 +49,19 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="ms1match-">MS1Match <img src="man/logo/MS1Match_Logo.png" align="right" width="120" height="120" alt=""><a class="anchor" aria-label="anchor" href="#ms1match-"></a>
 </h1></div>
-<p><strong>MS1Match</strong> is an R package for library-guided, compound-centric feature grouping and annotation of LC-MS data (MS1 and MS2). It offers:</p>
+<p><strong>MS1Match</strong> is an R package for library-guided, compound-centric grouping and annotation of redundant LC-MS features. It uses full-range MS1 and MS2 reference libraries to assign adducts, multimers, isotopes, neutral losses and in-source fragments to the compounds they originate from.</p>
+<p>Main functions:</p>
 <ol style="list-style-type: decimal">
-<li>Preprocessing of raw spectral data with the xcms framework</li>
-<li>Direct library-based annotation of detected features</li>
-<li>Annotation of adducts, isotopes, neutral losses and in-source MS2 fragments, each with an evidence tier</li>
-<li>Targeted annotation based on a user-defined compound list</li>
-<li>Benchmarking of other feature-grouping tools (CAMERA, RAMClustR, MZmine, …) against the tier-stratified MS1Match reference set</li>
+<li>
+<strong>Preprocessing</strong> (optional): feature detection from raw data with the xcms framework, or import of feature tables from MZmine or CSV files</li>
+<li>
+<strong>Library matching</strong>: direct matching of detected features to MS1 and MS2 reference spectra</li>
+<li>
+<strong>Feature annotation with evidence tiers</strong>: ion type, isotopologue, MS2 fragment and neutral-loss evidence (Tiers 1a to 1d), plus matched but unexplained features (Tier 2)</li>
+<li>
+<strong>M-expansion</strong>: extension of each compound group to co-eluting features without a direct library match (expansion tiers)</li>
+<li>
+<strong>Evaluation of grouping tools</strong>: reference-relative comparison of other feature grouping tools (e.g., CAMERA, RAMClustR) against the compound-centric MS1Match groups</li>
 </ol>
 </div>
 <div class="section level1">
@@ -323,10 +330,18 @@
 <div class="section level1">
 <h1 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
 </h1>
-<p>If you use MS1Match, please cite: <em>(manuscript in preparation)</em>.</p>
+<p>If you use MS1Match, please cite: Ruibing Shi, Frank Klawonn, Mark Brönstrup, and Raimo Franke. MS1Match for Library-guided Annotation and Grouping of Re-dundant MS1 Features in LC-MS Untargeted Metabolomics <em>Manuscript submitted</em>, 2026.</p>
 </div>
 
-  </main><aside class="col-md-3"><div class="license">
+  </main><aside class="col-md-3"><div class="links">
+<h2 data-toc-skip>Links</h2>
+<ul class="list-unstyled">
+<li><a href="https://github.com/RuibingS/MS1Match_Rpackage/" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/RuibingS/MS1Match_Rpackage/issues" class="external-link">Report a bug</a></li>
+</ul>
+</div>
+
+<div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li>

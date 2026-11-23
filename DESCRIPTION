@@ -1,8 +1,15 @@
 Package: MS1Match
-Title: MS1 Library-guided Comprehensive Annotation of Redundant MS1 Features in LC-MS Untargeted Metabolomics
-Version: 0.0.0.9000
+Title: MS1Match for Library-guided Annotation and Grouping of Re-dundant MS1 Features in LC-MS Untargeted Metabolomics
+Version: 1.0.0
 Authors@R: person("Ruibing", "Shi", email = "ruibingshi@gmail.com", role = c("aut", "cre"))
-Description: Provides functions for direct MS1 peak matching and feature annotation for LC-MS untargeted metabolomics datasets.
+Description: Annotates redundant MS1 features in LC-MS untargeted metabolomics
+    (adducts, isotopes and in-source fragments) by matching them to an MS1
+    reference library built from pure standards. Features are grouped per
+    compound and assigned to evidence tiers, optionally supported by MS2
+    fragment matching. The resulting reference groups can be used to
+    benchmark feature-grouping tools.
+URL: https://ruibings.github.io/MS1Match_Rpackage, https://github.com/RuibingS/MS1Match_Rpackage
+BugReports: https://github.com/RuibingS/MS1Match_Rpackage/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE, roclets = c("namespace", "rd"))

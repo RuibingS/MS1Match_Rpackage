@@ -1,15 +1,26 @@
 # MS1Match ![](man/logo/MS1Match_Logo.png)
 
 **MS1Match** is an R package for library-guided, compound-centric
-feature grouping and annotation of LC-MS data (MS1 and MS2). It offers:
+grouping and annotation of redundant LC-MS features. It uses full-range
+MS1 and MS2 reference libraries to assign adducts, multimers, isotopes,
+neutral losses and in-source fragments to the compounds they originate
+from.
 
-1.  Preprocessing of raw spectral data with the xcms framework
-2.  Direct library-based annotation of detected features
-3.  Annotation of adducts, isotopes, neutral losses and in-source MS2
-    fragments, each with an evidence tier
-4.  Targeted annotation based on a user-defined compound list
-5.  Benchmarking of other feature-grouping tools (CAMERA, RAMClustR,
-    MZmine, …) against the tier-stratified MS1Match reference set
+Main functions:
+
+1.  **Preprocessing** (optional): feature detection from raw data with
+    the xcms framework, or import of feature tables from MZmine or CSV
+    files
+2.  **Library matching**: direct matching of detected features to MS1
+    and MS2 reference spectra
+3.  **Feature annotation with evidence tiers**: ion type, isotopologue,
+    MS2 fragment and neutral-loss evidence (Tiers 1a to 1d), plus
+    matched but unexplained features (Tier 2)
+4.  **M-expansion**: extension of each compound group to co-eluting
+    features without a direct library match (expansion tiers)
+5.  **Evaluation of grouping tools**: reference-relative comparison of
+    other feature grouping tools (e.g., CAMERA, RAMClustR) against the
+    compound-centric MS1Match groups
 
 # Overview
 
@@ -224,4 +235,7 @@ after installing the package; the knitted reports are in
 
 # Citation
 
-If you use MS1Match, please cite: *(manuscript in preparation)*.
+If you use MS1Match, please cite: Ruibing Shi, Frank Klawonn, Mark
+Brönstrup, and Raimo Franke. MS1Match for Library-guided Annotation and
+Grouping of Re-dundant MS1 Features in LC-MS Untargeted Metabolomics
+*Manuscript submitted*, 2026.
