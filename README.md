@@ -23,7 +23,7 @@ Main functions:
 # Overview
 
 <p align="center">
-  <img src="man/figures/ms1match_overview.svg" width="100%"
+  <img src="man/figures/ms1match_overview.png" width="100%"
        alt="MS1Match workflow: inputs, the four-step MS1Match pipeline producing anno_result, and the optional evaluation of feature-grouping tools" />
 </p>
 
